@@ -10,29 +10,13 @@
   <meta name="theme-color" content="#4361ee">
 </head>
 <body>
-  <!-- PIN Access Screen (will be shown first) -->
-  <div id="pinScreen" class="pin-screen" style="display: none;">
-    <div class="pin-container">
-      <h2>Enter Access PIN</h2>
-      <p>Please enter the 4-digit PIN to access the application</p>
-      <input type="password" id="pinInput" maxlength="4" pattern="\d{4}" 
-             placeholder="Enter PIN" autocomplete="off">
-      <button id="submitPin" class="btn btn-primary">Submit</button>
-      <p id="pinError" class="error-message"></p>
-    </div>
-  </div>
-
-  <!-- Main App Container (hidden until PIN is entered) -->
-  <div class="app-container" style="display: none;">
+  <div class="app-container">
     <header>
       <div class="header-content">
         <h1><i class="fas fa-funnel-dollar"></i> Sales Funnel Manager</h1>
         <p class="subtitle">Visualize and optimize your customer journey</p>
       </div>
       <div class="header-controls">
-        <button id="installButton" class="btn btn-primary" style="display:none;">
-          <i class="fas fa-download"></i> Install App
-        </button>
         <button class="btn btn-primary" onclick="toggleAnalytics()">
           <i class="fas fa-chart-line"></i> Analytics
         </button>
@@ -46,8 +30,8 @@
             <a href="#" onclick="exportAsCSV()"><i class="fas fa-file-csv"></i> CSV</a>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="openFunnelStrategyModal()">
-          <i class="fas fa-cog"></i> Funnel Strategy
+        <button class="btn btn-info" onclick="loadExample()">
+          <i class="fas fa-lightbulb"></i> Example
         </button>
       </div>
     </header>
@@ -72,10 +56,6 @@
         <button class="add-lead-btn" onclick="openAddLeadModal('tof')">
           <i class="fas fa-plus"></i> Add Lead
         </button>
-        <div class="strategy-section">
-          <h4>Content Strategy</h4>
-          <p id="tof-strategy-text">No strategy yet.</p>
-        </div>
       </div>
 
       <!-- MOF Stage -->
@@ -97,10 +77,6 @@
         <button class="add-lead-btn" onclick="openAddLeadModal('mof')">
           <i class="fas fa-plus"></i> Add Lead
         </button>
-        <div class="strategy-section">
-          <h4>Content Strategy</h4>
-          <p id="mof-strategy-text">No strategy yet.</p>
-        </div>
       </div>
 
       <!-- BOF Stage -->
@@ -122,15 +98,11 @@
         <button class="add-lead-btn" onclick="openAddLeadModal('bof')">
           <i class="fas fa-plus"></i> Add Lead
         </button>
-        <div class="strategy-section">
-          <h4>Content Strategy</h4>
-          <p id="bof-strategy-text">No strategy yet.</p>
-        </div>
       </div>
     </div>
 
     <!-- Analytics Panel -->
-    <div id="analyticsPanel" class="analytics-panel">
+    <div id="analyticsPanel" class="analytics-panel hidden">
       <div class="analytics-header">
         <h3><i class="fas fa-chart-pie"></i> Funnel Analytics</h3>
         <button class="close-btn" onclick="toggleAnalytics()">
@@ -157,10 +129,6 @@
         </div>
       </div>
       
-      <div class="chart-container">
-        <canvas id="funnelChart"></canvas>
-      </div>
-      
       <div class="timeline-section">
         <h4><i class="fas fa-history"></i> Recent Activity</h4>
         <div class="timeline" id="activityTimeline"></div>
@@ -172,55 +140,37 @@
       <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
         <h3>Add New Lead</h3>
-        <form id="addLeadForm">
-          <div class="form-group">
-            <label for="leadName">Name *</label>
-            <input type="text" id="leadName" placeholder="Company or person name" required>
-          </div>
-          <div class="form-group">
-            <label for="leadEmail">Email</label>
-            <input type="email" id="leadEmail" placeholder="Email address">
-          </div>
-          <div class="form-group">
-            <label for="leadPhone">Phone</label>
-            <input type="tel" id="leadPhone" placeholder="Phone number">
-          </div>
-          <div class="form-group">
-            <label for="leadWebsite">Website</label>
-            <input type="url" id="leadWebsite" placeholder="Website URL">
-          </div>
-          <div class="form-group">
-            <label for="leadContacts">Contacts</label>
-            <input type="text" id="leadContacts" placeholder="People in contact with">
-          </div>
-          <div class="form-group">
-            <label for="leadTag">Tag</label>
-            <select id="leadTag">
-              <option value="">No tag</option>
-              <option value="hot">🔥 Hot lead</option>
-              <option value="cold">❄️ Cold lead</option>
-              <option value="repeat">🔄 Repeat customer</option>
-              <option value="vip">⭐ VIP</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="leadPriority">Priority</label>
-            <select id="leadPriority">
-              <option value="high">High</option>
-              <option value="medium" selected>Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="leadNotes">Notes</label>
-            <textarea id="leadNotes" placeholder="Add any notes..."></textarea>
-          </div>
-          <input type="hidden" id="currentStage">
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Lead</button>
-          </div>
-        </form>
+        <div class="form-group">
+          <label for="leadName">Name</label>
+          <input type="text" id="leadName" placeholder="Company or person name">
+        </div>
+        <div class="form-group">
+          <label for="leadTag">Tag</label>
+          <select id="leadTag">
+            <option value="">No tag</option>
+            <option value="hot">🔥 Hot lead</option>
+            <option value="cold">❄️ Cold lead</option>
+            <option value="repeat">🔄 Repeat customer</option>
+            <option value="vip">⭐ VIP</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="leadPriority">Priority</label>
+          <select id="leadPriority">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="leadNotes">Notes</label>
+          <textarea id="leadNotes" placeholder="Add any notes..."></textarea>
+        </div>
+        <input type="hidden" id="currentStage">
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
+        </div>
       </div>
     </div>
 
@@ -229,95 +179,35 @@
       <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
         <h3>Edit Lead</h3>
-        <form id="editLeadForm">
-          <div class="lead-info-header">
-            <h4 id="editLeadName"></h4>
-            <span class="lead-tag" id="editLeadTag"></span>
-          </div>
-          <div class="form-group">
-            <label for="editLeadEmail">Email</label>
-            <input type="email" id="editLeadEmail" placeholder="Email address">
-          </div>
-          <div class="form-group">
-            <label for="editLeadPhone">Phone</label>
-            <input type="tel" id="editLeadPhone" placeholder="Phone number">
-          </div>
-          <div class="form-group">
-            <label for="editLeadWebsite">Website</label>
-            <input type="url" id="editLeadWebsite" placeholder="Website URL">
-          </div>
-          <div class="form-group">
-            <label for="editLeadContacts">Contacts</label>
-            <input type="text" id="editLeadContacts" placeholder="People in contact with">
-          </div>
-          <div class="form-group">
-            <label for="editLeadStage">Stage</label>
-            <select id="editLeadStage">
-              <option value="tof">TOF - Top of Funnel</option>
-              <option value="mof">MOF - Middle of Funnel</option>
-              <option value="bof">BOF - Bottom of Funnel</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="editLeadPriority">Priority</label>
-            <select id="editLeadPriority">
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="editLeadNotes">Notes</label>
-            <textarea id="editLeadNotes" placeholder="Add any notes..."></textarea>
-          </div>
-          <div class="form-group">
-            <label for="editContentStrategy">Content Strategy</label>
-            <textarea id="editContentStrategy" placeholder="Content strategy for this lead..."></textarea>
-          </div>
-          <input type="hidden" id="editingLeadId">
-          <div class="form-actions">
-            <button type="button" class="btn btn-danger" onclick="deleteLead()">Delete Lead</button>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Funnel Strategy Modal -->
-    <div id="funnelStrategyModal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3>Funnel Content Strategy</h3>
-        <form id="funnelStrategyForm">
-          <div class="form-group">
-            <label for="tofStrategy">TOF Strategy</label>
-            <textarea id="tofStrategy" placeholder="Content strategy for Top of Funnel..."></textarea>
-          </div>
-          <div class="form-group">
-            <label for="tofContentTypes">TOF Content Types</label>
-            <input type="text" id="tofContentTypes" placeholder="Blog posts, social media, ads...">
-          </div>
-          <div class="form-group">
-            <label for="mofStrategy">MOF Strategy</label>
-            <textarea id="mofStrategy" placeholder="Content strategy for Middle of Funnel..."></textarea>
-          </div>
-          <div class="form-group">
-            <label for="mofContentTypes">MOF Content Types</label>
-            <input type="text" id="mofContentTypes" placeholder="Webinars, case studies, demos...">
-          </div>
-          <div class="form-group">
-            <label for="bofStrategy">BOF Strategy</label>
-            <textarea id="bofStrategy" placeholder="Content strategy for Bottom of Funnel..."></textarea>
-          </div>
-          <div class="form-group">
-            <label for="bofContentTypes">BOF Content Types</label>
-            <input type="text" id="bofContentTypes" placeholder="Proposals, contracts, testimonials...">
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Strategy</button>
-          </div>
-        </form>
+        <div class="lead-info-header">
+          <h4 id="editLeadName"></h4>
+          <span class="lead-tag" id="editLeadTag"></span>
+        </div>
+        <div class="form-group">
+          <label for="editLeadStage">Stage</label>
+          <select id="editLeadStage">
+            <option value="tof">TOF - Top of Funnel</option>
+            <option value="mof">MOF - Middle of Funnel</option>
+            <option value="bof">BOF - Bottom of Funnel</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editLeadPriority">Priority</label>
+          <select id="editLeadPriority">
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editLeadNotes">Notes</label>
+          <textarea id="editLeadNotes" placeholder="Add any notes..."></textarea>
+        </div>
+        <input type="hidden" id="editingLeadId">
+        <div class="form-actions">
+          <button class="btn btn-danger" onclick="deleteLead()">Delete Lead</button>
+          <button class="btn btn-primary" onclick="updateLead()">Save Changes</button>
+        </div>
       </div>
     </div>
 
@@ -326,7 +216,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
   <script>
     // Register service worker
@@ -341,41 +230,6 @@
           });
       });
     }
-
-    // Handle PWA install prompt
-    let deferredPrompt;
-    const installButton = document.getElementById('installButton');
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installButton.style.display = 'block';
-    });
-    
-    installButton.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          installButton.style.display = 'none';
-        }
-        deferredPrompt = null;
-      }
-    });
-    
-    window.addEventListener('appinstalled', () => {
-      installButton.style.display = 'none';
-      if (window.funnelManager) {
-        window.funnelManager.showNotification('App installed successfully!', 'success');
-      }
-    });
-
-    // Check if the app is already installed
-    window.addEventListener('load', () => {
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        installButton.style.display = 'none';
-      }
-    });
   </script>
 </body>
 </html>
