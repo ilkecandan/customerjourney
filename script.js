@@ -25,16 +25,16 @@ class FunnelManager {
     // Register beforeunload handler
     window.addEventListener('beforeunload', () => this.saveLeads());
     
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(registration => {
-          console.log('ServiceWorker registration successful');
-        })
-        .catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
-        });
-    }
+    // Setup form event listeners
+    document.getElementById('addLeadForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.saveNewLead();
+    });
+    
+    document.getElementById('editLeadForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.updateCurrentLead();
+    });
   }
   
   // Data Management
@@ -74,30 +74,45 @@ class FunnelManager {
       {
         id: this.generateId(),
         name: "Acme Corporation",
+        email: "contact@acme.com",
+        phone: "+1 555-123-4567",
+        website: "https://acme.com",
+        contacts: "John Smith, Jane Doe",
         tag: "hot",
         priority: "high",
         stage: "tof",
         notes: "Interested in premium plan. Follow up next week.",
+        contentStrategy: "Send case studies and whitepapers",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
         id: this.generateId(),
         name: "XYZ Ltd",
+        email: "info@xyz.com",
+        phone: "+1 555-987-6543",
+        website: "https://xyz.com",
+        contacts: "Robert Johnson",
         tag: "",
         priority: "medium",
         stage: "mof",
         notes: "Requested demo. Scheduled for Friday.",
+        contentStrategy: "Prepare demo focusing on pain points",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       },
       {
         id: this.generateId(),
         name: "Global Enterprises",
+        email: "sales@global.com",
+        phone: "+1 555-456-7890",
+        website: "https://globalenterprises.com",
+        contacts: "Sarah Williams, Michael Brown",
         tag: "vip",
         priority: "high",
         stage: "bof",
         notes: "Existing customer - contract renewal discussion",
+        contentStrategy: "Prepare ROI analysis and success metrics",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
@@ -137,10 +152,15 @@ class FunnelManager {
     const newLead = {
       id: this.generateId(),
       name: leadData.name.trim(),
-      tag: leadData.tag,
+      email: leadData.email?.trim() || '',
+      phone: leadData.phone?.trim() || '',
+      website: leadData.website?.trim() || '',
+      contacts: leadData.contacts?.trim() || '',
+      tag: leadData.tag || '',
       priority: leadData.priority || 'medium',
-      stage: leadData.stage,
+      stage: leadData.stage || 'tof',
       notes: leadData.notes ? leadData.notes.trim() : '',
+      contentStrategy: leadData.contentStrategy ? leadData.contentStrategy.trim() : '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -323,6 +343,7 @@ class FunnelManager {
     this.renderActivityTimeline();
     this.updateProgressBars();
     this.renderSelectedLeads();
+    this.renderFunnelChart();
   }
   
   renderLeads() {
@@ -421,6 +442,135 @@ class FunnelManager {
     document.getElementById('forecastCompletions').textContent = this.forecastCompletions();
   }
   
+  renderFunnelChart() {
+    const ctx = document.createElement('canvas');
+    ctx.id = 'funnelChart';
+    const chartContainer = document.querySelector('.analytics-panel');
+    
+    // Remove existing chart if it exists
+    const existingChart = document.getElementById('funnelChart');
+    if (existingChart) {
+      existingChart.remove();
+    }
+    
+    // Create new chart container
+    const container = document.createElement('div');
+    container.className = 'chart-container';
+    container.appendChild(ctx);
+    
+    // Insert after metrics grid
+    const metricsGrid = document.querySelector('.metrics-grid');
+    if (metricsGrid && chartContainer) {
+      chartContainer.insertBefore(container, metricsGrid.nextElementSibling);
+    }
+    
+    const stageCounts = {
+      tof: this.leads.filter(l => l.stage === 'tof').length,
+      mof: this.leads.filter(l => l.stage === 'mof').length,
+      bof: this.leads.filter(l => l.stage === 'bof').length
+    };
+    
+    const conversionRates = {
+      tofToMof: stageCounts.tof > 0 ? (stageCounts.mof / stageCounts.tof * 100).toFixed(1) : 0,
+      mofToBof: stageCounts.mof > 0 ? (stageCounts.bof / stageCounts.mof * 100).toFixed(1) : 0
+    };
+    
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['TOF', 'TOF → MOF', 'MOF', 'MOF → BOF', 'BOF'],
+        datasets: [{
+          label: 'Leads',
+          data: [
+            stageCounts.tof,
+            0, // Spacer for conversion rate
+            stageCounts.mof,
+            0, // Spacer for conversion rate
+            stageCounts.bof
+          ],
+          backgroundColor: [
+            this.getStageColor('tof'),
+            'transparent',
+            this.getStageColor('mof'),
+            'transparent',
+            this.getStageColor('bof')
+          ],
+          borderColor: [
+            this.getStageColor('tof'),
+            'transparent',
+            this.getStageColor('mof'),
+            'transparent',
+            this.getStageColor('bof')
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                if (context.dataIndex === 1 || context.dataIndex === 3) {
+                  return '';
+                }
+                return `Leads: ${context.raw}`;
+              }
+            }
+          },
+          annotation: {
+            annotations: {
+              tofToMof: {
+                type: 'line',
+                yMin: stageCounts.tof,
+                yMax: stageCounts.mof,
+                borderColor: '#6c757d',
+                borderWidth: 1,
+                borderDash: [5, 5],
+                label: {
+                  content: `${conversionRates.tofToMof}%`,
+                  enabled: true,
+                  position: 'right'
+                }
+              },
+              mofToBof: {
+                type: 'line',
+                yMin: stageCounts.mof,
+                yMax: stageCounts.bof,
+                borderColor: '#6c757d',
+                borderWidth: 1,
+                borderDash: [5, 5],
+                label: {
+                  content: `${conversionRates.mofToBof}%`,
+                  enabled: true,
+                  position: 'right'
+                }
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Leads'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Funnel Stage'
+            }
+          }
+        }
+      }
+    });
+  }
+  
   renderActivityTimeline() {
     const timeline = document.getElementById('activityTimeline');
     if (!timeline) return;
@@ -490,10 +640,15 @@ class FunnelManager {
   openAddLeadModal(stage) {
     document.getElementById('currentStage').value = stage;
     document.getElementById('leadName').value = '';
+    document.getElementById('leadEmail').value = '';
+    document.getElementById('leadPhone').value = '';
+    document.getElementById('leadWebsite').value = '';
+    document.getElementById('leadContacts').value = '';
     document.getElementById('leadTag').value = '';
     document.getElementById('leadPriority').value = 'medium';
     document.getElementById('leadNotes').value = '';
     document.getElementById('addLeadModal').style.display = 'block';
+    document.getElementById('leadName').focus();
   }
   
   openEditLeadModal(lead) {
@@ -511,13 +666,69 @@ class FunnelManager {
     
     document.getElementById('editLeadStage').value = lead.stage;
     document.getElementById('editLeadPriority').value = lead.priority;
+    document.getElementById('editLeadEmail').value = lead.email || '';
+    document.getElementById('editLeadPhone').value = lead.phone || '';
+    document.getElementById('editLeadWebsite').value = lead.website || '';
+    document.getElementById('editLeadContacts').value = lead.contacts || '';
     document.getElementById('editLeadNotes').value = lead.notes || '';
+    document.getElementById('editContentStrategy').value = lead.contentStrategy || '';
     document.getElementById('editLeadModal').style.display = 'block';
   }
   
   closeModal() {
     document.getElementById('addLeadModal').style.display = 'none';
     document.getElementById('editLeadModal').style.display = 'none';
+  }
+  
+  saveNewLead() {
+    const stage = document.getElementById('currentStage').value;
+    const name = document.getElementById('leadName').value;
+    const email = document.getElementById('leadEmail').value;
+    const phone = document.getElementById('leadPhone').value;
+    const website = document.getElementById('leadWebsite').value;
+    const contacts = document.getElementById('leadContacts').value;
+    const tag = document.getElementById('leadTag').value;
+    const priority = document.getElementById('leadPriority').value;
+    const notes = document.getElementById('leadNotes').value;
+    
+    if (!name) {
+      this.showNotification('Lead name is required', 'error');
+      return;
+    }
+    
+    const success = this.addLead({ stage, name, email, phone, website, contacts, tag, priority, notes });
+    if (success) {
+      this.showNotification('Lead added successfully', 'success');
+      this.closeModal();
+    }
+  }
+  
+  updateCurrentLead() {
+    const leadId = document.getElementById('editingLeadId').value;
+    const stage = document.getElementById('editLeadStage').value;
+    const priority = document.getElementById('editLeadPriority').value;
+    const email = document.getElementById('editLeadEmail').value;
+    const phone = document.getElementById('editLeadPhone').value;
+    const website = document.getElementById('editLeadWebsite').value;
+    const contacts = document.getElementById('editLeadContacts').value;
+    const notes = document.getElementById('editLeadNotes').value;
+    const contentStrategy = document.getElementById('editContentStrategy').value;
+    
+    const success = this.updateLead(leadId, { 
+      stage, 
+      priority, 
+      email, 
+      phone, 
+      website, 
+      contacts, 
+      notes, 
+      contentStrategy 
+    });
+    
+    if (success) {
+      this.showNotification('Lead updated successfully', 'success');
+      this.closeModal();
+    }
   }
   
   showNotification(message, type = 'info', duration = 3000) {
@@ -552,6 +763,10 @@ class FunnelManager {
   toggleAnalytics() {
     const panel = document.getElementById('analyticsPanel');
     panel.classList.toggle('visible');
+    
+    if (panel.classList.contains('visible')) {
+      this.renderFunnelChart();
+    }
   }
   
   // Drag and Drop
@@ -675,6 +890,22 @@ class FunnelManager {
         doc.text(`${index + 1}. ${lead.name}${lead.tag ? ` [${lead.tag}]` : ''}`, 25, yPos);
         doc.setFont('helvetica', 'normal');
         
+        // Contact info
+        if (lead.email || lead.phone) {
+          yPos += 7;
+          doc.text(`${lead.email || ''} ${lead.email && lead.phone ? '|' : ''} ${lead.phone || ''}`, 30, yPos);
+        }
+        
+        if (lead.website) {
+          yPos += 7;
+          doc.text(`Website: ${lead.website}`, 30, yPos);
+        }
+        
+        if (lead.contacts) {
+          yPos += 7;
+          doc.text(`Contacts: ${lead.contacts}`, 30, yPos);
+        }
+        
         // Priority
         doc.setTextColor(this.hexToRgb(this.getPriorityColor(lead.priority)));
         doc.text(`Priority: ${lead.priority}`, 160, yPos, { align: 'right' });
@@ -687,6 +918,18 @@ class FunnelManager {
           const splitNotes = doc.splitTextToSize(lead.notes, 160);
           doc.text(splitNotes, 30, yPos);
           yPos += splitNotes.length * 7;
+        }
+        
+        // Content strategy
+        if (lead.contentStrategy) {
+          yPos += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.text('Content Strategy:', 30, yPos);
+          doc.setFont('helvetica', 'normal');
+          yPos += 7;
+          const splitStrategy = doc.splitTextToSize(lead.contentStrategy, 160);
+          doc.text(splitStrategy, 30, yPos);
+          yPos += splitStrategy.length * 7;
         }
         
         yPos += 5;
@@ -752,14 +995,19 @@ class FunnelManager {
   }
   
   exportAsCSV() {
-    let csv = 'Name,Tag,Stage,Priority,Notes,Last Updated\n';
+    let csv = 'Name,Email,Phone,Website,Contacts,Tag,Stage,Priority,Notes,Content Strategy,Last Updated\n';
     
     this.leads.forEach(lead => {
       csv += `"${lead.name.replace(/"/g, '""')}",` +
+             `"${lead.email?.replace(/"/g, '""') || ''}",` +
+             `"${lead.phone?.replace(/"/g, '""') || ''}",` +
+             `"${lead.website?.replace(/"/g, '""') || ''}",` +
+             `"${lead.contacts?.replace(/"/g, '""') || ''}",` +
              `"${lead.tag || ''}",` +
              `"${this.getStageName(lead.stage)}",` +
              `"${lead.priority}",` +
              `"${(lead.notes || '').replace(/"/g, '""')}",` +
+             `"${(lead.contentStrategy || '').replace(/"/g, '""')}",` +
              `"${new Date(lead.updatedAt).toLocaleString()}"\n`;
     });
     
@@ -863,28 +1111,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // Add Lead form submission
-  document.getElementById('addLeadModal').addEventListener('submit', (e) => {
+  document.getElementById('addLeadForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const stage = document.getElementById('currentStage').value;
-    const name = document.getElementById('leadName').value;
-    const tag = document.getElementById('leadTag').value;
-    const priority = document.getElementById('leadPriority').value;
-    const notes = document.getElementById('leadNotes').value;
-    
-    window.funnelManager.addLead({ stage, name, tag, priority, notes });
-    window.funnelManager.closeModal();
+    window.funnelManager.saveNewLead();
   });
   
   // Edit Lead form submission
-  document.getElementById('editLeadModal').addEventListener('submit', (e) => {
+  document.getElementById('editLeadForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const leadId = document.getElementById('editingLeadId').value;
-    const stage = document.getElementById('editLeadStage').value;
-    const priority = document.getElementById('editLeadPriority').value;
-    const notes = document.getElementById('editLeadNotes').value;
-    
-    window.funnelManager.updateLead(leadId, { stage, priority, notes });
-    window.funnelManager.closeModal();
+    window.funnelManager.updateCurrentLead();
   });
   
   // Bulk actions
@@ -924,4 +1159,12 @@ function openAddLeadModal(stage) {
 
 function closeModal() {
   window.funnelManager.closeModal();
+}
+
+function deleteLead() {
+  const leadId = document.getElementById('editingLeadId').value;
+  if (confirm('Are you sure you want to delete this lead?')) {
+    window.funnelManager.deleteLead(leadId);
+    window.funnelManager.closeModal();
+  }
 }
