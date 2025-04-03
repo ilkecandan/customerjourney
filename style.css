@@ -45,6 +45,7 @@ body {
   line-height: 1.6;
   padding: 0;
   margin: 0;
+  min-height: 100vh;
 }
 
 .app-container {
@@ -318,6 +319,10 @@ header {
   box-shadow: 0 10px 20px rgba(0,0,0,0.15);
 }
 
+.lead-card.selected {
+  background-color: rgba(67, 97, 238, 0.1);
+}
+
 .lead-selector {
   position: absolute;
   top: 10px;
@@ -446,7 +451,7 @@ header {
 }
 
 .analytics-panel.visible {
-  max-height: 600px;
+  max-height: 800px;
   padding: 20px;
 }
 
@@ -510,6 +515,12 @@ header {
 .metric-label {
   color: var(--gray-color);
   font-size: 0.9rem;
+}
+
+.chart-container {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 25px;
 }
 
 .timeline-section {
@@ -586,9 +597,11 @@ header {
   padding: 25px;
   border-radius: var(--border-radius);
   width: 90%;
-  max-width: 500px;
+  max-width: 600px;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
   animation: slideDown 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes slideDown {
@@ -780,6 +793,11 @@ header {
   .metrics-grid {
     grid-template-columns: 1fr 1fr;
   }
+  
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -797,5 +815,14 @@ header {
   
   .form-actions .btn {
     width: 100%;
+  }
+  
+  .header-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
   }
 }
