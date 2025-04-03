@@ -1,84 +1,3 @@
-// PIN Access System
-class PinAccess {
-  constructor() {
-    this.correctPin = "1234"; // Set the access PIN to 1234
-    this.storageKey = "pinAccessGranted";
-    this.init();
-  }
-
-  init() {
-    // Check if access was already granted in this session
-    const accessGranted = sessionStorage.getItem(this.storageKey);
-    if (accessGranted === "true") {
-      this.grantAccess();
-      return;
-    }
-
-    this.showPinScreen();
-  }
-
-  showPinScreen() {
-    // Hide main app initially
-    document.querySelector('.app-container').style.display = 'none';
-    
-    // Create PIN screen if it doesn't exist
-    let pinScreen = document.getElementById('pinScreen');
-    if (!pinScreen) {
-      pinScreen = document.createElement('div');
-      pinScreen.id = 'pinScreen';
-      pinScreen.className = 'pin-screen';
-      pinScreen.innerHTML = `
-        <div class="pin-container">
-          <h2>Enter Access PIN</h2>
-          <p>Please enter the 4-digit PIN to access the application</p>
-          <input type="password" id="pinInput" maxlength="4" pattern="\\d{4}" 
-                 placeholder="Enter PIN" autocomplete="off">
-          <button id="submitPin" class="btn btn-primary">Submit</button>
-          <p id="pinError" class="error-message"></p>
-        </div>
-      `;
-      document.body.appendChild(pinScreen);
-      
-      document.getElementById('submitPin').addEventListener('click', () => this.checkPin());
-      
-      // Add keyboard event for PIN input
-      document.getElementById('pinInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          this.checkPin();
-        }
-      });
-    }
-  }
-
-  checkPin() {
-    const enteredPin = document.getElementById('pinInput').value;
-    const errorElement = document.getElementById('pinError');
-    
-    if (!enteredPin) {
-      errorElement.textContent = 'Please enter a PIN';
-      return;
-    }
-
-    if (enteredPin === this.correctPin) {
-      // Correct PIN - grant access
-      sessionStorage.setItem(this.storageKey, "true");
-      this.grantAccess();
-    } else {
-      errorElement.textContent = 'Incorrect PIN. Please try again.';
-    }
-  }
-
-  grantAccess() {
-    // Hide PIN screen and show app
-    const pinScreen = document.getElementById('pinScreen');
-    if (pinScreen) pinScreen.style.display = 'none';
-    document.querySelector('.app-container').style.display = 'block';
-    
-    // Initialize the funnel manager
-    window.funnelManager = new FunnelManager();
-  }
-}
-
 // Main Application
 class FunnelManager {
   constructor() {
@@ -90,18 +9,12 @@ class FunnelManager {
       mof: 60,
       bof: 30
     };
-    this.funnelStrategies = {
-      tof: { strategy: '', contentTypes: '' },
-      mof: { strategy: '', contentTypes: '' },
-      bof: { strategy: '', contentTypes: '' }
-    };
     
     this.init();
   }
   
   init() {
     this.loadLeads();
-    this.loadFunnelStrategies();
     this.setupDragAndDrop();
     this.setupKeyboardShortcuts();
     this.render();
@@ -121,11 +34,6 @@ class FunnelManager {
     document.getElementById('editLeadForm')?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.updateCurrentLead();
-    });
-    
-    document.getElementById('funnelStrategyForm')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      this.saveFunnelStrategies();
     });
   }
   
@@ -147,17 +55,6 @@ class FunnelManager {
     this.render();
   }
   
-  loadFunnelStrategies() {
-    try {
-      const savedStrategies = localStorage.getItem('funnelStrategies');
-      if (savedStrategies) {
-        this.funnelStrategies = JSON.parse(savedStrategies);
-      }
-    } catch (e) {
-      console.error("Failed to load funnel strategies:", e);
-    }
-  }
-  
   saveLeads() {
     try {
       const data = {
@@ -169,17 +66,6 @@ class FunnelManager {
     } catch (e) {
       console.error("Failed to save leads:", e);
       this.showNotification('Failed to save data', 'error');
-    }
-  }
-  
-  saveFunnelStrategies() {
-    try {
-      localStorage.setItem('funnelStrategies', JSON.stringify(this.funnelStrategies));
-      this.updateStrategyDisplay(); // Update the UI after saving
-      this.showNotification('Funnel strategies saved successfully', 'success');
-    } catch (e) {
-      console.error("Failed to save funnel strategies:", e);
-      this.showNotification('Failed to save funnel strategies', 'error');
     }
   }
   
@@ -360,48 +246,6 @@ class FunnelManager {
     return true;
   }
   
-  // Funnel Strategy Management
-  saveFunnelStrategies() {
-    this.funnelStrategies = {
-      tof: {
-        strategy: document.getElementById('tofStrategy').value,
-        contentTypes: document.getElementById('tofContentTypes').value
-      },
-      mof: {
-        strategy: document.getElementById('mofStrategy').value,
-        contentTypes: document.getElementById('mofContentTypes').value
-      },
-      bof: {
-        strategy: document.getElementById('bofStrategy').value,
-        contentTypes: document.getElementById('bofContentTypes').value
-      }
-    };
-    
-    localStorage.setItem('funnelStrategies', JSON.stringify(this.funnelStrategies));
-    this.updateStrategyDisplay();
-    this.closeModal();
-    this.showNotification('Funnel strategies saved successfully', 'success');
-  }
-  
-  updateStrategyDisplay() {
-    document.getElementById('tof-strategy-text').textContent =
-      this.funnelStrategies.tof.strategy || 'No strategy yet.';
-    document.getElementById('mof-strategy-text').textContent =
-      this.funnelStrategies.mof.strategy || 'No strategy yet.';
-    document.getElementById('bof-strategy-text').textContent =
-      this.funnelStrategies.bof.strategy || 'No strategy yet.';
-  }
-  
-  openFunnelStrategyModal() {
-    document.getElementById('tofStrategy').value = this.funnelStrategies.tof.strategy;
-    document.getElementById('tofContentTypes').value = this.funnelStrategies.tof.contentTypes;
-    document.getElementById('mofStrategy').value = this.funnelStrategies.mof.strategy;
-    document.getElementById('mofContentTypes').value = this.funnelStrategies.mof.contentTypes;
-    document.getElementById('bofStrategy').value = this.funnelStrategies.bof.strategy;
-    document.getElementById('bofContentTypes').value = this.funnelStrategies.bof.contentTypes;
-    document.getElementById('funnelStrategyModal').style.display = 'block';
-  }
-  
   // Bulk Actions
   toggleLeadSelection(leadId, selected) {
     if (selected) {
@@ -500,7 +344,6 @@ class FunnelManager {
     this.updateProgressBars();
     this.renderSelectedLeads();
     this.renderFunnelChart();
-    this.updateStrategyDisplay(); // Update strategy displays
   }
   
   renderLeads() {
@@ -573,16 +416,6 @@ class FunnelManager {
       }
     });
     
-    // Drag events
-    leadEl.addEventListener('dragstart', (e) => {
-      e.dataTransfer.setData('text/plain', lead.id);
-      e.target.classList.add('dragging');
-    });
-    
-    leadEl.addEventListener('dragend', (e) => {
-      e.target.classList.remove('dragging');
-    });
-    
     return leadEl;
   }
   
@@ -610,8 +443,26 @@ class FunnelManager {
   }
   
   renderFunnelChart() {
-    const ctx = document.getElementById('funnelChart');
-    if (!ctx) return;
+    const ctx = document.createElement('canvas');
+    ctx.id = 'funnelChart';
+    const chartContainer = document.querySelector('.analytics-panel');
+    
+    // Remove existing chart if it exists
+    const existingChart = document.getElementById('funnelChart');
+    if (existingChart) {
+      existingChart.remove();
+    }
+    
+    // Create new chart container
+    const container = document.createElement('div');
+    container.className = 'chart-container';
+    container.appendChild(ctx);
+    
+    // Insert after metrics grid
+    const metricsGrid = document.querySelector('.metrics-grid');
+    if (metricsGrid && chartContainer) {
+      chartContainer.insertBefore(container, metricsGrid.nextElementSibling);
+    }
     
     const stageCounts = {
       tof: this.leads.filter(l => l.stage === 'tof').length,
@@ -624,12 +475,7 @@ class FunnelManager {
       mofToBof: stageCounts.mof > 0 ? (stageCounts.bof / stageCounts.mof * 100).toFixed(1) : 0
     };
     
-    // Destroy previous chart if it exists
-    if (window.funnelChart) {
-      window.funnelChart.destroy();
-    }
-    
-    window.funnelChart = new Chart(ctx, {
+    new Chart(ctx, {
       type: 'bar',
       data: {
         labels: ['TOF', 'TOF → MOF', 'MOF', 'MOF → BOF', 'BOF'],
@@ -672,6 +518,36 @@ class FunnelManager {
                   return '';
                 }
                 return `Leads: ${context.raw}`;
+              }
+            }
+          },
+          annotation: {
+            annotations: {
+              tofToMof: {
+                type: 'line',
+                yMin: stageCounts.tof,
+                yMax: stageCounts.mof,
+                borderColor: '#6c757d',
+                borderWidth: 1,
+                borderDash: [5, 5],
+                label: {
+                  content: `${conversionRates.tofToMof}%`,
+                  enabled: true,
+                  position: 'right'
+                }
+              },
+              mofToBof: {
+                type: 'line',
+                yMin: stageCounts.mof,
+                yMax: stageCounts.bof,
+                borderColor: '#6c757d',
+                borderWidth: 1,
+                borderDash: [5, 5],
+                label: {
+                  content: `${conversionRates.mofToBof}%`,
+                  enabled: true,
+                  position: 'right'
+                }
               }
             }
           }
@@ -802,7 +678,6 @@ class FunnelManager {
   closeModal() {
     document.getElementById('addLeadModal').style.display = 'none';
     document.getElementById('editLeadModal').style.display = 'none';
-    document.getElementById('funnelStrategyModal').style.display = 'none';
   }
   
   saveNewLead() {
@@ -910,11 +785,23 @@ class FunnelManager {
           container.insertBefore(draggable, afterElement);
         }
       });
+    });
+    
+    document.querySelectorAll('.lead-card').forEach(card => {
+      card.addEventListener('dragstart', () => {
+        card.classList.add('dragging');
+      });
       
-      container.addEventListener('drop', e => {
-        e.preventDefault();
-        const leadId = e.dataTransfer.getData('text/plain');
-        const newStage = container.id.replace('-leads', '');
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        
+        // Get new stage from container
+        const newContainer = card.closest('.leads-container');
+        if (!newContainer) return;
+        
+        const newStage = newContainer.id.replace('-leads', '');
+        const leadId = card.dataset.leadId;
+        
         this.moveLead(leadId, newStage);
       });
     });
@@ -957,178 +844,128 @@ class FunnelManager {
   
   // Export Functions
   exportAsPDF() {
-    console.log("Starting PDF export...");
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
     
-    try {
-      const { jsPDF } = window.jspdf;
-      if (!jsPDF) {
-        this.showNotification('PDF library not loaded. Please try again.', 'error');
-        return;
-      }
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(67, 97, 238);
+    doc.text('Sales Funnel Report', 105, 20, { align: 'center' });
+    
+    // Date
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 30, { align: 'center' });
+    
+    // Funnel visualization
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    // Add funnel stages
+    const stages = ['tof', 'mof', 'bof'];
+    let yPos = 45;
+    
+    stages.forEach(stage => {
+      const stageLeads = this.leads.filter(l => l.stage === stage);
+      const stageName = this.getStageName(stage);
       
-      const doc = new jsPDF();
+      // Stage header
+      doc.setFillColor(this.hexToRgb(this.getStageColor(stage)));
+      doc.rect(20, yPos, 170, 10, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.text(`${stageName} (${stageLeads.length})`, 105, yPos + 7, { align: 'center' });
       
-      // Title
-      doc.setFontSize(20);
-      doc.setTextColor(67, 97, 238);
-      doc.text('Sales Funnel Report', 105, 20, { align: 'center' });
+      yPos += 15;
       
-      // Date
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 30, { align: 'center' });
-      
-      // Funnel visualization
-      doc.setFontSize(12);
+      // Leads list
       doc.setTextColor(0, 0, 0);
-      
-      // Add funnel stages
-      const stages = ['tof', 'mof', 'bof'];
-      let yPos = 45;
-      
-      // Add funnel strategies
-      doc.setFont('helvetica', 'bold');
-      doc.text('Funnel Content Strategies', 20, yPos);
-      doc.setFont('helvetica', 'normal');
-      yPos += 10;
-      
-      stages.forEach(stage => {
-        const stageName = this.getStageName(stage);
-        const strategy = this.funnelStrategies[stage];
+      stageLeads.forEach((lead, index) => {
+        if (yPos > 250) {
+          doc.addPage();
+          yPos = 20;
+        }
         
+        // Lead name and tag
         doc.setFont('helvetica', 'bold');
-        doc.text(`${stageName}:`, 20, yPos);
+        doc.text(`${index + 1}. ${lead.name}${lead.tag ? ` [${lead.tag}]` : ''}`, 25, yPos);
         doc.setFont('helvetica', 'normal');
+        
+        // Contact info
+        if (lead.email || lead.phone) {
+          yPos += 7;
+          doc.text(`${lead.email || ''} ${lead.email && lead.phone ? '|' : ''} ${lead.phone || ''}`, 30, yPos);
+        }
+        
+        if (lead.website) {
+          yPos += 7;
+          doc.text(`Website: ${lead.website}`, 30, yPos);
+        }
+        
+        if (lead.contacts) {
+          yPos += 7;
+          doc.text(`Contacts: ${lead.contacts}`, 30, yPos);
+        }
+        
+        // Priority
+        doc.setTextColor(this.hexToRgb(this.getPriorityColor(lead.priority)));
+        doc.text(`Priority: ${lead.priority}`, 160, yPos, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        
         yPos += 7;
         
-        if (strategy.strategy) {
-          const splitStrategy = doc.splitTextToSize(strategy.strategy, 160);
-          doc.text(splitStrategy, 25, yPos);
+        // Notes
+        if (lead.notes) {
+          const splitNotes = doc.splitTextToSize(lead.notes, 160);
+          doc.text(splitNotes, 30, yPos);
+          yPos += splitNotes.length * 7;
+        }
+        
+        // Content strategy
+        if (lead.contentStrategy) {
+          yPos += 7;
+          doc.setFont('helvetica', 'bold');
+          doc.text('Content Strategy:', 30, yPos);
+          doc.setFont('helvetica', 'normal');
+          yPos += 7;
+          const splitStrategy = doc.splitTextToSize(lead.contentStrategy, 160);
+          doc.text(splitStrategy, 30, yPos);
           yPos += splitStrategy.length * 7;
         }
         
-        if (strategy.contentTypes) {
-          doc.setFont('helvetica', 'bold');
-          doc.text('Content Types:', 25, yPos);
-          doc.setFont('helvetica', 'normal');
-          yPos += 7;
-          doc.text(strategy.contentTypes, 30, yPos);
-          yPos += 7;
-        }
-        
-        yPos += 10;
+        yPos += 5;
       });
       
-      // Add page break before leads
-      doc.addPage();
-      yPos = 20;
-      
-      // Add leads by stage
-      stages.forEach(stage => {
-        const stageLeads = this.leads.filter(l => l.stage === stage);
-        const stageName = this.getStageName(stage);
-        
-        // Stage header
-        doc.setFillColor(this.hexToRgb(this.getStageColor(stage)));
-        doc.rect(20, yPos, 170, 10, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text(`${stageName} (${stageLeads.length})`, 105, yPos + 7, { align: 'center' });
-        
-        yPos += 15;
-        
-        // Leads list
-        doc.setTextColor(0, 0, 0);
-        stageLeads.forEach((lead, index) => {
-          if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-          }
-          
-          // Lead name and tag
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${index + 1}. ${lead.name}${lead.tag ? ` [${lead.tag}]` : ''}`, 25, yPos);
-          doc.setFont('helvetica', 'normal');
-          
-          // Contact info
-          if (lead.email || lead.phone) {
-            yPos += 7;
-            doc.text(`${lead.email || ''} ${lead.email && lead.phone ? '|' : ''} ${lead.phone || ''}`, 30, yPos);
-          }
-          
-          if (lead.website) {
-            yPos += 7;
-            doc.text(`Website: ${lead.website}`, 30, yPos);
-          }
-          
-          if (lead.contacts) {
-            yPos += 7;
-            doc.text(`Contacts: ${lead.contacts}`, 30, yPos);
-          }
-          
-          // Priority
-          doc.setTextColor(this.hexToRgb(this.getPriorityColor(lead.priority)));
-          doc.text(`Priority: ${lead.priority}`, 160, yPos, { align: 'right' });
-          doc.setTextColor(0, 0, 0);
-          
-          yPos += 7;
-          
-          // Notes
-          if (lead.notes) {
-            const splitNotes = doc.splitTextToSize(lead.notes, 160);
-            doc.text(splitNotes, 30, yPos);
-            yPos += splitNotes.length * 7;
-          }
-          
-          // Content strategy
-          if (lead.contentStrategy) {
-            yPos += 7;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Content Strategy:', 30, yPos);
-            doc.setFont('helvetica', 'normal');
-            yPos += 7;
-            const splitStrategy = doc.splitTextToSize(lead.contentStrategy, 160);
-            doc.text(splitStrategy, 30, yPos);
-            yPos += splitStrategy.length * 7;
-          }
-          
-          yPos += 5;
-        });
-        
-        yPos += 10;
-      });
-      
-      // Analytics section
-      doc.addPage();
-      doc.setFontSize(16);
-      doc.setTextColor(67, 97, 238);
-      doc.text('Funnel Analytics', 105, 20, { align: 'center' });
-      
-      // Add analytics metrics
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      
-      const metrics = [
-        { label: 'Total Leads', value: this.leads.length },
-        { label: 'Conversion Rate', value: this.calculateConversionRate() + '%' },
-        { label: 'Avg. Dwell Time', value: this.calculateAvgDwellTime() + ' days' },
-        { label: 'Forecast (7d)', value: this.forecastCompletions() }
-      ];
-      
-      yPos = 40;
-      metrics.forEach(metric => {
-        doc.text(`${metric.label}:`, 20, yPos);
-        doc.text(metric.value.toString(), 180, yPos, { align: 'right' });
-        yPos += 10;
-      });
-      
-      // Save the PDF
-      doc.save('funnel_report.pdf');
-      this.logActivity('Exported PDF report');
-      this.showNotification('PDF exported successfully', 'success');
-    } catch (e) {
-      console.error("Failed to generate PDF:", e);
-      this.showNotification('Failed to generate PDF', 'error');
-    }
+      yPos += 10;
+    });
+    
+    // Analytics section
+    doc.addPage();
+    doc.setFontSize(16);
+    doc.setTextColor(67, 97, 238);
+    doc.text('Funnel Analytics', 105, 20, { align: 'center' });
+    
+    // Add analytics metrics
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    const metrics = [
+      { label: 'Total Leads', value: this.leads.length },
+      { label: 'Conversion Rate', value: this.calculateConversionRate() + '%' },
+      { label: 'Avg. Dwell Time', value: this.calculateAvgDwellTime() + ' days' },
+      { label: 'Forecast (7d)', value: this.forecastCompletions() + ' completions' }
+    ];
+    
+    yPos = 40;
+    metrics.forEach(metric => {
+      doc.text(`${metric.label}:`, 20, yPos);
+      doc.text(metric.value.toString(), 180, yPos, { align: 'right' });
+      yPos += 10;
+    });
+    
+    // Save the PDF
+    doc.save('funnel_report.pdf');
+    this.logActivity('Exported PDF report');
+    this.showNotification('PDF exported successfully', 'success');
   }
   
   exportAsJSON() {
@@ -1139,7 +976,6 @@ class FunnelManager {
         totalLeads: this.leads.length
       },
       leads: this.leads,
-      funnelStrategies: this.funnelStrategies,
       analytics: {
         conversionRate: this.calculateConversionRate(),
         avgDwellTime: this.calculateAvgDwellTime(),
@@ -1147,53 +983,43 @@ class FunnelManager {
       }
     };
     
-    try {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'funnel_data.json';
-      link.click();
-      
-      this.logActivity('Exported JSON data');
-      this.showNotification('JSON exported successfully', 'success');
-    } catch (e) {
-      console.error("Failed to export JSON:", e);
-      this.showNotification('Failed to export JSON', 'error');
-    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'funnel_data.json';
+    link.click();
+    
+    this.logActivity('Exported JSON data');
+    this.showNotification('JSON exported successfully', 'success');
   }
   
   exportAsCSV() {
-    try {
-      let csv = 'Name,Email,Phone,Website,Contacts,Tag,Stage,Priority,Notes,Content Strategy,Last Updated\n';
-      
-      this.leads.forEach(lead => {
-        csv += `"${lead.name.replace(/"/g, '""')}",` +
-               `"${lead.email?.replace(/"/g, '""') || ''}",` +
-               `"${lead.phone?.replace(/"/g, '""') || ''}",` +
-               `"${lead.website?.replace(/"/g, '""') || ''}",` +
-               `"${lead.contacts?.replace(/"/g, '""') || ''}",` +
-               `"${lead.tag || ''}",` +
-               `"${this.getStageName(lead.stage)}",` +
-               `"${lead.priority}",` +
-               `"${(lead.notes || '').replace(/"/g, '""')}",` +
-               `"${(lead.contentStrategy || '').replace(/"/g, '""')}",` +
-               `"${new Date(lead.updatedAt).toLocaleString()}"\n`;
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'funnel_leads.csv';
-      link.click();
-      
-      this.logActivity('Exported CSV data');
-      this.showNotification('CSV exported successfully', 'success');
-    } catch (e) {
-      console.error("Failed to export CSV:", e);
-      this.showNotification('Failed to export CSV', 'error');
-    }
+    let csv = 'Name,Email,Phone,Website,Contacts,Tag,Stage,Priority,Notes,Content Strategy,Last Updated\n';
+    
+    this.leads.forEach(lead => {
+      csv += `"${lead.name.replace(/"/g, '""')}",` +
+             `"${lead.email?.replace(/"/g, '""') || ''}",` +
+             `"${lead.phone?.replace(/"/g, '""') || ''}",` +
+             `"${lead.website?.replace(/"/g, '""') || ''}",` +
+             `"${lead.contacts?.replace(/"/g, '""') || ''}",` +
+             `"${lead.tag || ''}",` +
+             `"${this.getStageName(lead.stage)}",` +
+             `"${lead.priority}",` +
+             `"${(lead.notes || '').replace(/"/g, '""')}",` +
+             `"${(lead.contentStrategy || '').replace(/"/g, '""')}",` +
+             `"${new Date(lead.updatedAt).toLocaleString()}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'funnel_leads.csv';
+    link.click();
+    
+    this.logActivity('Exported CSV data');
+    this.showNotification('CSV exported successfully', 'success');
   }
   
   // Utility Functions
@@ -1275,46 +1101,70 @@ class FunnelManager {
   }
 }
 
-// Initialize the PIN access system
+// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-  window.pinAccess = new PinAccess();
+  window.funnelManager = new FunnelManager();
+  
+  // Modal close buttons
+  document.querySelectorAll('.close-btn').forEach(btn => {
+    btn.addEventListener('click', () => window.funnelManager.closeModal());
+  });
+  
+  // Add Lead form submission
+  document.getElementById('addLeadForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    window.funnelManager.saveNewLead();
+  });
+  
+  // Edit Lead form submission
+  document.getElementById('editLeadForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    window.funnelManager.updateCurrentLead();
+  });
+  
+  // Bulk actions
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Delete' && window.funnelManager.selectedLeads.size > 0) {
+      window.funnelManager.deleteSelectedLeads();
+    }
+  });
 });
 
 // Global functions for HTML onclick handlers
 function toggleAnalytics() {
-  if (window.funnelManager) window.funnelManager.toggleAnalytics();
+  window.funnelManager.toggleAnalytics();
 }
 
 function exportAsPDF() {
-  if (window.funnelManager) window.funnelManager.exportAsPDF();
+  window.funnelManager.exportAsPDF();
 }
 
 function exportAsJSON() {
-  if (window.funnelManager) window.funnelManager.exportAsJSON();
+  window.funnelManager.exportAsJSON();
 }
 
 function exportAsCSV() {
-  if (window.funnelManager) window.funnelManager.exportAsCSV();
+  window.funnelManager.exportAsCSV();
+}
+
+function loadExample() {
+  if (confirm('Load example data? This will replace your current leads.')) {
+    window.funnelManager.loadExampleLeads();
+  }
 }
 
 function openAddLeadModal(stage) {
-  if (window.funnelManager) window.funnelManager.openAddLeadModal(stage);
-}
-
-function openFunnelStrategyModal() {
-  if (window.funnelManager) window.funnelManager.openFunnelStrategyModal();
+  window.funnelManager.openAddLeadModal(stage);
 }
 
 function closeModal() {
-  if (window.funnelManager) window.funnelManager.closeModal();
+  window.funnelManager.closeModal();
 }
 
 function deleteLead() {
-  if (window.funnelManager) {
-    const leadId = document.getElementById('editingLeadId').value;
-    if (confirm('Are you sure you want to delete this lead?')) {
-      window.funnelManager.deleteLead(leadId);
-      window.funnelManager.closeModal();
-    }
+  const leadId = document.getElementById('editingLeadId').value;
+  if (confirm('Are you sure you want to delete this lead?')) {
+    window.funnelManager.deleteLead(leadId);
+    window.funnelManager.closeModal();
   }
 }
