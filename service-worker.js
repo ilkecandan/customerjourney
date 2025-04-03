@@ -1,4 +1,4 @@
-const CACHE_NAME = 'funnel-manager-v2';
+const CACHE_NAME = 'funnel-manager-v3';
 const ASSETS = [
   '/',
   '/index.html',
@@ -7,6 +7,7 @@ const ASSETS = [
   '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/chart.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
 ];
