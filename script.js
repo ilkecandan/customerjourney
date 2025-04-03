@@ -1,253 +1,288 @@
-// Lead Management System
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize with some example leads if none exist
-  if (!localStorage.getItem('funnelLeads')) {
-    const exampleLeads = [
-      { id: 1, name: "Acme Corp", tag: "hot", notes: "Interested in premium plan", stage: "tof" },
-      { id: 2, name: "XYZ Ltd", tag: "", notes: "Requested demo", stage: "mof" },
-      { id: 3, name: "Global Inc", tag: "vip", notes: "Existing customer - renewal", stage: "bof" }
-    ];
-    localStorage.setItem('funnelLeads', JSON.stringify(exampleLeads));
-  }
-  
-  loadLeads();
-  setupDragAndDrop();
-});
-
-// Load leads from localStorage
-function loadLeads() {
-  const leads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
-  const stages = ['tof', 'mof', 'bof'];
-  
-  // Clear all containers first
-  stages.forEach(stage => {
-    document.querySelector(`.leads-container[data-stage="${stage}"]`).innerHTML = '';
-  });
-  
-  // Add leads to their stages
-  leads.forEach(lead => {
-    addLeadToStage(lead, false);
-  });
-  
-  // Update counts
-  updateStageCounts();
-}
-
-// Add lead to stage (without saving)
-function addLeadToStage(lead, saveToStorage = true) {
-  const container = document.querySelector(`.leads-container[data-stage="${lead.stage}"]`);
-  
-  const leadCard = document.createElement('div');
-  leadCard.className = 'lead-card';
-  leadCard.draggable = true;
-  leadCard.dataset.leadId = lead.id;
-  
-  let tagClass = '';
-  let tagDisplay = '';
-  if (lead.tag === 'hot') {
-    tagClass = 'tag-hot';
-    tagDisplay = '🔥 Hot lead';
-  } else if (lead.tag === 'cold') {
-    tagClass = 'tag-cold';
-    tagDisplay = '❄️ Cold lead';
-  } else if (lead.tag === 'repeat') {
-    tagClass = 'tag-repeat';
-    tagDisplay = '🔄 Repeat customer';
-  } else if (lead.tag === 'vip') {
-    tagClass = 'tag-vip';
-    tagDisplay = '⭐ VIP';
-  }
-  
-  leadCard.innerHTML = `
-    <div class="lead-name">${lead.name}</div>
-    ${lead.tag ? `<span class="lead-tag ${tagClass}">${tagDisplay}</span>` : ''}
-    <div class="lead-notes" title="${lead.notes}">${lead.notes || 'No notes'}</div>
-  `;
-  
-  // Add click event to edit notes
-  leadCard.addEventListener('click', function(e) {
-    if (!e.target.classList.contains('lead-tag')) { // Don't open if clicking tag
-      openNotesModal(lead);
-    }
-  });
-  
-  container.appendChild(leadCard);
-  
-  if (saveToStorage) {
-    saveLeads();
-  }
-}
-
-// Save all leads to localStorage
-function saveLeads() {
-  const leads = [];
-  document.querySelectorAll('.lead-card').forEach(card => {
-    const leadId = parseInt(card.dataset.leadId);
-    const stage = card.closest('.leads-container').dataset.stage;
+// Main App Controller
+class FunnelManager {
+  constructor() {
+    this.leads = [];
+    this.activityLog = [];
+    this.selectedLeads = new Set();
+    this.stageCapacity = {
+      tof: 50,
+      mof: 30,
+      bof: 20
+    };
     
-    // Find this lead in existing data to preserve other properties
-    const existingLeads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
-    const existingLead = existingLeads.find(l => l.id === leadId) || {};
+    this.init();
+  }
+  
+  init() {
+    this.loadLeads();
+    this.setupDragAndDrop();
+    this.setupKeyboardShortcuts();
+    this.setupProgressBars();
+    this.render();
     
-    leads.push({
-      ...existingLead,
-      id: leadId,
-      stage: stage
-    });
-  });
+    // Auto-save every 30 seconds
+    setInterval(() => this.saveLeads(), 30000);
+    
+    // Register beforeunload handler
+    window.addEventListener('beforeunload', () => this.saveLeads());
+  }
   
-  localStorage.setItem('funnelLeads', JSON.stringify(leads));
-  updateStageCounts();
-}
-
-// Update the count badges on each stage
-function updateStageCounts() {
-  document.querySelectorAll('.leads-container').forEach(container => {
-    const count = container.querySelectorAll('.lead-card').length;
-    container.closest('.funnel-stage').querySelector('.stage-count').textContent = count;
-  });
-}
-
-// Setup drag and drop functionality
-function setupDragAndDrop() {
-  const containers = document.querySelectorAll('.leads-container');
-  
-  containers.forEach(container => {
-    container.addEventListener('dragover', e => {
-      e.preventDefault();
-      const afterElement = getDragAfterElement(container, e.clientY);
-      const draggable = document.querySelector('.dragging');
-      
-      if (afterElement == null) {
-        container.appendChild(draggable);
+  // Enhanced lead loading with validation
+  loadLeads() {
+    try {
+      const savedData = localStorage.getItem('funnelData');
+      if (savedData) {
+        const { leads, activity } = JSON.parse(savedData);
+        this.leads = Array.isArray(leads) ? leads : [];
+        this.activityLog = Array.isArray(activity) ? activity : [];
       } else {
-        container.insertBefore(draggable, afterElement);
+        this.loadExampleLeads();
+      }
+    } catch (e) {
+      console.error("Failed to load leads:", e);
+      this.loadExampleLeads();
+    }
+  }
+  
+  // Save with error handling
+  saveLeads() {
+    try {
+      const data = {
+        leads: this.leads,
+        activity: this.activityLog.slice(-50) // Keep last 50 activities
+      };
+      localStorage.setItem('funnelData', JSON.stringify(data));
+      this.showNotification('Auto-saved successfully', 'success');
+    } catch (e) {
+      console.error("Failed to save leads:", e);
+    }
+  }
+  
+  // PDF Export using jsPDF
+  exportAsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(67, 97, 238);
+    doc.text('Sales Funnel Report', 105, 20, { align: 'center' });
+    
+    // Funnel visualization
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    // Add funnel stages
+    const stages = ['tof', 'mof', 'bof'];
+    let yPos = 40;
+    
+    stages.forEach(stage => {
+      const stageLeads = this.leads.filter(l => l.stage === stage);
+      const stageName = this.getStageName(stage);
+      
+      // Stage header
+      doc.setFillColor(this.getStageColor(stage));
+      doc.rect(20, yPos, 170, 10, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.text(`${stageName} (${stageLeads.length})`, 105, yPos + 7, { align: 'center' });
+      
+      yPos += 15;
+      
+      // Leads list
+      doc.setTextColor(0, 0, 0);
+      stageLeads.forEach(lead => {
+        if (yPos > 250) {
+          doc.addPage();
+          yPos = 20;
+        }
+        
+        doc.text(`• ${lead.name}${lead.tag ? ` [${lead.tag}]` : ''}`, 25, yPos);
+        yPos += 7;
+        
+        if (lead.notes) {
+          doc.setFontSize(10);
+          doc.text(`  ${lead.notes.substring(0, 50)}${lead.notes.length > 50 ? '...' : ''}`, 30, yPos);
+          doc.setFontSize(12);
+          yPos += 7;
+        }
+        
+        yPos += 5;
+      });
+      
+      yPos += 10;
+    });
+    
+    // Analytics section
+    doc.addPage();
+    doc.setFontSize(16);
+    doc.setTextColor(67, 97, 238);
+    doc.text('Funnel Analytics', 105, 20, { align: 'center' });
+    
+    // Add analytics metrics
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    const metrics = [
+      { label: 'Total Leads', value: this.leads.length },
+      { label: 'Conversion Rate', value: this.calculateConversionRate() + '%' },
+      { label: 'Avg. Dwell Time', value: this.calculateAvgDwellTime() },
+      { label: 'Forecast (7d)', value: this.forecastCompletions() }
+    ];
+    
+    yPos = 40;
+    metrics.forEach(metric => {
+      doc.text(`${metric.label}:`, 20, yPos);
+      doc.text(metric.value.toString(), 150, yPos, { align: 'right' });
+      yPos += 10;
+    });
+    
+    // Save the PDF
+    doc.save('funnel_report.pdf');
+    this.logActivity('Exported PDF report');
+    this.showNotification('PDF exported successfully', 'success');
+  }
+  
+  // CSV Export
+  exportAsCSV() {
+    let csv = 'Name,Tag,Stage,Notes,Priority,Last Updated\n';
+    
+    this.leads.forEach(lead => {
+      csv += `"${lead.name}","${lead.tag || ''}","${this.getStageName(lead.stage)}",` +
+             `"${(lead.notes || '').replace(/"/g, '""')}","${lead.priority || 'medium'}",` +
+             `"${new Date(lead.updatedAt || lead.createdAt).toLocaleString()}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'funnel_leads.csv';
+    link.click();
+    
+    this.logActivity('Exported CSV data');
+    this.showNotification('CSV exported successfully', 'success');
+  }
+  
+  // JSON Export
+  exportAsJSON() {
+    const data = {
+      meta: { exportedAt: new Date().toISOString(), version: 1 },
+      leads: this.leads,
+      analytics: {
+        conversionRate: this.calculateConversionRate(),
+        avgDwellTime: this.calculateAvgDwellTime(),
+        forecast: this.forecastCompletions()
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'funnel_data.json';
+    link.click();
+    
+    this.logActivity('Exported JSON data');
+    this.showNotification('JSON exported successfully', 'success');
+  }
+  
+  // Analytics Functions
+  calculateConversionRate() {
+    const tofCount = this.leads.filter(l => l.stage === 'tof').length;
+    const bofCount = this.leads.filter(l => l.stage === 'bof').length;
+    return tofCount > 0 ? ((bofCount / tofCount) * 100).toFixed(1) : 0;
+  }
+  
+  calculateAvgDwellTime() {
+    const movedLeads = this.activityLog.filter(a => a.action === 'stage_change');
+    if (movedLeads.length === 0) return '0d';
+    
+    const totalDays = movedLeads.reduce((sum, action) => {
+      return sum + (action.dwellTime || 0);
+    }, 0);
+    
+    const avgDays = totalDays / movedLeads.length;
+    return avgDays >= 1 ? `${avgDays.toFixed(1)}d` : '<1d';
+  }
+  
+  forecastCompletions() {
+    const avgConversion = this.calculateConversionRate() / 100;
+    const avgDays = parseFloat(this.calculateAvgDwellTime()) || 7;
+    const currentBof = this.leads.filter(l => l.stage === 'bof').length;
+    
+    return Math.round(currentBof + (this.leads.filter(l => l.stage === 'mof').length * avgConversion));
+  }
+  
+  // UI Rendering
+  render() {
+    this.renderLeads();
+    this.renderAnalytics();
+    this.renderActivityTimeline();
+    this.updateProgressBars();
+  }
+  
+  renderLeads() {
+    const stages = ['tof', 'mof', 'bof'];
+    stages.forEach(stage => {
+      const container = document.getElementById(`${stage}-leads`);
+      if (!container) return;
+      
+      container.innerHTML = '';
+      const stageLeads = this.leads.filter(l => l.stage === stage);
+      
+      stageLeads.forEach(lead => {
+        const leadEl = this.createLeadElement(lead);
+        container.appendChild(leadEl);
+      });
+      
+      // Update count
+      const countEl = document.querySelector(`.funnel-stage[data-stage="${stage}"] .stage-count`);
+      if (countEl) countEl.textContent = stageLeads.length;
+    });
+  }
+  
+  createLeadElement(lead) {
+    const leadEl = document.createElement('div');
+    leadEl.className = `lead-card priority-${lead.priority || 'medium'}`;
+    leadEl.dataset.leadId = lead.id;
+    leadEl.draggable = true;
+    
+    // Add checkbox for bulk actions
+    leadEl.innerHTML = `
+      <label class="lead-selector">
+        <input type="checkbox" class="lead-checkbox" data-lead-id="${lead.id}">
+        <span class="checkmark"></span>
+      </label>
+      <div class="lead-name">${lead.name}</div>
+      ${lead.tag ? `<span class="lead-tag ${this.getTagClass(lead.tag)}">${this.getTagDisplay(lead.tag)}</span>` : ''}
+      <div class="lead-meta">
+        <span class="lead-notes" title="${lead.notes || 'No notes'}">
+          ${lead.notes ? lead.notes.substring(0, 30) + (lead.notes.length > 30 ? '...' : '') : 'No notes'}
+        </span>
+        <span class="lead-date">
+          ${new Date(lead.updatedAt || lead.createdAt).toLocaleDateString()}
+        </span>
+      </div>
+    `;
+    
+    // Add event listeners
+    leadEl.querySelector('.lead-checkbox').addEventListener('change', (e) => {
+      this.toggleLeadSelection(lead.id, e.target.checked);
+    });
+    
+    leadEl.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('lead-checkbox') && !e.target.closest('.lead-checkbox')) {
+        this.openLeadDetails(lead);
       }
     });
-  });
-  
-  document.querySelectorAll('.lead-card').forEach(card => {
-    card.addEventListener('dragstart', () => {
-      card.classList.add('dragging');
-    });
     
-    card.addEventListener('dragend', () => {
-      card.classList.remove('dragging');
-      saveLeads();
-    });
-  });
-}
-
-// Helper function for drag positioning
-function getDragAfterElement(container, y) {
-  const draggableElements = [...container.querySelectorAll('.lead-card:not(.dragging)')];
-  
-  return draggableElements.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height / 2;
-    
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
-    } else {
-      return closest;
-    }
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
-}
-
-// Add new lead
-function addLead(stage) {
-  document.getElementById('currentStage').value = stage;
-  document.getElementById('leadName').value = '';
-  document.getElementById('leadTag').value = '';
-  document.getElementById('leadNotes').value = '';
-  document.getElementById('leadModal').style.display = 'block';
-}
-
-// Save new lead
-function saveLead() {
-  const name = document.getElementById('leadName').value.trim();
-  const tag = document.getElementById('leadTag').value;
-  const notes = document.getElementById('leadNotes').value.trim();
-  const stage = document.getElementById('currentStage').value;
-  
-  if (!name) {
-    alert('Please enter a name for the lead');
-    return;
+    return leadEl;
   }
   
-  // Generate ID (in a real app, you'd want a better ID system)
-  const id = new Date().getTime();
-  
-  const lead = {
-    id,
-    name,
-    tag,
-    notes,
-    stage
-  };
-  
-  // Add to existing leads
-  const existingLeads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
-  existingLeads.push(lead);
-  localStorage.setItem('funnelLeads', JSON.stringify(existingLeads));
-  
-  // Add to UI
-  addLeadToStage(lead);
-  closeModal();
+  // ... (additional methods for all other functionality)
 }
 
-// Open notes modal
-function openNotesModal(lead) {
-  document.getElementById('leadModalName').textContent = lead.name;
-  
-  const tagElement = document.getElementById('leadModalTag');
-  tagElement.className = 'lead-tag';
-  tagElement.textContent = '';
-  
-  if (lead.tag === 'hot') {
-    tagElement.classList.add('tag-hot');
-    tagElement.textContent = '🔥 Hot lead';
-  } else if (lead.tag === 'cold') {
-    tagElement.classList.add('tag-cold');
-    tagElement.textContent = '❄️ Cold lead';
-  } else if (lead.tag === 'repeat') {
-    tagElement.classList.add('tag-repeat');
-    tagElement.textContent = '🔄 Repeat customer';
-  } else if (lead.tag === 'vip') {
-    tagElement.classList.add('tag-vip');
-    tagElement.textContent = '⭐ VIP';
-  }
-  
-  document.getElementById('editNotes').value = lead.notes || '';
-  document.getElementById('editingLeadId').value = lead.id;
-  document.getElementById('notesModal').style.display = 'block';
-}
-
-// Update notes
-function updateNotes() {
-  const leadId = parseInt(document.getElementById('editingLeadId').value);
-  const newNotes = document.getElementById('editNotes').value.trim();
-  
-  // Update in localStorage
-  const leads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
-  const leadIndex = leads.findIndex(l => l.id === leadId);
-  
-  if (leadIndex !== -1) {
-    leads[leadIndex].notes = newNotes;
-    localStorage.setItem('funnelLeads', JSON.stringify(leads));
-    
-    // Update in UI
-    const leadCard = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
-    if (leadCard) {
-      leadCard.querySelector('.lead-notes').textContent = newNotes || 'No notes';
-    }
-  }
-  
-  closeModal();
-}
-
-// Close modal
-function closeModal() {
-  document.getElementById('leadModal').style.display = 'none';
-  document.getElementById('notesModal').style.display = 'none';
-}
+// Initialize the app
+document.addEventListener('DOMContentLoaded', () => {
+  window.funnelManager = new FunnelManager();
+});
