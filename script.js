@@ -1,114 +1,150 @@
-// Default stages
-const defaultStageNames = ["Awareness", "Consideration", "Purchase", "Retention", "Loyalty"];
-const stageContainer = document.getElementById("stageContainer");
-const connectorsContainer = document.getElementById("connectorsContainer");
-const analyticsPanel = document.getElementById("analyticsPanel");
-
-// Example journey data
-const exampleJourney = [
-  { name: "Awareness", notes: "Social media ads\nBlog content\nSEO optimized pages" },
-  { name: "Consideration", notes: "Product comparisons\nEmail nurturing\nWebinars" },
-  { name: "Purchase", notes: "Checkout process\nPayment options\nDiscount offers" },
-  { name: "Retention", notes: "Thank you email\nCustomer onboarding\nSupport resources" },
-  { name: "Loyalty", notes: "Loyalty program\nExclusive offers\nCommunity access" }
-];
-
-// Initialize the app
-function init() {
-  // Load from localStorage if available
-  const savedJourney = localStorage.getItem('customerJourney');
-  
-  if (savedJourney) {
-    loadJourney(JSON.parse(savedJourney));
-  } else {
-    // Create default stages
-    defaultStageNames.forEach(name => addStage(name));
+// Lead Management System
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize with some example leads if none exist
+  if (!localStorage.getItem('funnelLeads')) {
+    const exampleLeads = [
+      { id: 1, name: "Acme Corp", tag: "hot", notes: "Interested in premium plan", stage: "tof" },
+      { id: 2, name: "XYZ Ltd", tag: "", notes: "Requested demo", stage: "mof" },
+      { id: 3, name: "Global Inc", tag: "vip", notes: "Existing customer - renewal", stage: "bof" }
+    ];
+    localStorage.setItem('funnelLeads', JSON.stringify(exampleLeads));
   }
   
-  // Update analytics
-  updateAnalytics();
+  loadLeads();
+  setupDragAndDrop();
+});
+
+// Load leads from localStorage
+function loadLeads() {
+  const leads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
+  const stages = ['tof', 'mof', 'bof'];
   
-  // Auto-save every 5 seconds
-  setInterval(saveJourney, 5000);
+  // Clear all containers first
+  stages.forEach(stage => {
+    document.querySelector(`.leads-container[data-stage="${stage}"]`).innerHTML = '';
+  });
+  
+  // Add leads to their stages
+  leads.forEach(lead => {
+    addLeadToStage(lead, false);
+  });
+  
+  // Update counts
+  updateStageCounts();
 }
 
-// Add a new stage
-function addStage(name = "New Stage", notes = "") {
-  const stage = document.createElement("div");
-  stage.className = "stage";
-  stage.draggable = true;
-  stage.innerHTML = `
-    <strong contenteditable="true">${name}</strong>
-    <textarea placeholder="Add touchpoints, notes, or data...">${notes}</textarea>
-    <div class="word-count">Words: 0</div>
+// Add lead to stage (without saving)
+function addLeadToStage(lead, saveToStorage = true) {
+  const container = document.querySelector(`.leads-container[data-stage="${lead.stage}"]`);
+  
+  const leadCard = document.createElement('div');
+  leadCard.className = 'lead-card';
+  leadCard.draggable = true;
+  leadCard.dataset.leadId = lead.id;
+  
+  let tagClass = '';
+  let tagDisplay = '';
+  if (lead.tag === 'hot') {
+    tagClass = 'tag-hot';
+    tagDisplay = '🔥 Hot lead';
+  } else if (lead.tag === 'cold') {
+    tagClass = 'tag-cold';
+    tagDisplay = '❄️ Cold lead';
+  } else if (lead.tag === 'repeat') {
+    tagClass = 'tag-repeat';
+    tagDisplay = '🔄 Repeat customer';
+  } else if (lead.tag === 'vip') {
+    tagClass = 'tag-vip';
+    tagDisplay = '⭐ VIP';
+  }
+  
+  leadCard.innerHTML = `
+    <div class="lead-name">${lead.name}</div>
+    ${lead.tag ? `<span class="lead-tag ${tagClass}">${tagDisplay}</span>` : ''}
+    <div class="lead-notes" title="${lead.notes}">${lead.notes || 'No notes'}</div>
   `;
   
-  addDragEvents(stage);
-  addEditEvents(stage);
-  stageContainer.appendChild(stage);
+  // Add click event to edit notes
+  leadCard.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('lead-tag')) { // Don't open if clicking tag
+      openNotesModal(lead);
+    }
+  });
   
-  // Update connectors
-  updateConnectors();
-  updateAnalytics();
-  saveJourney();
+  container.appendChild(leadCard);
+  
+  if (saveToStorage) {
+    saveLeads();
+  }
 }
 
-// Add drag and drop events
-function addDragEvents(stage) {
-  stage.addEventListener("dragstart", e => {
-    e.dataTransfer.setData("text/plain", stage.dataset.id || "");
-    e.dataTransfer.effectAllowed = "move";
-    stage.classList.add("dragging");
-    setTimeout(() => stage.style.display = "none", 0);
-  });
-
-  stage.addEventListener("dragend", () => {
-    document.querySelectorAll(".stage").forEach(s => {
-      s.classList.remove("dragging");
-      s.style.display = "flex";
-      s.style.flexDirection = "column";
+// Save all leads to localStorage
+function saveLeads() {
+  const leads = [];
+  document.querySelectorAll('.lead-card').forEach(card => {
+    const leadId = parseInt(card.dataset.leadId);
+    const stage = card.closest('.leads-container').dataset.stage;
+    
+    // Find this lead in existing data to preserve other properties
+    const existingLeads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
+    const existingLead = existingLeads.find(l => l.id === leadId) || {};
+    
+    leads.push({
+      ...existingLead,
+      id: leadId,
+      stage: stage
     });
   });
+  
+  localStorage.setItem('funnelLeads', JSON.stringify(leads));
+  updateStageCounts();
+}
 
-  stageContainer.addEventListener("dragover", e => {
-    e.preventDefault();
-    const afterElement = getDragAfterElement(stageContainer, e.clientX);
-    const dragging = document.querySelector(".dragging");
-    
-    if (afterElement == null) {
-      stageContainer.appendChild(dragging);
-    } else {
-      stageContainer.insertBefore(dragging, afterElement);
-    }
+// Update the count badges on each stage
+function updateStageCounts() {
+  document.querySelectorAll('.leads-container').forEach(container => {
+    const count = container.querySelectorAll('.lead-card').length;
+    container.closest('.funnel-stage').querySelector('.stage-count').textContent = count;
   });
+}
 
-  stageContainer.addEventListener("drop", e => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    const stage = document.querySelector(`.stage[data-id="${id}"]`);
-    
-    if (stage) {
-      const afterElement = getDragAfterElement(stageContainer, e.clientX);
+// Setup drag and drop functionality
+function setupDragAndDrop() {
+  const containers = document.querySelectorAll('.leads-container');
+  
+  containers.forEach(container => {
+    container.addEventListener('dragover', e => {
+      e.preventDefault();
+      const afterElement = getDragAfterElement(container, e.clientY);
+      const draggable = document.querySelector('.dragging');
       
       if (afterElement == null) {
-        stageContainer.appendChild(stage);
+        container.appendChild(draggable);
       } else {
-        stageContainer.insertBefore(stage, afterElement);
+        container.insertBefore(draggable, afterElement);
       }
-      
-      updateConnectors();
-      saveJourney();
-    }
+    });
+  });
+  
+  document.querySelectorAll('.lead-card').forEach(card => {
+    card.addEventListener('dragstart', () => {
+      card.classList.add('dragging');
+    });
+    
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      saveLeads();
+    });
   });
 }
 
 // Helper function for drag positioning
-function getDragAfterElement(container, x) {
-  const draggableElements = [...container.querySelectorAll(".stage:not(.dragging)")];
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll('.lead-card:not(.dragging)')];
   
   return draggableElements.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    const offset = x - box.left - box.width / 2;
+    const offset = y - box.top - box.height / 2;
     
     if (offset < 0 && offset > closest.offset) {
       return { offset: offset, element: child };
@@ -118,245 +154,100 @@ function getDragAfterElement(container, x) {
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// Add edit events for stage content
-function addEditEvents(stage) {
-  const textarea = stage.querySelector("textarea");
-  const wordCount = stage.querySelector(".word-count");
-  
-  // Generate unique ID if not exists
-  if (!stage.dataset.id) {
-    stage.dataset.id = 'stage-' + Math.random().toString(36).substr(2, 9);
-  }
-  
-  // Update word count on input
-  textarea.addEventListener("input", () => {
-    const words = textarea.value.trim() ? textarea.value.trim().split(/\s+/).length : 0;
-    wordCount.textContent = `Words: ${words}`;
-    updateAnalytics();
-    saveJourney();
-  });
-  
-  // Save when stage name is edited
-  stage.querySelector("strong").addEventListener("blur", saveJourney);
+// Add new lead
+function addLead(stage) {
+  document.getElementById('currentStage').value = stage;
+  document.getElementById('leadName').value = '';
+  document.getElementById('leadTag').value = '';
+  document.getElementById('leadNotes').value = '';
+  document.getElementById('leadModal').style.display = 'block';
 }
 
-// Update connector arrows between stages
-function updateConnectors() {
-  connectorsContainer.innerHTML = "";
-  const stages = document.querySelectorAll(".stage");
+// Save new lead
+function saveLead() {
+  const name = document.getElementById('leadName').value.trim();
+  const tag = document.getElementById('leadTag').value;
+  const notes = document.getElementById('leadNotes').value.trim();
+  const stage = document.getElementById('currentStage').value;
   
-  if (stages.length < 2) return;
-  
-  for (let i = 0; i < stages.length - 1; i++) {
-    const connector = document.createElement("div");
-    connector.className = "connector";
-    connectorsContainer.appendChild(connector);
+  if (!name) {
+    alert('Please enter a name for the lead');
+    return;
   }
+  
+  // Generate ID (in a real app, you'd want a better ID system)
+  const id = new Date().getTime();
+  
+  const lead = {
+    id,
+    name,
+    tag,
+    notes,
+    stage
+  };
+  
+  // Add to existing leads
+  const existingLeads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
+  existingLeads.push(lead);
+  localStorage.setItem('funnelLeads', JSON.stringify(existingLeads));
+  
+  // Add to UI
+  addLeadToStage(lead);
+  closeModal();
 }
 
-// Check for gaps in the journey
-function checkGaps() {
-  const stages = document.querySelectorAll(".stage");
-  let hasGap = false;
+// Open notes modal
+function openNotesModal(lead) {
+  document.getElementById('leadModalName').textContent = lead.name;
   
-  // Reset all highlights
-  stages.forEach(stage => {
-    stage.classList.remove("highlight-gap");
-    stage.querySelector("textarea").style.borderColor = "";
-  });
+  const tagElement = document.getElementById('leadModalTag');
+  tagElement.className = 'lead-tag';
+  tagElement.textContent = '';
   
-  // Check each stage pair
-  for (let i = 0; i < stages.length - 1; i++) {
-    const current = stages[i].querySelector("textarea").value.trim();
-    const next = stages[i + 1].querySelector("textarea").value.trim();
+  if (lead.tag === 'hot') {
+    tagElement.classList.add('tag-hot');
+    tagElement.textContent = '🔥 Hot lead';
+  } else if (lead.tag === 'cold') {
+    tagElement.classList.add('tag-cold');
+    tagElement.textContent = '❄️ Cold lead';
+  } else if (lead.tag === 'repeat') {
+    tagElement.classList.add('tag-repeat');
+    tagElement.textContent = '🔄 Repeat customer';
+  } else if (lead.tag === 'vip') {
+    tagElement.classList.add('tag-vip');
+    tagElement.textContent = '⭐ VIP';
+  }
+  
+  document.getElementById('editNotes').value = lead.notes || '';
+  document.getElementById('editingLeadId').value = lead.id;
+  document.getElementById('notesModal').style.display = 'block';
+}
+
+// Update notes
+function updateNotes() {
+  const leadId = parseInt(document.getElementById('editingLeadId').value);
+  const newNotes = document.getElementById('editNotes').value.trim();
+  
+  // Update in localStorage
+  const leads = JSON.parse(localStorage.getItem('funnelLeads')) || [];
+  const leadIndex = leads.findIndex(l => l.id === leadId);
+  
+  if (leadIndex !== -1) {
+    leads[leadIndex].notes = newNotes;
+    localStorage.setItem('funnelLeads', JSON.stringify(leads));
     
-    if (!current || !next) {
-      stages[i].classList.add("highlight-gap");
-      stages[i + 1].classList.add("highlight-gap");
-      stages[i].querySelector("textarea").style.borderColor = "#f72585";
-      stages[i + 1].querySelector("textarea").style.borderColor = "#f72585";
-      hasGap = true;
+    // Update in UI
+    const leadCard = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
+    if (leadCard) {
+      leadCard.querySelector('.lead-notes').textContent = newNotes || 'No notes';
     }
   }
   
-  // Show result
-  if (!hasGap) {
-    showNotification("✅ No gaps found in your journey!", "success");
-  } else {
-    showNotification("⚠️ Gaps found! Check highlighted stages.", "warning");
-  }
-  
-  updateAnalytics();
+  closeModal();
 }
 
-// Show/hide analytics panel
-function showAnalytics() {
-  analyticsPanel.classList.remove("hidden");
-  updateAnalytics();
+// Close modal
+function closeModal() {
+  document.getElementById('leadModal').style.display = 'none';
+  document.getElementById('notesModal').style.display = 'none';
 }
-
-function hideAnalytics() {
-  analyticsPanel.classList.add("hidden");
-}
-
-// Update analytics metrics
-function updateAnalytics() {
-  const stages = document.querySelectorAll(".stage");
-  const totalStages = stages.length;
-  let totalWords = 0;
-  let completedStages = 0;
-  let gapCount = 0;
-  
-  // Calculate metrics
-  stages.forEach(stage => {
-    const textarea = stage.querySelector("textarea");
-    const words = textarea.value.trim() ? textarea.value.trim().split(/\s+/).length : 0;
-    totalWords += words;
-    
-    if (words > 0) completedStages++;
-  });
-  
-  // Check for gaps
-  for (let i = 0; i < stages.length - 1; i++) {
-    const current = stages[i].querySelector("textarea").value.trim();
-    const next = stages[i + 1].querySelector("textarea").value.trim();
-    if (!current || !next) gapCount++;
-  }
-  
-  // Update UI
-  document.getElementById("totalStages").textContent = totalStages;
-  document.getElementById("totalWords").textContent = totalWords;
-  document.getElementById("completionRate").textContent = 
-    totalStages > 0 ? Math.round((completedStages / totalStages) * 100) + "%" : "0%";
-  document.getElementById("gapCount").textContent = gapCount;
-}
-
-// Save journey to localStorage
-function saveJourney() {
-  const stages = document.querySelectorAll(".stage");
-  const journeyData = [];
-  
-  stages.forEach(stage => {
-    journeyData.push({
-      id: stage.dataset.id,
-      name: stage.querySelector("strong").textContent,
-      notes: stage.querySelector("textarea").value
-    });
-  });
-  
-  localStorage.setItem('customerJourney', JSON.stringify(journeyData));
-  
-  // Show save confirmation
-  const saveNotice = document.getElementById("saveNotice");
-  saveNotice.style.opacity = 1;
-  setTimeout(() => {
-    saveNotice.style.opacity = 0.7;
-  }, 2000);
-}
-
-// Load journey from data
-function loadJourney(journeyData) {
-  // Clear existing stages
-  stageContainer.innerHTML = "";
-  
-  // Create new stages from data
-  journeyData.forEach(stage => {
-    addStage(stage.name, stage.notes);
-  });
-}
-
-// Export as JSON
-function exportAsJSON() {
-  const stages = document.querySelectorAll(".stage");
-  const journeyData = [];
-  
-  stages.forEach(stage => {
-    journeyData.push({
-      name: stage.querySelector("strong").textContent,
-      notes: stage.querySelector("textarea").value
-    });
-  });
-  
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(journeyData, null, 2));
-  const downloadAnchor = document.createElement("a");
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", "customer-journey.json");
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-  
-  showNotification("JSON exported successfully!", "success");
-}
-
-// Export as PDF (simplified - in a real app you'd use a library like jsPDF)
-function exportAsPDF() {
-  showNotification("PDF export would be implemented with a library like jsPDF in a production app", "info");
-}
-
-// Load example journey
-function loadExample() {
-  if (confirm("Load example journey? This will replace your current journey.")) {
-    stageContainer.innerHTML = "";
-    exampleJourney.forEach(stage => {
-      addStage(stage.name, stage.notes);
-    });
-    showNotification("Example journey loaded!", "success");
-  }
-}
-
-// Show notification
-function showNotification(message, type) {
-  const notification = document.createElement("div");
-  notification.className = `notification notification-${type}`;
-  notification.innerHTML = `
-    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-    ${message}
-  `;
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.classList.add("fade-out");
-    setTimeout(() => notification.remove(), 500);
-  }, 3000);
-}
-
-// Initialize the app when DOM is loaded
-document.addEventListener("DOMContentLoaded", init);
-
-// Add notification styles to head
-const style = document.createElement("style");
-style.textContent = `
-  .notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 15px 20px;
-    border-radius: 5px;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    transition: all 0.3s ease;
-  }
-  
-  .notification-success {
-    background-color: #4CAF50;
-  }
-  
-  .notification-warning {
-    background-color: #FF9800;
-  }
-  
-  .notification-info {
-    background-color: #2196F3;
-  }
-  
-  .fade-out {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-`;
-document.head.appendChild(style);
