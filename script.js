@@ -1,3 +1,84 @@
+// PIN Access System
+class PinAccess {
+  constructor() {
+    this.correctPin = "1234"; // Set the access PIN to 1234
+    this.storageKey = "pinAccessGranted";
+    this.init();
+  }
+
+  init() {
+    // Check if access was already granted in this session
+    const accessGranted = sessionStorage.getItem(this.storageKey);
+    if (accessGranted === "true") {
+      this.grantAccess();
+      return;
+    }
+
+    this.showPinScreen();
+  }
+
+  showPinScreen() {
+    // Hide main app initially
+    document.querySelector('.app-container').style.display = 'none';
+    
+    // Create PIN screen if it doesn't exist
+    let pinScreen = document.getElementById('pinScreen');
+    if (!pinScreen) {
+      pinScreen = document.createElement('div');
+      pinScreen.id = 'pinScreen';
+      pinScreen.className = 'pin-screen';
+      pinScreen.innerHTML = `
+        <div class="pin-container">
+          <h2>Enter Access PIN</h2>
+          <p>Please enter the 4-digit PIN to access the application</p>
+          <input type="password" id="pinInput" maxlength="4" pattern="\\d{4}" 
+                 placeholder="Enter PIN" autocomplete="off">
+          <button id="submitPin" class="btn btn-primary">Submit</button>
+          <p id="pinError" class="error-message"></p>
+        </div>
+      `;
+      document.body.appendChild(pinScreen);
+      
+      document.getElementById('submitPin').addEventListener('click', () => this.checkPin());
+      
+      // Add keyboard event for PIN input
+      document.getElementById('pinInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.checkPin();
+        }
+      });
+    }
+  }
+
+  checkPin() {
+    const enteredPin = document.getElementById('pinInput').value;
+    const errorElement = document.getElementById('pinError');
+    
+    if (!enteredPin) {
+      errorElement.textContent = 'Please enter a PIN';
+      return;
+    }
+
+    if (enteredPin === this.correctPin) {
+      // Correct PIN - grant access
+      sessionStorage.setItem(this.storageKey, "true");
+      this.grantAccess();
+    } else {
+      errorElement.textContent = 'Incorrect PIN. Please try again.';
+    }
+  }
+
+  grantAccess() {
+    // Hide PIN screen and show app
+    const pinScreen = document.getElementById('pinScreen');
+    if (pinScreen) pinScreen.style.display = 'none';
+    document.querySelector('.app-container').style.display = 'block';
+    
+    // Initialize the funnel manager
+    window.funnelManager = new FunnelManager();
+  }
+}
+
 // Main Application
 class FunnelManager {
   constructor() {
@@ -494,6 +575,7 @@ class FunnelManager {
     
     // Drag events
     leadEl.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', lead.id);
       e.target.classList.add('dragging');
     });
     
@@ -828,17 +910,13 @@ class FunnelManager {
           container.insertBefore(draggable, afterElement);
         }
       });
-    });
-    
-    document.addEventListener('dragend', (e) => {
-      if (e.target.classList.contains('lead-card')) {
-        e.target.classList.remove('dragging');
-        const newContainer = e.target.closest('.leads-container');
-        if (!newContainer) return;
-        const newStage = newContainer.id.replace('-leads', '');
-        const leadId = e.target.dataset.leadId;
+      
+      container.addEventListener('drop', e => {
+        e.preventDefault();
+        const leadId = e.dataTransfer.getData('text/plain');
+        const newStage = container.id.replace('-leads', '');
         this.moveLead(leadId, newStage);
-      }
+      });
     });
   }
   
@@ -1033,8 +1111,10 @@ class FunnelManager {
         { label: 'Total Leads', value: this.leads.length },
         { label: 'Conversion Rate', value: this.calculateConversionRate() + '%' },
         { label: 'Avg. Dwell Time', value: this.calculateAvgDwellTime() + ' days' },
-        { label: 'Forecast (7d)', value: this.forecast
-               yPos = 40;
+        { label: 'Forecast (7d)', value: this.forecastCompletions() }
+      ];
+      
+      yPos = 40;
       metrics.forEach(metric => {
         doc.text(`${metric.label}:`, 20, yPos);
         doc.text(metric.value.toString(), 180, yPos, { align: 'right' });
@@ -1195,345 +1275,46 @@ class FunnelManager {
   }
 }
 
-// Initialize the application
+// Initialize the PIN access system
 document.addEventListener('DOMContentLoaded', () => {
-  window.funnelManager = new FunnelManager();
-  
-  // Modal close buttons
-  document.querySelectorAll('.close-btn').forEach(btn => {
-    btn.addEventListener('click', () => window.funnelManager.closeModal());
-  });
-  
-  // Add Lead form submission
-  document.getElementById('addLeadForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    window.funnelManager.saveNewLead();
-  });
-  
-  // Edit Lead form submission
-  document.getElementById('editLeadForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    window.funnelManager.updateCurrentLead();
-  });
-  
-  // Funnel Strategy form submission
-  document.getElementById('funnelStrategyForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    window.funnelManager.saveFunnelStrategies();
-  });
-  
-  // Bulk actions
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Delete' && window.funnelManager.selectedLeads.size > 0) {
-      window.funnelManager.deleteSelectedLeads();
-    }
-  });
+  window.pinAccess = new PinAccess();
 });
 
 // Global functions for HTML onclick handlers
 function toggleAnalytics() {
-  window.funnelManager.toggleAnalytics();
+  if (window.funnelManager) window.funnelManager.toggleAnalytics();
 }
 
 function exportAsPDF() {
-  window.funnelManager.exportAsPDF();
+  if (window.funnelManager) window.funnelManager.exportAsPDF();
 }
 
 function exportAsJSON() {
-  window.funnelManager.exportAsJSON();
+  if (window.funnelManager) window.funnelManager.exportAsJSON();
 }
 
 function exportAsCSV() {
-  window.funnelManager.exportAsCSV();
-}
-
-function loadExample() {
-  if (confirm('Load example data? This will replace your current leads.')) {
-    window.funnelManager.loadExampleLeads();
-  }
+  if (window.funnelManager) window.funnelManager.exportAsCSV();
 }
 
 function openAddLeadModal(stage) {
-  window.funnelManager.openAddLeadModal(stage);
+  if (window.funnelManager) window.funnelManager.openAddLeadModal(stage);
 }
 
 function openFunnelStrategyModal() {
-  window.funnelManager.openFunnelStrategyModal();
+  if (window.funnelManager) window.funnelManager.openFunnelStrategyModal();
 }
 
 function closeModal() {
-  window.funnelManager.closeModal();
+  if (window.funnelManager) window.funnelManager.closeModal();
 }
 
 function deleteLead() {
-  const leadId = document.getElementById('editingLeadId').value;
-  if (confirm('Are you sure you want to delete this lead?')) {
-    window.funnelManager.deleteLead(leadId);
-    window.funnelManager.closeModal();
-  }
-}
-
-// PWA Installation Handling
-let deferredPrompt;
-const installButton = document.getElementById('installButton');
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the mini-infobar from appearing on mobile
-  e.preventDefault();
-  // Stash the event so it can be triggered later
-  deferredPrompt = e;
-  // Update UI notify the user they can install the PWA
-  installButton.style.display = 'block';
-});
-
-installButton.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  
-  // Show the install prompt
-  deferredPrompt.prompt();
-  
-  // Wait for the user to respond to the prompt
-  const { outcome } = await deferredPrompt.userChoice;
-  
-  // Optionally, send analytics event with outcome of user choice
-  console.log(`User response to the install prompt: ${outcome}`);
-  
-  // We've used the prompt, and can't use it again, throw it away
-  deferredPrompt = null;
-  
-  // Hide the install button
-  installButton.style.display = 'none';
-});
-
-window.addEventListener('appinstalled', () => {
-  // Hide the install button
-  installButton.style.display = 'none';
-  // Clear the deferredPrompt so it can be garbage collected
-  deferredPrompt = null;
-  // Optionally, send analytics event to indicate successful install
-  console.log('PWA was installed');
-  window.funnelManager.showNotification('App installed successfully!', 'success');
-});
-
-// Check if the app is already installed
-window.addEventListener('load', () => {
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    installButton.style.display = 'none';
-  }
-});
-
-// PIN Authentication System
-class PinAuth {
-  constructor() {
-    this.maxAttempts = 5;
-    this.lockoutDuration = 30000; // 30 seconds in milliseconds
-    this.attempts = 0;
-    this.lastAttemptTime = null;
-    this.isLocked = false;
-    this.pinKey = 'funnelManagerPin';
-    this.attemptsKey = 'funnelManagerPinAttempts';
-    this.lockoutKey = 'funnelManagerPinLockout';
-    
-    this.init();
-  }
-  
-  init() {
-    // Check if we're coming back from a lockout
-    const lockoutUntil = localStorage.getItem(this.lockoutKey);
-    if (lockoutUntil && Date.now() < parseInt(lockoutUntil)) {
-      this.isLocked = true;
-      const remainingTime = parseInt(lockoutUntil) - Date.now();
-      setTimeout(() => {
-        this.isLocked = false;
-        this.attempts = 0;
-      }, remainingTime);
-    } else {
-      this.attempts = parseInt(localStorage.getItem(this.attemptsKey)) || 0;
-    }
-    
-    // Check if PIN is set
-    if (!this.hasPin()) {
-      this.showSetupScreen();
-    } else {
-      this.showLoginScreen();
-    }
-  }
-  
-  hasPin() {
-    return !!localStorage.getItem(this.pinKey);
-  }
-  
-  showSetupScreen() {
-    // Hide main app
-    document.querySelector('.app-container').style.display = 'none';
-    
-    // Create or show PIN setup screen
-    let setupScreen = document.getElementById('pinSetupScreen');
-    if (!setupScreen) {
-      setupScreen = document.createElement('div');
-      setupScreen.id = 'pinSetupScreen';
-      setupScreen.className = 'pin-auth-screen';
-      setupScreen.innerHTML = `
-        <div class="pin-auth-container">
-          <h2>Setup PIN</h2>
-          <p>Create a 4-6 digit PIN to secure your funnel manager</p>
-          <div class="pin-input-container">
-            <input type="password" id="newPin" maxlength="6" pattern="\\d{4,6}" 
-                   placeholder="Enter new PIN" autocomplete="off">
-            <input type="password" id="confirmPin" maxlength="6" pattern="\\d{4,6}" 
-                   placeholder="Confirm PIN" autocomplete="off">
-          </div>
-          <button id="savePinBtn" class="btn btn-primary">Save PIN</button>
-          <p class="pin-note">You can reset the PIN later via the settings menu</p>
-        </div>
-      `;
-      document.body.appendChild(setupScreen);
-      
-      document.getElementById('savePinBtn').addEventListener('click', () => this.savePin());
-    } else {
-      setupScreen.style.display = 'block';
-    }
-  }
-  
-  showLoginScreen() {
-    // Hide main app
-    document.querySelector('.app-container').style.display = 'none';
-    
-    // Create or show login screen
-    let loginScreen = document.getElementById('pinLoginScreen');
-    if (!loginScreen) {
-      loginScreen = document.createElement('div');
-      loginScreen.id = 'pinLoginScreen';
-      loginScreen.className = 'pin-auth-screen';
-      loginScreen.innerHTML = `
-        <div class="pin-auth-container">
-          <h2>Enter PIN</h2>
-          <p>Please enter your PIN to access the funnel manager</p>
-          <div class="pin-input-container">
-            <input type="password" id="pinInput" maxlength="6" pattern="\\d{4,6}" 
-                   placeholder="Enter PIN" autocomplete="off">
-          </div>
-          <button id="submitPinBtn" class="btn btn-primary">Submit</button>
-          <p id="attemptsRemaining" class="attempts-info"></p>
-          <p id="lockoutMessage" class="lockout-message"></p>
-        </div>
-      `;
-      document.body.appendChild(loginScreen);
-      
-      document.getElementById('submitPinBtn').addEventListener('click', () => this.verifyPin());
-    } else {
-      loginScreen.style.display = 'block';
-      this.updateAttemptsDisplay();
-    }
-  }
-  
-  savePin() {
-    const newPin = document.getElementById('newPin').value;
-    const confirmPin = document.getElementById('confirmPin').value;
-    
-    if (!newPin || !confirmPin) {
-      alert('Please enter and confirm your PIN');
-      return;
-    }
-    
-    if (newPin.length < 4 || newPin.length > 6) {
-      alert('PIN must be 4-6 digits');
-      return;
-    }
-    
-    if (newPin !== confirmPin) {
-      alert('PINs do not match');
-      return;
-    }
-    
-    // Save the PIN (in a real app, you'd want to hash this)
-    localStorage.setItem(this.pinKey, newPin);
-    
-    // Hide setup screen and show app
-    document.getElementById('pinSetupScreen').style.display = 'none';
-    document.querySelector('.app-container').style.display = 'block';
-    
-    // Initialize the funnel manager
-    window.funnelManager = new FunnelManager();
-  }
-  
-  verifyPin() {
-    if (this.isLocked) {
-      alert(`Too many attempts. Please wait ${this.lockoutDuration/1000} seconds and try again.`);
-      return;
-    }
-    
-    const enteredPin = document.getElementById('pinInput').value;
-    const savedPin = localStorage.getItem(this.pinKey);
-    
-    if (enteredPin === savedPin) {
-      // Correct PIN - reset attempts and show app
-      this.attempts = 0;
-      localStorage.removeItem(this.attemptsKey);
-      localStorage.removeItem(this.lockoutKey);
-      
-      document.getElementById('pinLoginScreen').style.display = 'none';
-      document.querySelector('.app-container').style.display = 'block';
-      
-      // Initialize the funnel manager
-      window.funnelManager = new FunnelManager();
-    } else {
-      // Incorrect PIN
-      this.attempts++;
-      localStorage.setItem(this.attemptsKey, this.attempts.toString());
-      
-      if (this.attempts >= this.maxAttempts) {
-        // Lock the user out
-        this.isLocked = true;
-        const lockoutUntil = Date.now() + this.lockoutDuration;
-        localStorage.setItem(this.lockoutKey, lockoutUntil.toString());
-        
-        setTimeout(() => {
-          this.isLocked = false;
-          this.attempts = 0;
-          localStorage.removeItem(this.attemptsKey);
-          localStorage.removeItem(this.lockoutKey);
-          this.updateAttemptsDisplay();
-        }, this.lockoutDuration);
-      }
-      
-      this.updateAttemptsDisplay();
-      alert('Incorrect PIN. Please try again.');
-    }
-  }
-  
-  updateAttemptsDisplay() {
-    const attemptsRemaining = this.maxAttempts - this.attempts;
-    const attemptsElement = document.getElementById('attemptsRemaining');
-    const lockoutElement = document.getElementById('lockoutMessage');
-    
-    if (attemptsElement) {
-      if (this.isLocked) {
-        attemptsElement.textContent = '';
-        lockoutElement.textContent = `Too many attempts. Please wait ${this.lockoutDuration/1000} seconds.`;
-      } else {
-        attemptsElement.textContent = `Attempts remaining: ${attemptsRemaining}`;
-        lockoutElement.textContent = '';
-      }
-    }
-  }
-  
-  resetPin() {
-    if (confirm('Are you sure you want to reset your PIN? You will need to set up a new one.')) {
-      localStorage.removeItem(this.pinKey);
-      localStorage.removeItem(this.attemptsKey);
-      localStorage.removeItem(this.lockoutKey);
-      this.attempts = 0;
-      this.isLocked = false;
-      this.showSetupScreen();
+  if (window.funnelManager) {
+    const leadId = document.getElementById('editingLeadId').value;
+    if (confirm('Are you sure you want to delete this lead?')) {
+      window.funnelManager.deleteLead(leadId);
+      window.funnelManager.closeModal();
     }
   }
 }
-
-// Initialize PIN authentication
-document.addEventListener('DOMContentLoaded', () => {
-  // Only initialize PIN auth if not already initialized
-  if (!window.pinAuth) {
-    window.pinAuth = new PinAuth();
-  }
-});
