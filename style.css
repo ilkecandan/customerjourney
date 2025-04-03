@@ -1,0 +1,52 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f7f7f7;
+}
+
+h1 {
+  text-align: center;
+}
+
+.stage-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px;
+  border: 2px dashed #ccc;
+  min-height: 150px;
+}
+
+.stage {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  min-width: 150px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  cursor: grab;
+}
+
+.stage textarea {
+  width: 100%;
+  height: 60px;
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+.highlight-gap {
+  border-color: red;
+  background: #ffe6e6;
+}
+
+.controls {
+  text-align: center;
+  margin-top: 20px;
+}
+
+button {
+  margin: 0 10px;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+}
