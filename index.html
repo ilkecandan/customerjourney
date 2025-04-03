@@ -4,17 +4,79 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Journey Mapper</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Customer Journey Mapper</h1>
-  <div class="stage-container" id="stageContainer">
-    <!-- Stages will be added here -->
-  </div>
+  <div class="app-container">
+    <header>
+      <h1><i class="fas fa-map-marked-alt"></i> Customer Journey Mapper</h1>
+      <p class="subtitle">Visualize and optimize your customer's experience</p>
+    </header>
 
-  <div class="controls">
-    <button onclick="addStage()">➕ Add Stage</button>
-    <button onclick="checkGaps()">🔍 Check Gaps</button>
+    <div class="toolbar">
+      <div class="controls">
+        <button class="btn btn-primary" onclick="addStage()">
+          <i class="fas fa-plus"></i> Add Stage
+        </button>
+        <button class="btn btn-secondary" onclick="checkGaps()">
+          <i class="fas fa-search"></i> Check Gaps
+        </button>
+        <button class="btn btn-info" onclick="showAnalytics()">
+          <i class="fas fa-chart-bar"></i> Analytics
+        </button>
+        <div class="dropdown">
+          <button class="btn btn-success">
+            <i class="fas fa-file-export"></i> Export <i class="fas fa-caret-down"></i>
+          </button>
+          <div class="dropdown-content">
+            <a href="#" onclick="exportAsJSON()">Export as JSON</a>
+            <a href="#" onclick="exportAsPDF()">Export as PDF</a>
+          </div>
+        </div>
+        <button class="btn btn-warning" onclick="loadExample()">
+          <i class="fas fa-lightbulb"></i> Load Example
+        </button>
+      </div>
+    </div>
+
+    <div class="stage-container" id="stageContainer">
+      <!-- Stages will be added here -->
+    </div>
+
+    <div class="connectors-container" id="connectorsContainer">
+      <!-- Connector arrows will be added here -->
+    </div>
+
+    <div id="analyticsPanel" class="analytics-panel hidden">
+      <h3><i class="fas fa-chart-pie"></i> Journey Analytics</h3>
+      <div class="analytics-grid">
+        <div class="metric-card">
+          <div class="metric-value" id="totalStages">0</div>
+          <div class="metric-label">Total Stages</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="totalWords">0</div>
+          <div class="metric-label">Total Words</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="completionRate">0%</div>
+          <div class="metric-label">Completion</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="gapCount">0</div>
+          <div class="metric-label">Potential Gaps</div>
+        </div>
+      </div>
+      <button class="btn btn-close" onclick="hideAnalytics()">
+        <i class="fas fa-times"></i> Close
+      </button>
+    </div>
+
+    <div class="footer">
+      <p>Drag and drop stages to reorder. Click on stage names to edit.</p>
+      <p class="save-notice" id="saveNotice">Changes are saved automatically <i class="fas fa-check-circle"></i></p>
+    </div>
   </div>
 
   <script src="script.js"></script>
