@@ -10,7 +10,20 @@
   <meta name="theme-color" content="#4361ee">
 </head>
 <body>
-  <div class="app-container">
+  <!-- PIN Access Screen (will be shown first) -->
+  <div id="pinScreen" class="pin-screen" style="display: none;">
+    <div class="pin-container">
+      <h2>Enter Access PIN</h2>
+      <p>Please enter the 4-digit PIN to access the application</p>
+      <input type="password" id="pinInput" maxlength="4" pattern="\d{4}" 
+             placeholder="Enter PIN" autocomplete="off">
+      <button id="submitPin" class="btn btn-primary">Submit</button>
+      <p id="pinError" class="error-message"></p>
+    </div>
+  </div>
+
+  <!-- Main App Container (hidden until PIN is entered) -->
+  <div class="app-container" style="display: none;">
     <header>
       <div class="header-content">
         <h1><i class="fas fa-funnel-dollar"></i> Sales Funnel Manager</h1>
@@ -59,7 +72,6 @@
         <button class="add-lead-btn" onclick="openAddLeadModal('tof')">
           <i class="fas fa-plus"></i> Add Lead
         </button>
-        <!-- Added strategy section -->
         <div class="strategy-section">
           <h4>Content Strategy</h4>
           <p id="tof-strategy-text">No strategy yet.</p>
@@ -85,7 +97,6 @@
         <button class="add-lead-btn" onclick="openAddLeadModal('mof')">
           <i class="fas fa-plus"></i> Add Lead
         </button>
-        <!-- Added strategy section -->
         <div class="strategy-section">
           <h4>Content Strategy</h4>
           <p id="mof-strategy-text">No strategy yet.</p>
@@ -111,7 +122,6 @@
         <button class="add-lead-btn" onclick="openAddLeadModal('bof')">
           <i class="fas fa-plus"></i> Add Lead
         </button>
-        <!-- Added strategy section -->
         <div class="strategy-section">
           <h4>Content Strategy</h4>
           <p id="bof-strategy-text">No strategy yet.</p>
@@ -355,7 +365,16 @@
     
     window.addEventListener('appinstalled', () => {
       installButton.style.display = 'none';
-      window.funnelManager.showNotification('App installed successfully!', 'success');
+      if (window.funnelManager) {
+        window.funnelManager.showNotification('App installed successfully!', 'success');
+      }
+    });
+
+    // Check if the app is already installed
+    window.addEventListener('load', () => {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        installButton.style.display = 'none';
+      }
     });
   </script>
 </body>
