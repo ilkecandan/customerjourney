@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <title>Advanced Sales Funnel Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -34,7 +33,12 @@
             <a href="#" onclick="exportAsCSV()"><i class="fas fa-file-csv"></i> CSV</a>
           </div>
         </div>
-        
+        <button class="btn btn-info" onclick="loadExample()">
+          <i class="fas fa-lightbulb"></i> Example
+        </button>
+        <button class="btn btn-primary" onclick="openFunnelStrategyModal()">
+          <i class="fas fa-cog"></i> Funnel Strategy
+        </button>
       </div>
     </header>
 
@@ -129,6 +133,10 @@
           <div class="metric-value" id="forecastCompletions">0</div>
           <div class="metric-label">Forecast (7d)</div>
         </div>
+      </div>
+      
+      <div class="chart-container">
+        <canvas id="funnelChart"></canvas>
       </div>
       
       <div class="timeline-section">
@@ -242,12 +250,50 @@
           </div>
           <div class="form-group">
             <label for="editContentStrategy">Content Strategy</label>
-            <textarea id="editContentStrategy" placeholder="Content strategy for this funnel stage..."></textarea>
+            <textarea id="editContentStrategy" placeholder="Content strategy for this lead..."></textarea>
           </div>
           <input type="hidden" id="editingLeadId">
           <div class="form-actions">
             <button type="button" class="btn btn-danger" onclick="deleteLead()">Delete Lead</button>
             <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Funnel Strategy Modal -->
+    <div id="funnelStrategyModal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3>Funnel Content Strategy</h3>
+        <form id="funnelStrategyForm">
+          <div class="form-group">
+            <label for="tofStrategy">TOF Strategy</label>
+            <textarea id="tofStrategy" placeholder="Content strategy for Top of Funnel..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="tofContentTypes">TOF Content Types</label>
+            <input type="text" id="tofContentTypes" placeholder="Blog posts, social media, ads...">
+          </div>
+          <div class="form-group">
+            <label for="mofStrategy">MOF Strategy</label>
+            <textarea id="mofStrategy" placeholder="Content strategy for Middle of Funnel..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="mofContentTypes">MOF Content Types</label>
+            <input type="text" id="mofContentTypes" placeholder="Webinars, case studies, demos...">
+          </div>
+          <div class="form-group">
+            <label for="bofStrategy">BOF Strategy</label>
+            <textarea id="bofStrategy" placeholder="Content strategy for Bottom of Funnel..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="bofContentTypes">BOF Content Types</label>
+            <input type="text" id="bofContentTypes" placeholder="Proposals, contracts, testimonials...">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Strategy</button>
           </div>
         </form>
       </div>
