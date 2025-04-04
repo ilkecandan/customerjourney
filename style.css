@@ -1,195 +1,539 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Funnel Manager</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
-</head>
-<body>
-    <div id="auth-screen" class="auth-screen">
-        <div class="auth-container">
-            <h1>Marketing Funnel Manager</h1>
-            <p>Enter PIN to access the application</p>
-            <input type="password" id="pin-input" placeholder="Enter PIN (1234)" maxlength="4">
-            <button id="login-btn">Login</button>
-            <p id="pin-error" class="error-message"></p>
-        </div>
-    </div>
+:root {
+    --primary-color: #4a6fa5;
+    --secondary-color: #166088;
+    --accent-color: #4fc3f7;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --gray-color: #6c757d;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
 
-    <div id="app-container" class="app-container hidden">
-        <header>
-            <div class="header-left">
-                <h1>Marketing Funnel Manager</h1>
-                <button id="install-btn" class="install-btn">Install App</button>
-            </div>
-            <div class="header-right">
-                <button id="export-pdf" class="action-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-                <button id="add-funnel" class="action-btn"><i class="fas fa-plus"></i> Add Funnel</button>
-            </div>
-        </header>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-        <main>
-            <div class="funnels-container" id="funnels-container">
-                <!-- Funnels will be dynamically added here -->
-            </div>
+body {
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
 
-            <div class="analytics-container">
-                <h2><i class="fas fa-chart-line"></i> Funnel Analytics</h2>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <h3>Total Leads</h3>
-                        <p id="total-leads">0</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>TOF → MOF Conversion</h3>
-                        <p id="tof-mof-rate">0%</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>MOF → BOF Conversion</h3>
-                        <p id="mof-bof-rate">0%</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>Overall Conversion</h3>
-                        <p id="overall-rate">0%</p>
-                    </div>
-                </div>
-                <div class="conversion-chart">
-                    <canvas id="conversion-chart"></canvas>
-                </div>
-            </div>
-        </main>
+.hidden {
+    display: none !important;
+}
 
-        <!-- Add Funnel Modal -->
-        <div id="add-funnel-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Add New Funnel</h2>
-                <form id="funnel-form">
-                    <div class="form-group">
-                        <label for="funnel-name">Funnel Name</label>
-                        <input type="text" id="funnel-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funnel-type">Funnel Type</label>
-                        <select id="funnel-type" required>
-                            <option value="TOF">TOF (Top of Funnel)</option>
-                            <option value="MOF">MOF (Middle of Funnel)</option>
-                            <option value="BOF">BOF (Bottom of Funnel)</option>
-                            <option value="CUSTOM">Custom</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="funnel-description">Description</label>
-                        <textarea id="funnel-description"></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Create Funnel</button>
-                </form>
-            </div>
-        </div>
+/* Auth Screen */
+.auth-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
 
-        <!-- Add Lead Modal -->
-        <div id="add-lead-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Add New Lead</h2>
-                <form id="lead-form">
-                    <div class="form-group">
-                        <label for="lead-company">Company Name</label>
-                        <input type="text" id="lead-company" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-email">Email</label>
-                        <input type="email" id="lead-email">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-phone">Phone</label>
-                        <input type="tel" id="lead-phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-website">Website</label>
-                        <input type="url" id="lead-website" placeholder="https://">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-notes">Notes</label>
-                        <textarea id="lead-notes"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-content-strategy">Content Strategy</label>
-                        <select id="lead-content-strategy" multiple>
-                            <option value="blog">Blog Posts</option>
-                            <option value="ebook">E-books</option>
-                            <option value="webinar">Webinars</option>
-                            <option value="casestudy">Case Studies</option>
-                            <option value="demo">Product Demos</option>
-                            <option value="trial">Free Trials</option>
-                        </select>
-                    </div>
-                    <input type="hidden" id="lead-funnel-id">
-                    <button type="submit" class="submit-btn">Add Lead</button>
-                </form>
-            </div>
-        </div>
+.auth-container {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
 
-        <!-- Edit Lead Modal -->
-        <div id="edit-lead-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Edit Lead</h2>
-                <form id="edit-lead-form">
-                    <div class="form-group">
-                        <label for="edit-lead-company">Company Name</label>
-                        <input type="text" id="edit-lead-company" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-email">Email</label>
-                        <input type="email" id="edit-lead-email">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-phone">Phone</label>
-                        <input type="tel" id="edit-lead-phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-website">Website</label>
-                        <input type="url" id="edit-lead-website" placeholder="https://">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-notes">Notes</label>
-                        <textarea id="edit-lead-notes"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-content-strategy">Content Strategy</label>
-                        <select id="edit-lead-content-strategy" multiple>
-                            <option value="blog">Blog Posts</option>
-                            <option value="ebook">E-books</option>
-                            <option value="webinar">Webinars</option>
-                            <option value="casestudy">Case Studies</option>
-                            <option value="demo">Product Demos</option>
-                            <option value="trial">Free Trials</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-funnel">Move to Funnel</label>
-                        <select id="edit-lead-funnel">
-                            <!-- Dynamically populated -->
-                        </select>
-                    </div>
-                    <input type="hidden" id="edit-lead-id">
-                    <button type="submit" class="submit-btn">Save Changes</button>
-                    <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
-                </form>
-            </div>
-        </div>
+.auth-container h1 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
 
-        <!-- Notification Toast -->
-        <div id="toast" class="toast hidden"></div>
-    </div>
+.auth-container p {
+    margin-bottom: 1.5rem;
+    color: var(--gray-color);
+}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+.auth-container input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.auth-container button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.auth-container button:hover {
+    background-color: var(--secondary-color);
+}
+
+.error-message {
+    color: var(--danger-color);
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* App Container */
+.app-container {
+    padding: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-left h1 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.header-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.install-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.install-btn:hover {
+    background-color: #3d8b40;
+}
+
+/* Funnels Container */
+.funnels-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.funnel {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.funnel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.funnel-header {
+    padding: 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.funnel-header h3 {
+    margin: 0;
+}
+
+.funnel-header .funnel-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.funnel-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.funnel-btn:hover {
+    opacity: 0.8;
+}
+
+.funnel-body {
+    padding: 1rem;
+}
+
+.funnel-content {
+    margin-bottom: 1rem;
+}
+
+.funnel-content p {
+    color: var(--gray-color);
+    font-size: 0.9rem;
+}
+
+.add-content-btn {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    background-color: var(--light-color);
+    border: 1px dashed var(--gray-color);
+    border-radius: var(--border-radius);
+    color: var(--gray-color);
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 1rem;
+}
+
+.add-content-btn:hover {
+    background-color: #e9ecef;
+}
+
+.leads-list {
+    list-style: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.lead-item {
+    padding: 0.75rem;
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    margin-bottom: 0.5rem;
+    cursor: grab;
+    background: white;
+    transition: var(--transition);
+    position: relative;
+}
+
+.lead-item:hover {
+    background-color: #f8f9fa;
+}
+
+.lead-item.dragging {
+    opacity: 0.5;
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.lead-company {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.lead-email, .lead-phone {
+    font-size: 0.8rem;
+    color: var(--gray-color);
+    display: block;
+}
+
+.lead-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.lead-action-btn {
+    background: none;
+    border: none;
+    color: var(--gray-color);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.lead-action-btn:hover {
+    color: var(--primary-color);
+}
+
+.add-lead-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.add-lead-btn:hover {
+    background-color: #3da8d8;
+}
+
+/* Analytics */
+.analytics-container {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.analytics-container h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    text-align: center;
+}
+
+.metric-card h3 {
+    font-size: 1rem;
+    color: var(--gray-color);
+    margin-bottom: 0.5rem;
+}
+
+.metric-card p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.conversion-chart {
+    margin-top: 2rem;
+    height: 300px;
+}
+
+/* Modals */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-color);
+    transition: var(--transition);
+}
+
+.close-modal:hover {
+    color: var(--dark-color);
+}
+
+.modal h2 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-group select[multiple] {
+    height: auto;
+    min-height: 100px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 1rem;
+}
+
+.submit-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.delete-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 1rem;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--success-color);
+    color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    z-index: 1001;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .funnels-container {
+        grid-template-columns: 1fr;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 1.5rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
