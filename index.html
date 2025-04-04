@@ -1,22 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Customer Journey Mapper</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Funnel Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <h1>Customer Journey Mapper</h1>
-  <div class="stage-container" id="stageContainer">
-    <!-- Stages will be added here -->
-  </div>
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-container">
+            <h1>Marketing Funnel Manager</h1>
+            <p>Enter PIN to access the application</p>
+            <input type="password" id="pin-input" placeholder="Enter PIN (1234)" maxlength="4">
+            <button id="login-btn">Login</button>
+            <p id="pin-error" class="error-message"></p>
+        </div>
+    </div>
 
-  <div class="controls">
-    <button onclick="addStage()">➕ Add Stage</button>
-    <button onclick="checkGaps()">🔍 Check Gaps</button>
-  </div>
+    <div id="app-container" class="app-container hidden">
+        <header>
+            <div class="header-left">
+                <h1>Marketing Funnel Manager</h1>
+                <button id="install-btn" class="install-btn">Install App</button>
+            </div>
+            <div class="header-right">
+                <button id="export-pdf" class="action-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                <button id="add-funnel" class="action-btn"><i class="fas fa-plus"></i> Add Funnel</button>
+            </div>
+        </header>
 
-  <script src="script.js"></script>
+        <main>
+            <div class="funnels-container" id="funnels-container">
+                <!-- Funnels will be dynamically added here -->
+            </div>
+
+            <div class="analytics-container">
+                <h2><i class="fas fa-chart-line"></i> Funnel Analytics</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Total Leads</h3>
+                        <p id="total-leads">0</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>TOF → MOF Conversion</h3>
+                        <p id="tof-mof-rate">0%</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>MOF → BOF Conversion</h3>
+                        <p id="mof-bof-rate">0%</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Overall Conversion</h3>
+                        <p id="overall-rate">0%</p>
+                    </div>
+                </div>
+                <div class="conversion-chart">
+                    <canvas id="conversion-chart"></canvas>
+                </div>
+            </div>
+        </main>
+
+        <!-- Add Funnel Modal -->
+        <div id="add-funnel-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Add New Funnel</h2>
+                <form id="funnel-form">
+                    <div class="form-group">
+                        <label for="funnel-name">Funnel Name</label>
+                        <input type="text" id="funnel-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="funnel-type">Funnel Type</label>
+                        <select id="funnel-type" required>
+                            <option value="TOF">TOF (Top of Funnel)</option>
+                            <option value="MOF">MOF (Middle of Funnel)</option>
+                            <option value="BOF">BOF (Bottom of Funnel)</option>
+                            <option value="CUSTOM">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="funnel-description">Description</label>
+                        <textarea id="funnel-description"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Create Funnel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Lead Modal -->
+        <div id="add-lead-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Add New Lead</h2>
+                <form id="lead-form">
+                    <div class="form-group">
+                        <label for="lead-company">Company Name</label>
+                        <input type="text" id="lead-company" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-email">Email</label>
+                        <input type="email" id="lead-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-phone">Phone</label>
+                        <input type="tel" id="lead-phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-website">Website</label>
+                        <input type="url" id="lead-website" placeholder="https://">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-notes">Notes</label>
+                        <textarea id="lead-notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-content-strategy">Content Strategy</label>
+                        <select id="lead-content-strategy" multiple>
+                            <option value="blog">Blog Posts</option>
+                            <option value="ebook">E-books</option>
+                            <option value="webinar">Webinars</option>
+                            <option value="casestudy">Case Studies</option>
+                            <option value="demo">Product Demos</option>
+                            <option value="trial">Free Trials</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="lead-funnel-id">
+                    <button type="submit" class="submit-btn">Add Lead</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Lead Modal -->
+        <div id="edit-lead-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Edit Lead</h2>
+                <form id="edit-lead-form">
+                    <div class="form-group">
+                        <label for="edit-lead-company">Company Name</label>
+                        <input type="text" id="edit-lead-company" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lead-email">Email</label>
+                        <input type="email" id="edit-lead-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lead-phone">Phone</label>
+                        <input type="tel" id="edit-lead-phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lead-website">Website</label>
+                        <input type="url" id="edit-lead-website" placeholder="https://">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lead-notes">Notes</label>
+                        <textarea id="edit-lead-notes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lead-content-strategy">Content Strategy</label>
+                        <select id="edit-lead-content-strategy" multiple>
+                            <option value="blog">Blog Posts</option>
+                            <option value="ebook">E-books</option>
+                            <option value="webinar">Webinars</option>
+                            <option value="casestudy">Case Studies</option>
+                            <option value="demo">Product Demos</option>
+                            <option value="trial">Free Trials</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lead-funnel">Move to Funnel</label>
+                        <select id="edit-lead-funnel">
+                            <!-- Dynamically populated -->
+                        </select>
+                    </div>
+                    <input type="hidden" id="edit-lead-id">
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                    <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
