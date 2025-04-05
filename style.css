@@ -34,44 +34,6 @@ body {
     display: none !important;
 }
 
-/* Auth Screen */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: var(--light-color);
-}
-
-.auth-box {
-    background: white;
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
-}
-
-.auth-box h2 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.auth-box input {
-    width: 100%;
-    padding: 0.8rem;
-    margin: 1rem 0;
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius);
-}
-
-.error-message {
-    color: var(--danger-color);
-    font-size: 0.9rem;
-    min-height: 1.2rem;
-}
-
 header {
     display: flex;
     justify-content: space-between;
@@ -88,30 +50,6 @@ header {
     -webkit-background-clip: text;
     color: transparent;
     text-shadow: 0 0 8px rgba(110, 215, 255, 0.4);
-}
-
-/* Analytics Summary */
-.analytics-summary {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.analytics-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.analytics-label {
-    font-size: 0.8rem;
-    color: var(--gray-color);
-}
-
-.analytics-value {
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: var(--primary-color);
 }
 
 .install-btn,
@@ -201,15 +139,6 @@ header {
 }
 
 /* Funnel Visualization */
-.funnel-visualization {
-    background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--soft-glow);
-    padding: 1.5rem;
-    margin: 2rem auto;
-    max-width: 1200px;
-}
-
 .funnels-container {
     display: flex;
     flex-direction: column;
@@ -374,141 +303,6 @@ header {
     box-shadow: var(--glow-shadow);
 }
 
-/* Functional Funnel Styles */
-.funnel-header {
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.funnel-header h3 {
-    margin: 0;
-}
-
-.funnel-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.funnel-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.funnel-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.funnel-body {
-    padding: 1.5rem;
-}
-
-.funnel-content {
-    margin-bottom: 1.5rem;
-}
-
-.funnel-content h4 {
-    margin-bottom: 0.5rem;
-    color: var(--primary-color);
-}
-
-.add-content-btn, .add-lead-btn {
-    background: var(--light-color);
-    border: 1px dashed var(--primary-color);
-    color: var(--primary-color);
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: var(--transition);
-    width: 100%;
-    margin-top: 0.5rem;
-}
-
-.add-content-btn:hover, .add-lead-btn:hover {
-    background: rgba(90, 79, 207, 0.1);
-}
-
-.leads-list {
-    list-style: none;
-    margin: 1rem 0;
-    padding: 0;
-    min-height: 100px;
-    border: 1px dashed #ddd;
-    border-radius: var(--border-radius);
-    padding: 0.5rem;
-}
-
-.lead-item {
-    background: var(--light-color);
-    padding: 0.8rem;
-    margin-bottom: 0.5rem;
-    border-radius: 8px;
-    cursor: move;
-    transition: var(--transition);
-    position: relative;
-}
-
-.lead-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.lead-company {
-    font-weight: bold;
-    margin-bottom: 0.3rem;
-    display: flex;
-    justify-content: space-between;
-}
-
-.lead-email, .lead-phone {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--gray-color);
-    margin-bottom: 0.2rem;
-}
-
-.lead-actions {
-    display: flex;
-    gap: 0.3rem;
-}
-
-.lead-action-btn {
-    background: none;
-    border: none;
-    color: var(--gray-color);
-    cursor: pointer;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
-
-.lead-action-btn:hover {
-    color: var(--primary-color);
-    background: rgba(90, 79, 207, 0.1);
-}
-
-/* Drag and Drop States */
-.drag-over {
-    background: rgba(110, 215, 255, 0.2) !important;
-    border-color: var(--accent-color) !important;
-}
-
-.dragging {
-    opacity: 0.5;
-}
-
 /* Leads Section */
 .leads-section {
     background: white;
@@ -591,17 +385,6 @@ header {
     font-size: 0.8rem;
 }
 
-/* Chart Section */
-.chart-section {
-    background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--soft-glow);
-    padding: 1.5rem;
-    margin: 2rem auto;
-    max-width: 1200px;
-    height: 400px;
-}
-
 /* Tutorial Tooltips */
 .tutorial-tooltip {
     position: absolute;
@@ -664,151 +447,6 @@ header {
     transform: translateY(-50%) rotate(45deg);
 }
 
-/* Modals */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.modal.show {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.modal-content {
-    background: white;
-    border-radius: var(--border-radius);
-    width: 100%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 2rem;
-    position: relative;
-    box-shadow: var(--box-shadow);
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--gray-color);
-    background: none;
-    border: none;
-}
-
-.close-modal:hover {
-    color: var(--dark-color);
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-}
-
-.form-group textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-.form-group select[multiple] {
-    height: auto;
-    min-height: 100px;
-}
-
-.submit-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition);
-    width: 100%;
-    margin-top: 1rem;
-}
-
-.submit-btn:hover {
-    background: var(--secondary-color);
-}
-
-.delete-btn {
-    background: var(--danger-color);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition);
-    width: 100%;
-    margin-top: 1rem;
-}
-
-.delete-btn:hover {
-    background: #d32f2f;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.form-actions .submit-btn,
-.form-actions .delete-btn {
-    margin-top: 0;
-    width: auto;
-    flex: 1;
-}
-
-/* Toast Notification */
-.toast {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--dark-color);
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1001;
-}
-
-.toast.show {
-    opacity: 1;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .content-types {
@@ -846,23 +484,6 @@ header {
     .funnel::after,
     .funnel-connector::before {
         display: none;
-    }
-    
-    .analytics-summary {
-        flex-wrap: wrap;
-    }
-    
-    .analytics-item {
-        flex: 1 0 45%;
-        margin-bottom: 1rem;
-    }
-    
-    .modal-content {
-        width: 90%;
-    }
-    
-    .form-actions {
-        flex-direction: column;
     }
 }
 
