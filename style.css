@@ -8,103 +8,37 @@
     --light-color: #fafbfd;
     --dark-color: #2e2e3e;
     --gray-color: #a0a0b2;
-    --border-radius: 12px;
-    --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    --glow-shadow: 0 0 10px rgba(110, 215, 255, 0.7), 0 0 20px rgba(110, 215, 255, 0.4);
-    --soft-glow: 0 4px 16px rgba(90, 79, 207, 0.2);
+    --border-radius: 14px;
+    --box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    --glow-shadow: 0 0 12px rgba(110, 215, 255, 0.7), 0 0 24px rgba(110, 215, 255, 0.3);
+    --soft-glow: 0 6px 18px rgba(90, 79, 207, 0.2);
     --transition: all 0.3s ease-in-out;
+    --font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: var(--font-family);
 }
 
 body {
     background-color: #f1f3f8;
-    color: #2e2e3e;
+    color: var(--dark-color);
     line-height: 1.6;
+    padding-bottom: 4rem;
 }
 
 .hidden {
     display: none !important;
 }
 
-.auth-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-}
-
-.auth-container {
-    background: white;
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--soft-glow);
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-}
-
-.auth-container h1 {
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-}
-
-.auth-container input {
-    width: 100%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ccc;
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    transition: var(--transition);
-}
-
-.auth-container input:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(110, 215, 255, 0.2);
-    outline: none;
-}
-
-.auth-container button {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.auth-container button:hover {
-    background-color: var(--secondary-color);
-}
-
-.error-message {
-    color: var(--danger-color);
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.app-container {
-    padding: 1rem;
-    max-width: 1400px;
-    margin: auto;
-}
-
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding: 1rem 0;
+    padding: 1.5rem 1rem;
     border-bottom: 1px solid #e0e0e0;
 }
 
@@ -114,92 +48,154 @@ header {
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     -webkit-background-clip: text;
     color: transparent;
-    text-shadow: 0 0 6px rgba(110, 215, 255, 0.5);
+    text-shadow: 0 0 8px rgba(110, 215, 255, 0.4);
 }
 
-.funnels-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.funnel {
-    background: white;
+.install-btn,
+.action-btn {
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
     border-radius: var(--border-radius);
-    box-shadow: var(--soft-glow);
+    cursor: pointer;
+    font-weight: 600;
     transition: var(--transition);
-    overflow: hidden;
-    animation: fadeInUp 0.5s ease forwards;
+    box-shadow: var(--soft-glow);
 }
 
-.funnel:hover {
-    transform: scale(1.02);
+.install-btn:hover,
+.action-btn:hover {
+    background-color: var(--secondary-color);
     box-shadow: var(--glow-shadow);
 }
 
-.funnel-header {
-    padding: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
+/* Funnel Section */
+.funnels-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    gap: 2rem;
+    margin-top: 2rem;
 }
 
-.funnel-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
+.funnel-stage {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--soft-glow);
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+    padding: 1rem 1.5rem;
+    clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+    text-align: center;
 }
 
-.funnel-body {
-    padding: 1rem;
-    background-color: #fafbfd;
+.funnel-stage:hover {
+    transform: scale(1.01);
+    box-shadow: var(--glow-shadow);
 }
 
-.funnel-content p {
-    font-size: 0.95rem;
-    color: var(--gray-color);
+.funnel-stage.tof {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    color: white;
+}
+
+.funnel-stage.mof {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+}
+
+.funnel-stage.bof {
+    background: linear-gradient(135deg, #302a7d, var(--primary-color));
+    color: white;
+}
+
+.funnel-stage h3 {
+    font-size: 1.4rem;
     margin-bottom: 0.5rem;
+}
+
+.funnel-stage .funnel-description {
+    font-size: 1rem;
+    color: var(--light-color);
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.funnel-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
 }
 
 .add-content-btn,
 .add-lead-btn {
-    width: 100%;
     padding: 0.6rem;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px dashed var(--light-color);
+    color: #fff;
     font-weight: bold;
     border-radius: var(--border-radius);
-    border: 1px dashed var(--primary-color);
-    background-color: rgba(74, 111, 165, 0.05);
-    color: var(--primary-color);
-    cursor: pointer;
     transition: var(--transition);
+    cursor: pointer;
 }
 
 .add-content-btn:hover,
 .add-lead-btn:hover {
-    background-color: rgba(110, 215, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.25);
     box-shadow: var(--glow-shadow);
 }
 
-.lead-item {
+/* Analytics Section */
+.analytics-container {
+    margin-top: 3rem;
+    padding: 2rem;
     background: white;
-    border: 1px solid #eee;
-    padding: 0.75rem;
     border-radius: var(--border-radius);
-    margin-bottom: 0.75rem;
-    transition: var(--transition);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
-    cursor: grab;
-    animation: fadeInUp 0.4s ease-out;
-    opacity: 1;
+    box-shadow: var(--soft-glow);
 }
 
-.lead-item:hover {
-    background-color: #f5f9ff;
-    box-shadow: var(--glow-shadow);
+.analytics-container h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: var(--light-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.metric-card h3 {
+    font-size: 1rem;
+    color: var(--gray-color);
+    margin-bottom: 0.5rem;
+}
+
+.metric-card p {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Toasts */
 .toast {
     position: fixed;
     bottom: 1rem;
@@ -212,6 +208,7 @@ header {
     opacity: 0;
     transform: translateY(20px);
     transition: var(--transition);
+    z-index: 1001;
 }
 
 .toast.show {
@@ -219,6 +216,7 @@ header {
     transform: translateY(0);
 }
 
+/* Fade In Animation */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -230,6 +228,7 @@ header {
     }
 }
 
+/* Responsive */
 @media (max-width: 768px) {
     header {
         flex-direction: column;
@@ -238,6 +237,11 @@ header {
     }
 
     .funnels-container {
-        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .funnel-stage {
+        clip-path: none;
+        border-left: 8px solid var(--accent-color);
     }
 }
