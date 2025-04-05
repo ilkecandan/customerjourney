@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-
 // Authentication setup
 function setupAuth() {
     const pinInput = document.getElementById('pin-input');
@@ -100,6 +99,7 @@ function createFunnelElement(funnel) {
     const funnelElement = document.createElement('div');
     funnelElement.className = 'funnel';
     funnelElement.dataset.funnelId = funnel.id;
+    funnelElement.dataset.funnelType = funnel.type;
     
     // Funnel header
     const header = document.createElement('div');
@@ -240,6 +240,7 @@ function setupDragAndDrop() {
     
     funnelContainers.forEach(container => {
         container.addEventListener('dragover', handleDragOver);
+        container.addEventListener('dragleave', handleDragLeave);
         container.addEventListener('drop', handleDrop);
     });
 }
@@ -250,10 +251,19 @@ function handleDragStart(e) {
         sourceFunnelId: e.target.dataset.funnelId
     }));
     e.target.classList.add('dragging');
+    e.target.style.opacity = '0.4';
 }
 
 function handleDragOver(e) {
     e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+    e.currentTarget.style.backgroundColor = 'rgba(110, 215, 255, 0.1)';
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    e.currentTarget.style.backgroundColor = '';
 }
 
 function handleDrop(e) {
@@ -261,10 +271,20 @@ function handleDrop(e) {
     const data = JSON.parse(e.dataTransfer.getData('text/plain'));
     const leadId = data.leadId;
     const sourceFunnelId = data.sourceFunnelId;
-    const targetFunnelId = e.target.closest('.funnel').dataset.funnelId;
+    const targetFunnelId = e.currentTarget.closest('.funnel').dataset.funnelId;
+    
+    e.currentTarget.classList.remove('drag-over');
+    e.currentTarget.style.backgroundColor = '';
     
     if (sourceFunnelId !== targetFunnelId) {
         moveLeadToFunnel(leadId, sourceFunnelId, targetFunnelId);
+    }
+    
+    // Reset dragged element
+    const draggingElement = document.querySelector('.lead-item.dragging');
+    if (draggingElement) {
+        draggingElement.style.opacity = '1';
+        draggingElement.classList.remove('dragging');
     }
 }
 
