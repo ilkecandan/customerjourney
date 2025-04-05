@@ -39,7 +39,7 @@ function initializeApp() {
         const defaultFunnels = [
             {
                 id: 'tof-' + Date.now(),
-                name: 'TOF (Top of Funnel)',
+                name: 'Top of Funnel',
                 type: 'TOF',
                 description: 'Awareness stage - attracting potential customers',
                 leads: [],
@@ -47,7 +47,7 @@ function initializeApp() {
             },
             {
                 id: 'mof-' + Date.now(),
-                name: 'MOF (Middle of Funnel)',
+                name: 'Middle of Funnel',
                 type: 'MOF',
                 description: 'Consideration stage - nurturing leads',
                 leads: [],
@@ -55,9 +55,17 @@ function initializeApp() {
             },
             {
                 id: 'bof-' + Date.now(),
-                name: 'BOF (Bottom of Funnel)',
+                name: 'Bottom of Funnel',
                 type: 'BOF',
                 description: 'Decision stage - converting leads to customers',
+                leads: [],
+                contentStrategy: []
+            },
+            {
+                id: 'conversion-' + Date.now(),
+                name: 'Conversion',
+                type: 'CONVERSION',
+                description: 'Customers who completed purchase',
                 leads: [],
                 contentStrategy: []
             }
@@ -76,6 +84,24 @@ function initializeApp() {
     
     // Setup PWA installation
     setupPWA();
+    
+    // Initialize tutorial tooltips
+    setupTutorialTooltips();
+}
+
+// Initialize tutorial tooltips
+function setupTutorialTooltips() {
+    document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+        const tooltip = trigger.querySelector('.tutorial-tooltip');
+        
+        trigger.addEventListener('mouseenter', () => {
+            tooltip.classList.add('show');
+        });
+        
+        trigger.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('show');
+        });
+    });
 }
 
 // Load funnels from localStorage and render them
@@ -92,75 +118,78 @@ function loadFunnels() {
     
     // Initialize drag and drop for leads
     setupDragAndDrop();
+    
+    // Load leads section
+    loadLeadsSection();
 }
 
 // Create a funnel DOM element
 function createFunnelElement(funnel) {
     const funnelElement = document.createElement('div');
-    funnelElement.className = 'funnel';
+    funnelElement.className = 'funnel tooltip-trigger';
     funnelElement.dataset.funnelId = funnel.id;
     funnelElement.dataset.funnelType = funnel.type;
     
-    // Funnel header
-    const header = document.createElement('div');
-    header.className = 'funnel-header';
+    // Funnel stage
+    const stage = document.createElement('div');
+    stage.className = `funnel-stage ${funnel.type.toLowerCase()}`;
     
     const title = document.createElement('h3');
     title.textContent = funnel.name;
     
-    const actions = document.createElement('div');
-    actions.className = 'funnel-actions';
-    
-    const editBtn = document.createElement('button');
-    editBtn.className = 'funnel-btn';
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    editBtn.title = 'Edit Funnel';
-    editBtn.addEventListener('click', () => openEditFunnelModal(funnel));
-    
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'funnel-btn';
-    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteBtn.title = 'Delete Funnel';
-    deleteBtn.addEventListener('click', () => deleteFunnel(funnel.id));
-    
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-    header.appendChild(title);
-    header.appendChild(actions);
-    
-    // Funnel body
-    const body = document.createElement('div');
-    body.className = 'funnel-body';
-    
     const description = document.createElement('div');
-    description.className = 'funnel-content';
-    description.innerHTML = `<p>${funnel.description}</p>`;
+    description.className = 'funnel-description';
+    description.textContent = funnel.description;
     
-    const contentStrategy = document.createElement('div');
-    contentStrategy.className = 'funnel-content';
-    contentStrategy.innerHTML = `
-        <h4>Content Strategy</h4>
-        ${funnel.contentStrategy.length > 0 ? 
-            `<ul>${funnel.contentStrategy.map(item => `<li>${item}</li>`).join('')}</ul>` : 
-            '<p>No content strategy defined</p>'}
-        <button class="add-content-btn">+ Add Content Strategy</button>
+    const metrics = document.createElement('div');
+    metrics.className = 'funnel-metrics';
+    
+    const leadsMetric = document.createElement('div');
+    leadsMetric.className = 'funnel-metric';
+    leadsMetric.innerHTML = `
+        <div class="funnel-metric-value">${funnel.leads.length}</div>
+        <div class="funnel-metric-label">Leads</div>
     `;
     
-    contentStrategy.querySelector('.add-content-btn').addEventListener('click', () => {
-        openContentStrategyModal(funnel.id);
-    });
+    metrics.appendChild(leadsMetric);
     
-    const leadsHeader = document.createElement('h4');
-    leadsHeader.textContent = 'Leads';
+    if (funnel.type === 'TOF' || funnel.type === 'MOF' || funnel.type === 'BOF') {
+        const conversionMetric = document.createElement('div');
+        conversionMetric.className = 'funnel-metric';
+        
+        let conversionRate = '0%';
+        const funnels = JSON.parse(localStorage.getItem('funnels'));
+        
+        if (funnel.type === 'TOF') {
+            const mofFunnel = funnels.find(f => f.type === 'MOF');
+            conversionRate = funnel.leads.length > 0 
+                ? `${Math.round((mofFunnel.leads.length / funnel.leads.length) * 100)}%` 
+                : '0%';
+        } else if (funnel.type === 'MOF') {
+            const bofFunnel = funnels.find(f => f.type === 'BOF');
+            conversionRate = funnel.leads.length > 0 
+                ? `${Math.round((bofFunnel.leads.length / funnel.leads.length) * 100)}%` 
+                : '0%';
+        } else if (funnel.type === 'BOF') {
+            const conversionFunnel = funnels.find(f => f.type === 'CONVERSION');
+            conversionRate = funnel.leads.length > 0 
+                ? `${Math.round((conversionFunnel.leads.length / funnel.leads.length) * 100)}%` 
+                : '0%';
+        }
+        
+        conversionMetric.innerHTML = `
+            <div class="funnel-metric-value">${conversionRate}</div>
+            <div class="funnel-metric-label">Conversion</div>
+        `;
+        
+        metrics.appendChild(conversionMetric);
+    }
     
-    const leadsList = document.createElement('ul');
-    leadsList.className = 'leads-list';
+    stage.appendChild(title);
+    stage.appendChild(description);
+    stage.appendChild(metrics);
     
-    funnel.leads.forEach(lead => {
-        const leadItem = createLeadElement(lead, funnel.id);
-        leadsList.appendChild(leadItem);
-    });
-    
+    // Add lead button
     const addLeadBtn = document.createElement('button');
     addLeadBtn.className = 'add-lead-btn';
     addLeadBtn.innerHTML = '<i class="fas fa-plus"></i> Add Lead';
@@ -169,79 +198,113 @@ function createFunnelElement(funnel) {
         document.getElementById('add-lead-modal').classList.remove('hidden');
     });
     
-    body.appendChild(description);
-    body.appendChild(contentStrategy);
-    body.appendChild(leadsHeader);
-    body.appendChild(leadsList);
-    body.appendChild(addLeadBtn);
+    stage.appendChild(addLeadBtn);
     
-    funnelElement.appendChild(header);
-    funnelElement.appendChild(body);
+    funnelElement.appendChild(stage);
+    
+    // Add connector if not the last funnel
+    if (funnel.type !== 'CONVERSION') {
+        const connector = document.createElement('div');
+        connector.className = 'funnel-connector';
+        funnelElement.appendChild(connector);
+    }
+    
+    // Add tutorial tooltip
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tutorial-tooltip tooltip-top';
+    
+    let tooltipContent = '';
+    if (funnel.type === 'TOF') {
+        tooltipContent = `
+            <h4>Top of Funnel</h4>
+            <p>This is where visitors first discover your brand. Focus on educational content that addresses their pain points.</p>
+        `;
+    } else if (funnel.type === 'MOF') {
+        tooltipContent = `
+            <h4>Middle of Funnel</h4>
+            <p>Leads here are evaluating solutions. Provide comparison guides and case studies to showcase your value.</p>
+        `;
+    } else if (funnel.type === 'BOF') {
+        tooltipContent = `
+            <h4>Bottom of Funnel</h4>
+            <p>Leads are ready to buy. Offer demos, free trials, and consultations to close the deal.</p>
+        `;
+    } else {
+        tooltipContent = `
+            <h4>Conversion Stage</h4>
+            <p>Congratulations! These leads became customers. Focus now on retention and upselling.</p>
+        `;
+    }
+    
+    tooltip.innerHTML = tooltipContent;
+    funnelElement.appendChild(tooltip);
     
     return funnelElement;
 }
 
-// Create a lead DOM element
-function createLeadElement(lead, funnelId) {
-    const leadItem = document.createElement('li');
-    leadItem.className = 'lead-item';
-    leadItem.draggable = true;
-    leadItem.dataset.leadId = lead.id;
-    leadItem.dataset.funnelId = funnelId;
+// Load leads section
+function loadLeadsSection() {
+    const leadsGrid = document.querySelector('.leads-grid');
+    leadsGrid.innerHTML = '';
     
-    const company = document.createElement('div');
-    company.className = 'lead-company';
-    company.textContent = lead.company;
+    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
+    const allLeads = funnels.flatMap(funnel => 
+        funnel.leads.map(lead => ({ ...lead, funnelId: funnel.id, funnelName: funnel.name }))
+        .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
     
-    const actions = document.createElement('div');
-    actions.className = 'lead-actions';
+    allLeads.forEach(lead => {
+        const leadCard = createLeadCard(lead);
+        leadsGrid.appendChild(leadCard);
+    });
+}
+
+// Create lead card for leads section
+function createLeadCard(lead) {
+    const leadCard = document.createElement('div');
+    leadCard.className = 'lead-card tooltip-trigger';
+    leadCard.dataset.leadId = lead.id;
+    leadCard.dataset.funnelId = lead.funnelId;
     
-    const editBtn = document.createElement('button');
-    editBtn.className = 'lead-action-btn';
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    editBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openEditLeadModal(lead, funnelId);
+    leadCard.innerHTML = `
+        <div class="lead-name">${lead.company}</div>
+        <div class="lead-info">
+            <span><i class="fas fa-envelope"></i> ${lead.email || 'No email'}</span>
+            <span><i class="fas fa-phone"></i> ${lead.phone || 'No phone'}</span>
+        </div>
+        <div class="lead-stage">${lead.funnelName}</div>
+    `;
+    
+    // Add tooltip
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tutorial-tooltip tooltip-top';
+    tooltip.innerHTML = `
+        <h4>Lead Details</h4>
+        <p>Click to view/edit. Drag between funnel stages to update status.</p>
+        <p><strong>Added:</strong> ${new Date(lead.dateAdded).toLocaleDateString()}</p>
+        ${lead.notes ? `<p><strong>Notes:</strong> ${lead.notes}</p>` : ''}
+    `;
+    leadCard.appendChild(tooltip);
+    
+    // Make draggable
+    leadCard.draggable = true;
+    leadCard.addEventListener('dragstart', handleDragStart);
+    
+    // Add click to edit
+    leadCard.addEventListener('click', () => {
+        openEditLeadModal(lead, lead.funnelId);
     });
     
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'lead-action-btn';
-    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteLead(lead.id, funnelId);
-    });
-    
-    actions.appendChild(editBtn);
-    actions.appendChild(deleteBtn);
-    company.appendChild(actions);
-    
-    const email = document.createElement('span');
-    email.className = 'lead-email';
-    email.textContent = lead.email || 'No email provided';
-    
-    const phone = document.createElement('span');
-    phone.className = 'lead-phone';
-    phone.textContent = lead.phone || 'No phone provided';
-    
-    leadItem.appendChild(company);
-    leadItem.appendChild(email);
-    leadItem.appendChild(phone);
-    
-    // Drag events
-    leadItem.addEventListener('dragstart', handleDragStart);
-    
-    return leadItem;
+    return leadCard;
 }
 
 // Setup drag and drop functionality
 function setupDragAndDrop() {
-    const funnelContainers = document.querySelectorAll('.funnel .leads-list');
+    const funnelStages = document.querySelectorAll('.funnel-stage');
     
-    funnelContainers.forEach(container => {
-        container.addEventListener('dragover', handleDragOver);
-        container.addEventListener('dragleave', handleDragLeave);
-        container.addEventListener('drop', handleDrop);
+    funnelStages.forEach(stage => {
+        stage.addEventListener('dragover', handleDragOver);
+        stage.addEventListener('dragleave', handleDragLeave);
+        stage.addEventListener('drop', handleDrop);
     });
 }
 
@@ -256,14 +319,14 @@ function handleDragStart(e) {
 
 function handleDragOver(e) {
     e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
-    e.currentTarget.style.backgroundColor = 'rgba(110, 215, 255, 0.1)';
+    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+    e.currentTarget.style.boxShadow = 'var(--glow-shadow)';
 }
 
 function handleDragLeave(e) {
     e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
     e.currentTarget.style.backgroundColor = '';
+    e.currentTarget.style.boxShadow = '';
 }
 
 function handleDrop(e) {
@@ -273,15 +336,15 @@ function handleDrop(e) {
     const sourceFunnelId = data.sourceFunnelId;
     const targetFunnelId = e.currentTarget.closest('.funnel').dataset.funnelId;
     
-    e.currentTarget.classList.remove('drag-over');
     e.currentTarget.style.backgroundColor = '';
+    e.currentTarget.style.boxShadow = '';
     
     if (sourceFunnelId !== targetFunnelId) {
         moveLeadToFunnel(leadId, sourceFunnelId, targetFunnelId);
     }
     
     // Reset dragged element
-    const draggingElement = document.querySelector('.lead-item.dragging');
+    const draggingElement = document.querySelector('.lead-card.dragging');
     if (draggingElement) {
         draggingElement.style.opacity = '1';
         draggingElement.classList.remove('dragging');
@@ -310,8 +373,9 @@ function moveLeadToFunnel(leadId, sourceFunnelId, targetFunnelId) {
     // Save to localStorage
     localStorage.setItem('funnels', JSON.stringify(funnels));
     
-    // Reload funnels
+    // Reload funnels and leads
     loadFunnels();
+    loadLeadsSection();
     
     // Update analytics
     updateAnalytics();
@@ -352,6 +416,15 @@ function setupEventListeners() {
         document.getElementById('edit-lead-modal').classList.add('hidden');
     });
     
+    // Lead filters
+    document.querySelectorAll('.lead-filter').forEach(filter => {
+        filter.addEventListener('click', function() {
+            document.querySelector('.lead-filter.active').classList.remove('active');
+            this.classList.add('active');
+            filterLeads(this.textContent);
+        });
+    });
+    
     // Close modals
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -372,141 +445,18 @@ function setupEventListeners() {
     document.getElementById('export-pdf').addEventListener('click', exportToPDF);
 }
 
-// Add a new funnel
-function addFunnel() {
-    const name = document.getElementById('funnel-name').value;
-    const type = document.getElementById('funnel-type').value;
-    const description = document.getElementById('funnel-description').value;
+// Filter leads based on selection
+function filterLeads(filter) {
+    const leadsGrid = document.querySelector('.leads-grid');
+    const leadCards = leadsGrid.querySelectorAll('.lead-card');
     
-    const newFunnel = {
-        id: 'funnel-' + Date.now(),
-        name: name,
-        type: type,
-        description: description,
-        leads: [],
-        contentStrategy: []
-    };
-    
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
-    funnels.push(newFunnel);
-    localStorage.setItem('funnels', JSON.stringify(funnels));
-    
-    document.getElementById('add-funnel-modal').classList.add('hidden');
-    loadFunnels();
-    showNotification('Funnel added successfully');
-}
-
-// Edit a funnel
-function openEditFunnelModal(funnel) {
-    document.getElementById('funnel-name').value = funnel.name;
-    document.getElementById('funnel-type').value = funnel.type;
-    document.getElementById('funnel-description').value = funnel.description;
-    
-    const form = document.getElementById('funnel-form');
-    form.dataset.funnelId = funnel.id;
-    form.querySelector('button[type="submit"]').textContent = 'Update Funnel';
-    
-    // Change submit handler to update instead of add
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        updateFunnel();
-    };
-    
-    document.getElementById('add-funnel-modal').classList.remove('hidden');
-}
-
-function updateFunnel() {
-    const funnelId = document.getElementById('funnel-form').dataset.funnelId;
-    const name = document.getElementById('funnel-name').value;
-    const type = document.getElementById('funnel-type').value;
-    const description = document.getElementById('funnel-description').value;
-    
-    const funnels = JSON.parse(localStorage.getItem('funnels'));
-    const funnelIndex = funnels.findIndex(f => f.id === funnelId);
-    
-    if (funnelIndex !== -1) {
-        funnels[funnelIndex].name = name;
-        funnels[funnelIndex].type = type;
-        funnels[funnelIndex].description = description;
-        
-        localStorage.setItem('funnels', JSON.stringify(funnels));
-        document.getElementById('add-funnel-modal').classList.add('hidden');
-        loadFunnels();
-        showNotification('Funnel updated successfully');
-    }
-}
-
-// Delete a funnel
-function deleteFunnel(funnelId) {
-    if (confirm('Are you sure you want to delete this funnel? All leads in this funnel will be lost.')) {
-        const funnels = JSON.parse(localStorage.getItem('funnels'));
-        const updatedFunnels = funnels.filter(f => f.id !== funnelId);
-        
-        localStorage.setItem('funnels', JSON.stringify(updatedFunnels));
-        loadFunnels();
-        showNotification('Funnel deleted successfully');
-    }
-}
-
-// Open content strategy modal
-function openContentStrategyModal(funnelId) {
-    const funnels = JSON.parse(localStorage.getItem('funnels'));
-    const funnel = funnels.find(f => f.id === funnelId);
-    
-    if (funnel) {
-        const modalContent = `
-            <h2>Content Strategy for ${funnel.name}</h2>
-            <div class="form-group">
-                <label>Select Content Types</label>
-                <select id="content-types" multiple>
-                    <option value="blog">Blog Posts</option>
-                    <option value="ebook">E-books</option>
-                    <option value="webinar">Webinars</option>
-                    <option value="casestudy">Case Studies</option>
-                    <option value="demo">Product Demos</option>
-                    <option value="trial">Free Trials</option>
-                </select>
-            </div>
-            <button id="save-content-strategy" class="submit-btn">Save Strategy</button>
-        `;
-        
-        // Create a temporary modal
-        const tempModal = document.createElement('div');
-        tempModal.className = 'modal';
-        tempModal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                ${modalContent}
-            </div>
-        `;
-        
-        document.body.appendChild(tempModal);
-        tempModal.classList.remove('hidden');
-        
-        // Set selected values
-        const select = tempModal.querySelector('#content-types');
-        funnel.contentStrategy.forEach(type => {
-            const option = select.querySelector(`option[value="${type}"]`);
-            if (option) option.selected = true;
-        });
-        
-        // Close modal
-        tempModal.querySelector('.close-modal').addEventListener('click', () => {
-            tempModal.classList.add('hidden');
-            setTimeout(() => tempModal.remove(), 300);
-        });
-        
-        // Save strategy
-        tempModal.querySelector('#save-content-strategy').addEventListener('click', () => {
-            const selectedOptions = Array.from(select.selectedOptions).map(opt => opt.value);
-            funnel.contentStrategy = selectedOptions;
-            localStorage.setItem('funnels', JSON.stringify(funnels));
-            loadFunnels();
-            tempModal.classList.add('hidden');
-            setTimeout(() => tempModal.remove(), 300);
-            showNotification('Content strategy updated');
-        });
-    }
+    leadCards.forEach(card => {
+        if (filter === 'All Leads' || card.querySelector('.lead-stage').textContent.includes(filter)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }
 
 // Add a new lead
@@ -518,9 +468,6 @@ function addLead() {
     const website = document.getElementById('lead-website').value;
     const notes = document.getElementById('lead-notes').value;
     
-    const contentStrategySelect = document.getElementById('lead-content-strategy');
-    const contentStrategy = Array.from(contentStrategySelect.selectedOptions).map(opt => opt.value);
-    
     const newLead = {
         id: 'lead-' + Date.now(),
         company: company,
@@ -528,7 +475,6 @@ function addLead() {
         phone: phone,
         website: website,
         notes: notes,
-        contentStrategy: contentStrategy,
         dateAdded: new Date().toISOString()
     };
     
@@ -555,12 +501,6 @@ function openEditLeadModal(lead, funnelId) {
     document.getElementById('edit-lead-website').value = lead.website || '';
     document.getElementById('edit-lead-notes').value = lead.notes || '';
     document.getElementById('edit-lead-id').value = lead.id;
-    
-    // Set content strategy
-    const contentStrategySelect = document.getElementById('edit-lead-content-strategy');
-    Array.from(contentStrategySelect.options).forEach(option => {
-        option.selected = lead.contentStrategy.includes(option.value);
-    });
     
     // Set funnel dropdown
     const funnelSelect = document.getElementById('edit-lead-funnel');
@@ -593,9 +533,6 @@ function saveLeadChanges() {
     const website = document.getElementById('edit-lead-website').value;
     const notes = document.getElementById('edit-lead-notes').value;
     
-    const contentStrategySelect = document.getElementById('edit-lead-content-strategy');
-    const contentStrategy = Array.from(contentStrategySelect.selectedOptions).map(opt => opt.value);
-    
     const funnels = JSON.parse(localStorage.getItem('funnels'));
     
     // Find current funnel and lead
@@ -611,8 +548,7 @@ function saveLeadChanges() {
         email: email,
         phone: phone,
         website: website,
-        notes: notes,
-        contentStrategy: contentStrategy
+        notes: notes
     };
     
     if (currentFunnelId !== newFunnelId) {
@@ -628,6 +564,7 @@ function saveLeadChanges() {
     localStorage.setItem('funnels', JSON.stringify(funnels));
     document.getElementById('edit-lead-modal').classList.add('hidden');
     loadFunnels();
+    loadLeadsSection();
     updateAnalytics();
     showNotification('Lead updated successfully');
 }
@@ -642,6 +579,7 @@ function deleteLead(leadId, funnelId) {
             funnel.leads = funnel.leads.filter(lead => lead.id !== leadId);
             localStorage.setItem('funnels', JSON.stringify(funnels));
             loadFunnels();
+            loadLeadsSection();
             updateAnalytics();
             showNotification('Lead deleted successfully');
         }
@@ -660,10 +598,12 @@ function updateAnalytics() {
     const tofFunnel = funnels.find(f => f.type === 'TOF');
     const mofFunnel = funnels.find(f => f.type === 'MOF');
     const bofFunnel = funnels.find(f => f.type === 'BOF');
+    const conversionFunnel = funnels.find(f => f.type === 'CONVERSION');
     
     // Calculate conversion rates
     let tofMofRate = '0%';
     let mofBofRate = '0%';
+    let bofConversionRate = '0%';
     let overallRate = '0%';
     
     if (tofFunnel && mofFunnel) {
@@ -678,22 +618,29 @@ function updateAnalytics() {
         mofBofRate = mofCount > 0 ? `${Math.round((bofCount / mofCount) * 100)}%` : '0%';
     }
     
-    if (tofFunnel && bofFunnel) {
-        const tofCount = tofFunnel.leads.length;
+    if (bofFunnel && conversionFunnel) {
         const bofCount = bofFunnel.leads.length;
-        overallRate = tofCount > 0 ? `${Math.round((bofCount / tofCount) * 100)}%` : '0%';
+        const conversionCount = conversionFunnel.leads.length;
+        bofConversionRate = bofCount > 0 ? `${Math.round((conversionCount / bofCount) * 100)}%` : '0%';
+    }
+    
+    if (tofFunnel && conversionFunnel) {
+        const tofCount = tofFunnel.leads.length;
+        const conversionCount = conversionFunnel.leads.length;
+        overallRate = tofCount > 0 ? `${Math.round((conversionCount / tofCount) * 100)}%` : '0%';
     }
     
     document.getElementById('tof-mof-rate').textContent = tofMofRate;
     document.getElementById('mof-bof-rate').textContent = mofBofRate;
+    document.getElementById('bof-conversion-rate').textContent = bofConversionRate;
     document.getElementById('overall-rate').textContent = overallRate;
     
     // Update chart
-    updateConversionChart(tofFunnel, mofFunnel, bofFunnel);
+    updateConversionChart(tofFunnel, mofFunnel, bofFunnel, conversionFunnel);
 }
 
 // Update conversion chart
-function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
+function updateConversionChart(tofFunnel, mofFunnel, bofFunnel, conversionFunnel) {
     const ctx = document.getElementById('conversion-chart').getContext('2d');
     
     // Destroy previous chart if it exists
@@ -704,23 +651,26 @@ function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
     const tofCount = tofFunnel ? tofFunnel.leads.length : 0;
     const mofCount = mofFunnel ? mofFunnel.leads.length : 0;
     const bofCount = bofFunnel ? bofFunnel.leads.length : 0;
+    const conversionCount = conversionFunnel ? conversionFunnel.leads.length : 0;
     
     window.conversionChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['TOF (Awareness)', 'MOF (Consideration)', 'BOF (Decision)'],
+            labels: ['TOF (Awareness)', 'MOF (Consideration)', 'BOF (Decision)', 'Conversion'],
             datasets: [{
                 label: 'Number of Leads',
-                data: [tofCount, mofCount, bofCount],
+                data: [tofCount, mofCount, bofCount, conversionCount],
                 backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)'
+                    'rgba(90, 79, 207, 0.7)',
+                    'rgba(110, 215, 255, 0.7)',
+                    'rgba(76, 175, 80, 0.7)',
+                    'rgba(46, 125, 50, 0.7)'
                 ],
                 borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)'
+                    'rgba(90, 79, 207, 1)',
+                    'rgba(110, 215, 255, 1)',
+                    'rgba(76, 175, 80, 1)',
+                    'rgba(46, 125, 50, 1)'
                 ],
                 borderWidth: 1
             }]
@@ -754,6 +704,8 @@ function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
                                 return `TOF → MOF Conversion: ${Math.round((mofCount / tofCount) * 100)}%`;
                             } else if (label.includes('MOF') && bofCount > 0) {
                                 return `MOF → BOF Conversion: ${Math.round((bofCount / mofCount) * 100)}%`;
+                            } else if (label.includes('BOF') && conversionCount > 0) {
+                                return `BOF → Conversion: ${Math.round((conversionCount / bofCount) * 100)}%`;
                             }
                             return '';
                         }
@@ -762,76 +714,6 @@ function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
             }
         }
     });
-}
-
-// Export to PDF
-function exportToPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(20);
-    doc.text('Marketing Funnel Report', 105, 20, { align: 'center' });
-    
-    // Add date
-    doc.setFontSize(12);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
-    
-    // Add funnel data
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
-    let yPosition = 50;
-    
-    funnels.forEach(funnel => {
-        // Funnel header
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 255);
-        doc.text(`${funnel.name} (${funnel.type})`, 14, yPosition);
-        yPosition += 10;
-        
-        // Funnel description
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Description: ${funnel.description}`, 14, yPosition);
-        yPosition += 10;
-        
-        // Content strategy
-        doc.text(`Content Strategy: ${funnel.contentStrategy.join(', ') || 'None defined'}`, 14, yPosition);
-        yPosition += 10;
-        
-        // Leads count
-        doc.text(`Leads: ${funnel.leads.length}`, 14, yPosition);
-        yPosition += 10;
-        
-        // Add space between funnels
-        yPosition += 10;
-        
-        // Check if we need a new page
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
-        }
-    });
-    
-    // Add analytics
-    doc.addPage();
-    doc.setFontSize(16);
-    doc.text('Funnel Analytics', 105, 20, { align: 'center' });
-    
-    // Get analytics data
-    const totalLeads = document.getElementById('total-leads').textContent;
-    const tofMofRate = document.getElementById('tof-mof-rate').textContent;
-    const mofBofRate = document.getElementById('mof-bof-rate').textContent;
-    const overallRate = document.getElementById('overall-rate').textContent;
-    
-    doc.setFontSize(12);
-    doc.text(`Total Leads: ${totalLeads}`, 14, 40);
-    doc.text(`TOF → MOF Conversion Rate: ${tofMofRate}`, 14, 50);
-    doc.text(`MOF → BOF Conversion Rate: ${mofBofRate}`, 14, 60);
-    doc.text(`Overall Conversion Rate: ${overallRate}`, 14, 70);
-    
-    // Save the PDF
-    doc.save('Marketing_Funnel_Report.pdf');
-    showNotification('PDF exported successfully');
 }
 
 // Show notification
@@ -850,35 +732,24 @@ function setupPWA() {
     let deferredPrompt;
     
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent the mini-infobar from appearing on mobile
         e.preventDefault();
-        // Stash the event so it can be triggered later
         deferredPrompt = e;
-        // Show the install button
         document.getElementById('install-btn').classList.remove('hidden');
     });
     
     document.getElementById('install-btn').addEventListener('click', async () => {
         if (deferredPrompt) {
-            // Show the install prompt
             deferredPrompt.prompt();
-            // Wait for the user to respond to the prompt
             const { outcome } = await deferredPrompt.userChoice;
-            // Optionally, send analytics event with outcome of user choice
             console.log(`User response to the install prompt: ${outcome}`);
-            // Hide the install button
             document.getElementById('install-btn').classList.add('hidden');
-            // We've used the prompt, and can't use it again, throw it away
             deferredPrompt = null;
         }
     });
     
     window.addEventListener('appinstalled', () => {
-        // Hide the install button
         document.getElementById('install-btn').classList.add('hidden');
-        // Clear the deferredPrompt so it can be garbage collected
         deferredPrompt = null;
-        // Optionally, send analytics event to indicate successful install
         console.log('PWA was installed');
     });
 }
