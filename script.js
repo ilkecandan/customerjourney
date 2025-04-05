@@ -1,7 +1,8 @@
 // Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is already authenticated
-    if (localStorage.getItem('authenticated')) {
+document.addEventListener('DOMContentLoaded', function () {
+    const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+
+    if (isAuthenticated) {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-container').classList.remove('hidden');
         initializeApp();
