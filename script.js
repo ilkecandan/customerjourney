@@ -1,4 +1,3 @@
-// Initialize the application
 document.addEventListener('DOMContentLoaded', function () {
     const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
@@ -10,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setupAuth();
     }
 });
+
 
 // Authentication setup
 function setupAuth() {
