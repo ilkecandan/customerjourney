@@ -40,6 +40,7 @@ header {
     align-items: center;
     padding: 1.5rem 1rem;
     border-bottom: 1px solid #e0e0e0;
+    position: relative;
 }
 
 .header-left h1 {
@@ -70,305 +71,428 @@ header {
     box-shadow: var(--glow-shadow);
 }
 
-/* Improved Funnel Visualization */
+/* Content Strategy Section */
+.content-strategy {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--soft-glow);
+    padding: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    position: relative;
+}
+
+.content-strategy h2 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.content-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.content-card {
+    background: var(--light-color);
+    border-radius: var(--border-radius);
+    padding: 1.2rem;
+    transition: var(--transition);
+    border: 1px solid #eee;
+    position: relative;
+}
+
+.content-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow);
+}
+
+.content-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.content-card p {
+    color: var(--gray-color);
+    font-size: 0.9rem;
+}
+
+.content-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: var(--accent-color);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Funnel Visualization */
 .funnels-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0;
     margin: 2rem auto;
-    max-width: 1200px;
+    max-width: 800px;
     padding: 0 1rem;
+    position: relative;
 }
 
 .funnel {
     width: 100%;
     background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--soft-glow);
-    overflow: hidden;
-    margin-bottom: 1rem;
+    position: relative;
     transition: var(--transition);
-    border-left: 6px solid;
-}
-
-.funnel:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--glow-shadow);
-}
-
-/* Funnel type colors */
-.funnel[data-funnel-type="TOF"] {
-    border-left-color: #5a4fcf;
-}
-
-.funnel[data-funnel-type="MOF"] {
-    border-left-color: #6ed7ff;
-}
-
-.funnel[data-funnel-type="BOF"] {
-    border-left-color: #4caf50;
-}
-
-.funnel-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, rgba(90, 79, 207, 0.1), rgba(110, 215, 255, 0.1));
-    border-bottom: 1px solid #eee;
 }
 
-.funnel-header h3 {
-    font-size: 1.2rem;
-    color: var(--dark-color);
-    margin: 0;
+.funnel::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, transparent 100%);
+    z-index: -1;
+    filter: blur(5px);
 }
 
-.funnel-actions {
-    display: flex;
-    gap: 0.5rem;
+.funnel:last-child::after {
+    display: none;
 }
 
-.funnel-btn {
-    background: none;
-    border: none;
-    color: var(--gray-color);
-    cursor: pointer;
-    font-size: 1rem;
-    transition: var(--transition);
-    padding: 0.3rem;
-    border-radius: 4px;
+.funnel-stage {
+    width: 100%;
+    background: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    clip-path: polygon(
+        20% 0%,
+        80% 0%,
+        100% 100%,
+        0% 100%
+    );
+    margin-bottom: -10px;
+    z-index: 1;
 }
 
-.funnel-btn:hover {
-    color: var(--primary-color);
-    background: rgba(90, 79, 207, 0.1);
-}
-
-.funnel-body {
-    padding: 1.5rem;
-}
-
-.funnel-content {
-    margin-bottom: 1.5rem;
-}
-
-.funnel-content h4 {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-    color: var(--dark-color);
-}
-
-/* Leads List */
-.leads-list {
-    list-style: none;
-    margin: 1rem 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.lead-item {
-    background: var(--light-color);
-    padding: 1rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--primary-color);
-    transition: var(--transition);
-    cursor: grab;
-}
-
-.lead-item.dragging {
-    opacity: 0.5;
-    background: rgba(110, 215, 255, 0.2);
-    border: 2px dashed var(--primary-color);
-}
-
-.lead-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-}
-
-.lead-company {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    display: flex;
-    justify-content: space-between;
-}
-
-.lead-email, .lead-phone {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--gray-color);
-    margin-top: 0.3rem;
-}
-
-.lead-actions {
-    display: flex;
-    gap: 0.3rem;
-}
-
-.lead-action-btn {
-    background: none;
-    border: none;
-    color: var(--gray-color);
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: var(--transition);
-}
-
-.lead-action-btn:hover {
-    color: var(--primary-color);
-}
-
-/* Add Lead Button */
-.add-lead-btn {
-    background: var(--primary-color);
+/* Adjust the clip-path for each stage to create the funnel effect */
+.funnel-stage.tof {
+    width: 100%;
+    clip-path: polygon(
+        15% 0%,
+        85% 0%,
+        95% 100%,
+        5% 100%
+    );
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     color: white;
-    border: none;
-    padding: 0.7rem 1rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-weight: 600;
-    transition: var(--transition);
+    z-index: 4;
+}
+
+.funnel-stage.mof {
+    width: 80%;
+    clip-path: polygon(
+        15% 0%,
+        85% 0%,
+        90% 100%,
+        10% 100%
+    );
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    z-index: 3;
+}
+
+.funnel-stage.bof {
+    width: 60%;
+    clip-path: polygon(
+        15% 0%,
+        85% 0%,
+        85% 100%,
+        15% 100%
+    );
+    background: linear-gradient(135deg, #302a7d, var(--primary-color));
+    color: white;
+    z-index: 2;
+}
+
+.funnel-stage.conversion {
+    width: 30%;
+    clip-path: polygon(
+        15% 0%,
+        85% 0%,
+        70% 100%,
+        30% 100%
+    );
+    background: linear-gradient(135deg, var(--success-color), #302a7d);
+    color: white;
+    z-index: 1;
+    margin-bottom: 0;
+}
+
+.funnel-stage h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.funnel-stage .funnel-description {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+.funnel-metrics {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    justify-content: space-around;
     margin-top: 1rem;
 }
 
-.add-lead-btn:hover {
-    background: var(--secondary-color);
-    box-shadow: var(--soft-glow);
+.funnel-metric {
+    text-align: center;
 }
 
-.analytics-container {
-    margin-top: 3rem;
-    padding: 2rem;
+.funnel-metric-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.funnel-metric-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Funnel Connector Lines */
+.funnel-connector {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.funnel-connector::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 20px;
+    width: 2px;
+    background: var(--accent-color);
+    box-shadow: 0 0 8px var(--accent-color);
+}
+
+/* Hover Effects */
+.funnel-stage:hover {
+    transform: scale(1.02);
+    z-index: 10;
+    box-shadow: var(--glow-shadow);
+}
+
+/* Leads Section */
+.leads-section {
     background: white;
     border-radius: var(--border-radius);
     box-shadow: var(--soft-glow);
+    padding: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1200px;
 }
 
-.analytics-container h2 {
-    font-size: 1.6rem;
-    margin-bottom: 1.5rem;
+.leads-section h2 {
     color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.lead-filters {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 }
 
-.metric-card {
+.lead-filter {
+    padding: 0.5rem 1rem;
+    background: var(--light-color);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.lead-filter.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.lead-filter:hover {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.leads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.lead-card {
     background: var(--light-color);
     border-radius: var(--border-radius);
     padding: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
 }
 
-.metric-card h3 {
-    font-size: 1rem;
-    color: var(--gray-color);
+.lead-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--box-shadow);
+}
+
+.lead-name {
+    font-weight: bold;
     margin-bottom: 0.5rem;
 }
 
-.metric-card p {
-    font-size: 1.4rem;
-    font-weight: bold;
+.lead-info {
+    display: flex;
+    gap: 0.5rem;
+    color: var(--gray-color);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.lead-stage {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background: rgba(90, 79, 207, 0.1);
     color: var(--primary-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
 }
 
-.toast {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    background: var(--success-color);
-    color: white;
-    padding: 1rem 1.5rem;
+/* Tutorial Tooltips */
+.tutorial-tooltip {
+    position: absolute;
+    background: white;
     border-radius: var(--border-radius);
-    box-shadow: var(--soft-glow);
+    box-shadow: var(--glow-shadow);
+    padding: 1rem;
+    width: 280px;
+    z-index: 1000;
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
     transition: var(--transition);
-    z-index: 1001;
+    pointer-events: none;
 }
 
-.toast.show {
+.tutorial-tooltip.show {
     opacity: 1;
     transform: translateY(0);
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.tutorial-tooltip h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
 }
 
+.tutorial-tooltip p {
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.tutorial-tooltip::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+}
+
+.tooltip-trigger {
+    position: relative;
+}
+
+.tooltip-trigger:hover .tutorial-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Position tooltips */
+.tooltip-top::after {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+.tooltip-right::after {
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .funnels-container {
-        padding: 0 0.5rem;
-    }
-    
-    .funnel-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .leads-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .metrics-grid {
+    .content-types {
         grid-template-columns: 1fr 1fr;
     }
     
-    header {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
+    .leads-grid {
+        grid-template-columns: 1fr;
     }
     
-    .header-left, .header-right {
-        width: 100%;
+    .funnel-stage {
+        clip-path: none;
+        width: 100% !important;
+        margin-bottom: 1rem;
+        border-left: 6px solid;
+        border-radius: var(--border-radius);
     }
     
-    .header-right {
-        display: flex;
-        gap: 0.5rem;
+    .funnel-stage.tof {
+        border-left-color: var(--primary-color);
     }
     
-    .action-btn, .install-btn {
-        flex: 1;
-        padding: 0.5rem;
-        font-size: 0.9rem;
+    .funnel-stage.mof {
+        border-left-color: var(--accent-color);
+    }
+    
+    .funnel-stage.bof {
+        border-left-color: #302a7d;
+    }
+    
+    .funnel-stage.conversion {
+        border-left-color: var(--success-color);
+    }
+    
+    .funnel::after,
+    .funnel-connector::before {
+        display: none;
     }
 }
 
 @media (max-width: 480px) {
-    .metrics-grid {
+    .content-types {
         grid-template-columns: 1fr;
     }
     
-    .funnel-body {
-        padding: 1rem;
-    }
-    
-    .modal-content {
-        width: 95%;
+    .lead-filters {
+        flex-direction: column;
     }
 }
