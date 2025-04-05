@@ -1,4 +1,3 @@
-
 :root {
     --primary-color: #5a4fcf;
     --secondary-color: #443a99;
@@ -71,94 +70,177 @@ header {
     box-shadow: var(--glow-shadow);
 }
 
+/* Improved Funnel Visualization */
 .funnels-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    margin-top: 2rem;
+    gap: 1rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    padding: 0 1rem;
 }
 
-.funnel-stage {
+.funnel {
     width: 100%;
-    max-width: 600px;
     background: white;
     border-radius: var(--border-radius);
     box-shadow: var(--soft-glow);
-    transition: var(--transition);
     overflow: hidden;
-    padding: 1rem 1.5rem;
-    text-align: center;
-    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
-    position: relative;
-}
-
-.funnel-stage::before {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 20px;
-    background: var(--accent-color);
-    box-shadow: 0 0 6px var(--accent-color);
-}
-
-.funnel-stage:last-child::before {
-    display: none;
-}
-
-.funnel-stage.tof {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: white;
-}
-
-.funnel-stage.mof {
-    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-    color: white;
-}
-
-.funnel-stage.bof {
-    background: linear-gradient(135deg, #302a7d, var(--primary-color));
-    color: white;
-}
-
-.funnel-stage h3 {
-    font-size: 1.4rem;
-    margin-bottom: 0.5rem;
-}
-
-.funnel-stage .funnel-description {
-    font-size: 1rem;
-    color: var(--light-color);
-    opacity: 0.9;
     margin-bottom: 1rem;
+    transition: var(--transition);
+    border-left: 6px solid;
 }
 
-.funnel-buttons {
+.funnel:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--glow-shadow);
+}
+
+/* Funnel type colors */
+.funnel[data-funnel-type="TOF"] {
+    border-left-color: #5a4fcf;
+}
+
+.funnel[data-funnel-type="MOF"] {
+    border-left-color: #6ed7ff;
+}
+
+.funnel[data-funnel-type="BOF"] {
+    border-left-color: #4caf50;
+}
+
+.funnel-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(90, 79, 207, 0.1), rgba(110, 215, 255, 0.1));
+    border-bottom: 1px solid #eee;
+}
+
+.funnel-header h3 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    margin: 0;
+}
+
+.funnel-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.funnel-btn {
+    background: none;
+    border: none;
+    color: var(--gray-color);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+    padding: 0.3rem;
+    border-radius: 4px;
+}
+
+.funnel-btn:hover {
+    color: var(--primary-color);
+    background: rgba(90, 79, 207, 0.1);
+}
+
+.funnel-body {
+    padding: 1.5rem;
+}
+
+.funnel-content {
+    margin-bottom: 1.5rem;
+}
+
+.funnel-content h4 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+/* Leads List */
+.leads-list {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.lead-item {
+    background: var(--light-color);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    transition: var(--transition);
+    cursor: grab;
+}
+
+.lead-item.dragging {
+    opacity: 0.5;
+    background: rgba(110, 215, 255, 0.2);
+    border: 2px dashed var(--primary-color);
+}
+
+.lead-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.lead-company {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.lead-email, .lead-phone {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--gray-color);
+    margin-top: 0.3rem;
+}
+
+.lead-actions {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.lead-action-btn {
+    background: none;
+    border: none;
+    color: var(--gray-color);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: var(--transition);
+}
+
+.lead-action-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Add Lead Button */
+.add-lead-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
     margin-top: 1rem;
 }
 
-.add-content-btn,
-.add-lead-btn {
-    padding: 0.6rem;
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px dashed var(--light-color);
-    color: #fff;
-    font-weight: bold;
-    border-radius: var(--border-radius);
-    transition: var(--transition);
-    cursor: pointer;
-}
-
-.add-content-btn:hover,
 .add-lead-btn:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-    box-shadow: var(--glow-shadow);
+    background: var(--secondary-color);
+    box-shadow: var(--soft-glow);
 }
 
 .analytics-container {
@@ -237,18 +319,56 @@ header {
 }
 
 @media (max-width: 768px) {
+    .funnels-container {
+        padding: 0 0.5rem;
+    }
+    
+    .funnel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .leads-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
     header {
         flex-direction: column;
         gap: 1rem;
-        align-items: flex-start;
+        padding: 1rem;
     }
-
-    .funnels-container {
-        gap: 1.5rem;
+    
+    .header-left, .header-right {
+        width: 100%;
     }
+    
+    .header-right {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .action-btn, .install-btn {
+        flex: 1;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+}
 
-    .funnel-stage {
-        clip-path: none;
-        border-left: 8px solid var(--accent-color);
+@media (max-width: 480px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .funnel-body {
+        padding: 1rem;
+    }
+    
+    .modal-content {
+        width: 95%;
     }
 }
