@@ -10,6 +10,8 @@
     --gray-color: #6c757d;
     --border-radius: 8px;
     --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --glow-shadow: 0 0 8px rgba(79, 195, 247, 0.7), 0 0 20px rgba(79, 195, 247, 0.5);
+    --soft-glow: 0 4px 12px rgba(74, 111, 165, 0.3);
     --transition: all 0.3s ease;
 }
 
@@ -113,8 +115,12 @@ header {
 }
 
 .header-left h1 {
-    color: var(--primary-color);
     font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #4a6fa5, #4fc3f7);
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 6px rgba(79, 195, 247, 0.5);
 }
 
 .header-right {
@@ -141,12 +147,14 @@ header {
 
 .install-btn {
     padding: 0.5rem 1rem;
-    background-color: var(--success-color);
+    background: linear-gradient(135deg, var(--success-color), #81c784);
     color: white;
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: var(--transition);
+    font-weight: bold;
+    box-shadow: var(--glow-shadow);
 }
 
 .install-btn:hover {
@@ -164,14 +172,16 @@ header {
 .funnel {
     background: white;
     border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    box-shadow: var(--soft-glow);
     overflow: hidden;
     transition: var(--transition);
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
 }
 
 .funnel:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+    box-shadow: var(--glow-shadow);
 }
 
 .funnel-header {
@@ -235,6 +245,7 @@ header {
     background-color: #e9ecef;
 }
 
+/* Lead Items */
 .leads-list {
     list-style: none;
     max-height: 300px;
@@ -250,10 +261,13 @@ header {
     background: white;
     transition: var(--transition);
     position: relative;
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
 }
 
 .lead-item:hover {
     background-color: #f8f9fa;
+    box-shadow: var(--glow-shadow);
 }
 
 .lead-item.dragging {
@@ -269,7 +283,8 @@ header {
     justify-content: space-between;
 }
 
-.lead-email, .lead-phone {
+.lead-email,
+.lead-phone {
     font-size: 0.8rem;
     color: var(--gray-color);
     display: block;
@@ -313,6 +328,44 @@ header {
 
 .add-lead-btn:hover {
     background-color: #3da8d8;
+}
+
+/* Funnel Visual */
+.funnel-visual {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.funnel-shape {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.funnel-stage {
+    width: 80%;
+    max-width: 400px;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: var(--glow-shadow);
+    transition: var(--transition);
+}
+
+.tof {
+    background: linear-gradient(135deg, #4a6fa5, #4fc3f7);
+}
+.mof {
+    background: linear-gradient(135deg, #166088, #4fc3f7);
+    width: 70%;
+}
+.bof {
+    background: linear-gradient(135deg, #0d3b66, #4fc3f7);
+    width: 60%;
 }
 
 /* Analytics */
@@ -499,6 +552,18 @@ header {
 .toast.show {
     transform: translateY(0);
     opacity: 1;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Responsive */
