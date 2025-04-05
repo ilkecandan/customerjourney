@@ -23,7 +23,7 @@
         <header>
             <div class="header-left">
                 <h1>Marketing Funnel Manager</h1>
-                <button id="install-btn" class="install-btn">Install App</button>
+                <button id="install-btn" class="install-btn"><i class="fas fa-download"></i> Install App</button>
             </div>
             <div class="header-right">
                 <button id="export-pdf" class="action-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
@@ -66,7 +66,7 @@
         <div id="add-funnel-modal" class="modal hidden">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h2>Add New Funnel</h2>
+                <h2><i class="fas fa-filter"></i> Add New Funnel</h2>
                 <form id="funnel-form">
                     <div class="form-group">
                         <label for="funnel-name">Funnel Name</label>
@@ -94,7 +94,7 @@
         <div id="add-lead-modal" class="modal hidden">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h2>Add New Lead</h2>
+                <h2><i class="fas fa-user-plus"></i> Add New Lead</h2>
                 <form id="lead-form">
                     <div class="form-group">
                         <label for="lead-company">Company Name</label>
@@ -137,7 +137,7 @@
         <div id="edit-lead-modal" class="modal hidden">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
-                <h2>Edit Lead</h2>
+                <h2><i class="fas fa-user-edit"></i> Edit Lead</h2>
                 <form id="edit-lead-form">
                     <div class="form-group">
                         <label for="edit-lead-company">Company Name</label>
@@ -172,9 +172,7 @@
                     </div>
                     <div class="form-group">
                         <label for="edit-lead-funnel">Move to Funnel</label>
-                        <select id="edit-lead-funnel">
-                            <!-- Dynamically populated -->
-                        </select>
+                        <select id="edit-lead-funnel"></select>
                     </div>
                     <input type="hidden" id="edit-lead-id">
                     <button type="submit" class="submit-btn">Save Changes</button>
@@ -187,14 +185,9 @@
         <div id="toast" class="toast hidden"></div>
     </div>
 
-    ...
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-    <!-- App Bootloader -->
-
     <script src="script.js"></script>
 </body>
 </html>
-
