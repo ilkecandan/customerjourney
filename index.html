@@ -193,19 +193,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- App Bootloader -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
-            if (isAuthenticated) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
-                initializeApp();
-            } else {
-                setupAuth();
-            }
-        });
-    </script>
     <script src="app.js"></script>
 </body>
 </html>
