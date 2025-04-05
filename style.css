@@ -176,7 +176,6 @@ header {
     overflow: hidden;
     transition: var(--transition);
     animation: fadeInUp 0.5s ease forwards;
-    opacity: 0;
 }
 
 .funnel:hover {
@@ -558,7 +557,6 @@ header {
 @keyframes fadeInUp {
     0% {
         transform: translateY(20px);
-        opacity: 0;
     }
     100% {
         transform: translateY(0);
