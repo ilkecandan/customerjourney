@@ -70,7 +70,6 @@ header {
     box-shadow: var(--glow-shadow);
 }
 
-/* Funnel Section */
 .funnels-container {
     display: flex;
     flex-direction: column;
@@ -85,17 +84,28 @@ header {
     background: white;
     border-radius: var(--border-radius);
     box-shadow: var(--soft-glow);
-    overflow: hidden;
     transition: var(--transition);
-    position: relative;
+    overflow: hidden;
     padding: 1rem 1.5rem;
-    clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
     text-align: center;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 15% 100%);
+    position: relative;
 }
 
-.funnel-stage:hover {
-    transform: scale(1.01);
-    box-shadow: var(--glow-shadow);
+.funnel-stage::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 20px;
+    background: var(--accent-color);
+    box-shadow: 0 0 6px var(--accent-color);
+}
+
+.funnel-stage:last-child::before {
+    display: none;
 }
 
 .funnel-stage.tof {
@@ -150,7 +160,6 @@ header {
     box-shadow: var(--glow-shadow);
 }
 
-/* Analytics Section */
 .analytics-container {
     margin-top: 3rem;
     padding: 2rem;
@@ -195,7 +204,6 @@ header {
     color: var(--primary-color);
 }
 
-/* Toasts */
 .toast {
     position: fixed;
     bottom: 1rem;
@@ -216,7 +224,6 @@ header {
     transform: translateY(0);
 }
 
-/* Fade In Animation */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -228,7 +235,6 @@ header {
     }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     header {
         flex-direction: column;
