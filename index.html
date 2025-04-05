@@ -3,191 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Funnel Manager</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <title>Marketing Funnel Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div id="auth-screen" class="auth-screen">
-        <div class="auth-container">
-            <h1>Marketing Funnel Manager</h1>
-            <p>Enter PIN to access the application</p>
-            <input type="password" id="pin-input" placeholder="Enter PIN (1234)" maxlength="4">
-            <button id="login-btn">Login</button>
-            <p id="pin-error" class="error-message"></p>
+    <header>
+        <div class="header-left">
+            <h1>FunnelFlow</h1>
+        </div>
+        <div class="header-right">
+            <button class="action-btn">New Campaign</button>
+            <button class="install-btn">Install App</button>
+        </div>
+        
+        <!-- Tutorial Tooltip for Header -->
+        <div class="tutorial-tooltip tooltip-top" style="top: 100%; right: 0;">
+            <h4>Welcome to FunnelFlow!</h4>
+            <p>This dashboard helps you track leads through your marketing funnel. Start by creating a new campaign.</p>
+        </div>
+    </header>
+
+    <div class="content-strategy">
+        <h2><i class="fas fa-lightbulb"></i> Content Strategy</h2>
+        <p>Recommended content for each funnel stage to nurture your leads</p>
+        
+        <div class="content-types">
+            <!-- TOF Content -->
+            <div class="content-card tooltip-trigger">
+                <span class="content-badge">TOF</span>
+                <h3>Blog Articles</h3>
+                <p>Educational content to attract new visitors</p>
+                
+                <div class="tutorial-tooltip tooltip-right" style="top: 0; left: 105%;">
+                    <h4>Top of Funnel Content</h4>
+                    <p>Use blog posts to attract new visitors with educational content about their pain points.</p>
+                </div>
+            </div>
+            
+            <!-- MOF Content -->
+            <div class="content-card tooltip-trigger">
+                <span class="content-badge">MOF</span>
+                <h3>Case Studies</h3>
+                <p>Show how you've solved similar problems</p>
+                
+                <div class="tutorial-tooltip tooltip-right" style="top: 0; left: 105%;">
+                    <h4>Middle of Funnel Content</h4>
+                    <p>Case studies help leads in consideration stage see your solution in action.</p>
+                </div>
+            </div>
+            
+            <!-- BOF Content -->
+            <div class="content-card tooltip-trigger">
+                <span class="content-badge">BOF</span>
+                <h3>Product Demos</h3>
+                <p>Show your solution in action</p>
+                
+                <div class="tutorial-tooltip tooltip-right" style="top: 0; left: 105%;">
+                    <h4>Bottom of Funnel Content</h4>
+                    <p>Demos help convince leads who are ready to buy by showing your product's value.</p>
+                </div>
+            </div>
+            
+            <!-- Conversion Content -->
+            <div class="content-card tooltip-trigger">
+                <span class="content-badge">Convert</span>
+                <h3>Testimonials</h3>
+                <p>Social proof to overcome final objections</p>
+                
+                <div class="tutorial-tooltip tooltip-right" style="top: 0; left: 105%;">
+                    <h4>Conversion Content</h4>
+                    <p>Testimonials provide the final push by showing others' success with your product.</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="app-container" class="app-container hidden">
-        <header>
-            <div class="header-left">
-                <h1>Marketing Funnel Manager</h1>
-                <button id="install-btn" class="install-btn"><i class="fas fa-download"></i> Install App</button>
-            </div>
-            <div class="header-right">
-                <button id="export-pdf" class="action-btn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-                <button id="add-funnel" class="action-btn"><i class="fas fa-plus"></i> Add Funnel</button>
-            </div>
-        </header>
-
-        <main>
-            <section class="funnels-container" id="funnels-container">
-                <!-- Dynamically generated funnel stages -->
-            </section>
-
-            <div class="analytics-container">
-                <h2><i class="fas fa-chart-line"></i> Funnel Analytics</h2>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <h3>Total Leads</h3>
-                        <p id="total-leads">0</p>
+    <div class="funnels-container">
+        <!-- TOF Stage -->
+        <div class="funnel tooltip-trigger">
+            <div class="funnel-stage tof">
+                <h3>Top of Funnel</h3>
+                <div class="funnel-description">Awareness Stage</div>
+                <div class="funnel-metrics">
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">1,024</div>
+                        <div class="funnel-metric-label">Leads</div>
                     </div>
-                    <div class="metric-card">
-                        <h3>TOF → MOF Conversion</h3>
-                        <p id="tof-mof-rate">0%</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>MOF → BOF Conversion</h3>
-                        <p id="mof-bof-rate">0%</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>Overall Conversion</h3>
-                        <p id="overall-rate">0%</p>
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">12%</div>
+                        <div class="funnel-metric-label">Conversion</div>
                     </div>
                 </div>
-                <div class="conversion-chart">
-                    <canvas id="conversion-chart"></canvas>
+            </div>
+            <div class="funnel-connector"></div>
+            
+            <div class="tutorial-tooltip tooltip-top" style="bottom: 100%; left: 50%; transform: translateX(-50%);">
+                <h4>Top of Funnel</h4>
+                <p>This is where visitors first discover your brand. Focus on educational content that addresses their pain points.</p>
+            </div>
+        </div>
+        
+        <!-- MOF Stage -->
+        <div class="funnel tooltip-trigger">
+            <div class="funnel-stage mof">
+                <h3>Middle of Funnel</h3>
+                <div class="funnel-description">Consideration Stage</div>
+                <div class="funnel-metrics">
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">648</div>
+                        <div class="funnel-metric-label">Leads</div>
+                    </div>
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">25%</div>
+                        <div class="funnel-metric-label">Conversion</div>
+                    </div>
                 </div>
             </div>
-        </main>
-
-        <!-- Add Funnel Modal -->
-        <div id="add-funnel-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2><i class="fas fa-filter"></i> Add New Funnel</h2>
-                <form id="funnel-form">
-                    <div class="form-group">
-                        <label for="funnel-name">Funnel Name</label>
-                        <input type="text" id="funnel-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funnel-type">Funnel Type</label>
-                        <select id="funnel-type" required>
-                            <option value="TOF">TOF (Top of Funnel)</option>
-                            <option value="MOF">MOF (Middle of Funnel)</option>
-                            <option value="BOF">BOF (Bottom of Funnel)</option>
-                            <option value="CUSTOM">Custom</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="funnel-description">Description</label>
-                        <textarea id="funnel-description"></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Create Funnel</button>
-                </form>
+            <div class="funnel-connector"></div>
+            
+            <div class="tutorial-tooltip tooltip-top" style="bottom: 100%; left: 50%; transform: translateX(-50%);">
+                <h4>Middle of Funnel</h4>
+                <p>Leads here are evaluating solutions. Provide comparison guides and case studies to showcase your value.</p>
             </div>
         </div>
-
-        <!-- Add Lead Modal -->
-        <div id="add-lead-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2><i class="fas fa-user-plus"></i> Add New Lead</h2>
-                <form id="lead-form">
-                    <div class="form-group">
-                        <label for="lead-company">Company Name</label>
-                        <input type="text" id="lead-company" required>
+        
+        <!-- BOF Stage -->
+        <div class="funnel tooltip-trigger">
+            <div class="funnel-stage bof">
+                <h3>Bottom of Funnel</h3>
+                <div class="funnel-description">Decision Stage</div>
+                <div class="funnel-metrics">
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">312</div>
+                        <div class="funnel-metric-label">Leads</div>
                     </div>
-                    <div class="form-group">
-                        <label for="lead-email">Email</label>
-                        <input type="email" id="lead-email">
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">48%</div>
+                        <div class="funnel-metric-label">Conversion</div>
                     </div>
-                    <div class="form-group">
-                        <label for="lead-phone">Phone</label>
-                        <input type="tel" id="lead-phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-website">Website</label>
-                        <input type="url" id="lead-website" placeholder="https://">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-notes">Notes</label>
-                        <textarea id="lead-notes"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-content-strategy">Content Strategy</label>
-                        <select id="lead-content-strategy" multiple>
-                            <option value="blog">Blog Posts</option>
-                            <option value="ebook">E-books</option>
-                            <option value="webinar">Webinars</option>
-                            <option value="casestudy">Case Studies</option>
-                            <option value="demo">Product Demos</option>
-                            <option value="trial">Free Trials</option>
-                        </select>
-                    </div>
-                    <input type="hidden" id="lead-funnel-id">
-                    <button type="submit" class="submit-btn">Add Lead</button>
-                </form>
+                </div>
+            </div>
+            <div class="funnel-connector"></div>
+            
+            <div class="tutorial-tooltip tooltip-top" style="bottom: 100%; left: 50%; transform: translateX(-50%);">
+                <h4>Bottom of Funnel</h4>
+                <p>Leads are ready to buy. Offer demos, free trials, and consultations to close the deal.</p>
             </div>
         </div>
-
-        <!-- Edit Lead Modal -->
-        <div id="edit-lead-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2><i class="fas fa-user-edit"></i> Edit Lead</h2>
-                <form id="edit-lead-form">
-                    <div class="form-group">
-                        <label for="edit-lead-company">Company Name</label>
-                        <input type="text" id="edit-lead-company" required>
+        
+        <!-- Conversion Stage -->
+        <div class="funnel tooltip-trigger">
+            <div class="funnel-stage conversion">
+                <h3>Conversion</h3>
+                <div class="funnel-description">Customers</div>
+                <div class="funnel-metrics">
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">150</div>
+                        <div class="funnel-metric-label">Customers</div>
                     </div>
-                    <div class="form-group">
-                        <label for="edit-lead-email">Email</label>
-                        <input type="email" id="edit-lead-email">
+                    <div class="funnel-metric">
+                        <div class="funnel-metric-value">$24k</div>
+                        <div class="funnel-metric-label">Revenue</div>
                     </div>
-                    <div class="form-group">
-                        <label for="edit-lead-phone">Phone</label>
-                        <input type="tel" id="edit-lead-phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-website">Website</label>
-                        <input type="url" id="edit-lead-website" placeholder="https://">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-notes">Notes</label>
-                        <textarea id="edit-lead-notes"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-content-strategy">Content Strategy</label>
-                        <select id="edit-lead-content-strategy" multiple>
-                            <option value="blog">Blog Posts</option>
-                            <option value="ebook">E-books</option>
-                            <option value="webinar">Webinars</option>
-                            <option value="casestudy">Case Studies</option>
-                            <option value="demo">Product Demos</option>
-                            <option value="trial">Free Trials</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-funnel">Move to Funnel</label>
-                        <select id="edit-lead-funnel"></select>
-                    </div>
-                    <input type="hidden" id="edit-lead-id">
-                    <button type="submit" class="submit-btn">Save Changes</button>
-                    <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
-                </form>
+                </div>
+            </div>
+            
+            <div class="tutorial-tooltip tooltip-top" style="bottom: 100%; left: 50%; transform: translateX(-50%);">
+                <h4>Conversion Stage</h4>
+                <p>Congratulations! These leads became customers. Focus now on retention and upselling.</p>
             </div>
         </div>
-
-        <!-- Notification Toast -->
-        <div id="toast" class="toast hidden"></div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+    <div class="leads-section">
+        <h2><i class="fas fa-users"></i> Lead Management</h2>
+        
+        <div class="lead-filters">
+            <div class="lead-filter active">All Leads</div>
+            <div class="lead-filter">TOF</div>
+            <div class="lead-filter">MOF</div>
+            <div class="lead-filter">BOF</div>
+            <div class="lead-filter">Hot Leads</div>
+        </div>
+        
+        <div class="leads-grid">
+            <!-- Lead Cards -->
+            <div class="lead-card tooltip-trigger">
+                <div class="lead-name">Acme Corp</div>
+                <div class="lead-info">
+                    <span><i class="fas fa-envelope"></i> john@acme.com</span>
+                    <span><i class="fas fa-phone"></i> (555) 123-4567</span>
+                </div>
+                <div class="lead-stage">MOF</div>
+                
+                <div class="tutorial-tooltip tooltip-top" style="bottom: 100%; left: 50%; transform: translateX(-50%);">
+                    <h4>Lead Details</h4>
+                    <p>Click to view full details. Drag and drop between funnel stages to update their status.</p>
+                </div>
+            </div>
+            
+            <div class="lead-card tooltip-trigger">
+                <div class="lead-name">Globex Inc</div>
+                <div class="lead-info">
+                    <span><i class="fas fa-envelope"></i> sarah@globex.com</span>
+                    <span><i class="fas fa-phone"></i> (555) 987-6543</span>
+                </div>
+                <div class="lead-stage">BOF</div>
+            </div>
+            
+            <div class="lead-card tooltip-trigger">
+                <div class="lead-name">Initech</div>
+                <div class="lead-info">
+                    <span><i class="fas fa-envelope"></i> peter@initech.com</span>
+                    <span><i class="fas fa-phone"></i> (555) 456-7890</span>
+                </div>
+                <div class="lead-stage">TOF</div>
+            </div>
+            
+            <div class="lead-card tooltip-trigger">
+                <div class="lead-name">Umbrella Corp</div>
+                <div class="lead-info">
+                    <span><i class="fas fa-envelope"></i> alice@umbrella.com</span>
+                    <span><i class="fas fa-phone"></i> (555) 789-0123</span>
+                </div>
+                <div class="lead-stage">BOF</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Activate tooltips on hover
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            const tooltip = trigger.querySelector('.tutorial-tooltip');
+            
+            trigger.addEventListener('mouseenter', () => {
+                tooltip.classList.add('show');
+            });
+            
+            trigger.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+        });
+        
+        // Simple filter functionality
+        document.querySelectorAll('.lead-filter').forEach(filter => {
+            filter.addEventListener('click', () => {
+                document.querySelector('.lead-filter.active').classList.remove('active');
+                filter.classList.add('active');
+                // In a real app, you would filter the leads here
+            });
+        });
+    </script>
 </body>
 </html>
