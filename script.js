@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // First hide the app container
+    document.getElementById('app-container').classList.add('hidden');
+    
+    // Check authentication status
     const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
     if (isAuthenticated) {
@@ -16,6 +20,9 @@ function setupAuth() {
     const loginBtn = document.getElementById('login-btn');
     const pinError = document.getElementById('pin-error');
 
+    // Focus on the PIN input when the page loads
+    pinInput.focus();
+
     loginBtn.addEventListener('click', function() {
         if (pinInput.value === '1234') {
             localStorage.setItem('authenticated', 'true');
@@ -24,6 +31,15 @@ function setupAuth() {
             initializeApp();
         } else {
             pinError.textContent = 'Incorrect PIN. Please try again.';
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    });
+
+    // Also allow login on Enter key press
+    pinInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            loginBtn.click();
         }
     });
 
@@ -80,12 +96,40 @@ function initializeApp() {
         localStorage.setItem('content', JSON.stringify(defaultContent));
     }
 
+    // Initialize Select2 for content selection
+    $('.content-select').select2({
+        placeholder: 'Select content strategies',
+        width: '100%'
+    });
+
+    // Populate content options
+    populateContentOptions();
+
     // Load data and setup UI
     loadLeads();
     loadContent();
     setupEventListeners();
     updateAnalytics();
     setupPWA();
+}
+
+// Populate content options in select elements
+function populateContentOptions() {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const selectElements = document.querySelectorAll('.content-select');
+    
+    selectElements.forEach(select => {
+        // Clear existing options
+        select.innerHTML = '';
+        
+        // Add new options
+        contentItems.forEach(content => {
+            const option = document.createElement('option');
+            option.value = content.id;
+            option.textContent = content.name;
+            select.appendChild(option);
+        });
+    });
 }
 
 // Load leads into the funnel visualization
@@ -427,6 +471,7 @@ function addContent() {
 
     // Update UI
     loadContent();
+    populateContentOptions(); // Refresh content options in selects
     showNotification('Content strategy added successfully');
 }
 
@@ -505,6 +550,9 @@ function openEditLeadModal(lead) {
     Array.from(contentSelect.options).forEach(option => {
         option.selected = lead.contentStrategies && lead.contentStrategies.includes(option.value);
     });
+
+    // Refresh Select2
+    $(contentSelect).trigger('change');
 
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
@@ -631,11 +679,13 @@ function updateConversionPercentages() {
     const interestCount = leads.interest.length;
     const awarenessInterestRate = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
     document.getElementById('awareness-interest-rate').textContent = `${awarenessInterestRate}%`;
+    document.getElementById('awareness-conversion-rate').textContent = `${awarenessInterestRate}%`;
 
     // Interest → Consideration (average of intent, evaluation, purchase)
     const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
     const interestConsiderationRate = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
     document.getElementById('interest-consideration-rate').textContent = `${interestConsiderationRate}%`;
+    document.getElementById('interest-conversion-rate').textContent = `${interestConsiderationRate}%`;
 
     // Overall conversion rate (awareness → purchase)
     const purchaseCount = leads.purchase.length;
