@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,6 +26,7 @@
                 <h1>FunnelFlow</h1>
                 <div class="header-actions">
                     <button id="add-lead-btn" class="action-btn">+ Add Lead</button>
+                    <button id="add-content-btn" class="action-btn">+ Add Content</button>
                     <button id="export-pdf" class="action-btn">Export PDF</button>
                 </div>
             </div>
@@ -123,64 +125,20 @@
                 <div class="content-strategy">
                     <div class="section-header">
                         <h2><i class="fas fa-lightbulb"></i> Content Strategy</h2>
-                        <div class="content-filter">
-                            <select id="content-stage-filter">
-                                <option value="all">All Stages</option>
-                                <option value="awareness">Awareness</option>
-                                <option value="interest">Interest</option>
-                                <option value="consideration">Consideration</option>
-                            </select>
+                        <div class="content-actions">
+                            <div class="content-filter">
+                                <select id="content-stage-filter">
+                                    <option value="all">All Stages</option>
+                                    <option value="awareness">Awareness</option>
+                                    <option value="interest">Interest</option>
+                                    <option value="consideration">Consideration</option>
+                                </select>
+                            </div>
+                            <button id="add-content-strategy-btn" class="action-btn small">+ New</button>
                         </div>
                     </div>
-                    <div class="content-items">
-                        <div class="content-item" data-stage="awareness">
-                            <h4>Blog Posts</h4>
-                            <p>Educational content to attract potential customers</p>
-                            <div class="content-stats">
-                                <span><i class="fas fa-users"></i> 12 leads</span>
-                                <span><i class="fas fa-percentage"></i> 15%</span>
-                            </div>
-                        </div>
-                        <div class="content-item" data-stage="awareness">
-                            <h4>Social Media</h4>
-                            <p>Engaging posts to build brand awareness</p>
-                            <div class="content-stats">
-                                <span><i class="fas fa-users"></i> 24 leads</span>
-                                <span><i class="fas fa-percentage"></i> 8%</span>
-                            </div>
-                        </div>
-                        <div class="content-item" data-stage="interest">
-                            <h4>E-books</h4>
-                            <p>In-depth resources for leads showing interest</p>
-                            <div class="content-stats">
-                                <span><i class="fas fa-users"></i> 8 leads</span>
-                                <span><i class="fas fa-percentage"></i> 32%</span>
-                            </div>
-                        </div>
-                        <div class="content-item" data-stage="interest">
-                            <h4>Webinars</h4>
-                            <p>Interactive sessions to demonstrate expertise</p>
-                            <div class="content-stats">
-                                <span><i class="fas fa-users"></i> 15 leads</span>
-                                <span><i class="fas fa-percentage"></i> 45%</span>
-                            </div>
-                        </div>
-                        <div class="content-item" data-stage="consideration">
-                            <h4>Case Studies</h4>
-                            <p>Success stories to help evaluation</p>
-                            <div class="content-stats">
-                                <span><i class="fas fa-users"></i> 6 leads</span>
-                                <span><i class="fas fa-percentage"></i> 68%</span>
-                            </div>
-                        </div>
-                        <div class="content-item" data-stage="consideration">
-                            <h4>Product Demos</h4>
-                            <p>Show features to leads with purchase intent</p>
-                            <div class="content-stats">
-                                <span><i class="fas fa-users"></i> 5 leads</span>
-                                <span><i class="fas fa-percentage"></i> 80%</span>
-                            </div>
-                        </div>
+                    <div class="content-items" id="content-items-container">
+                        <!-- Content items will be populated here -->
                     </div>
                 </div>
 
@@ -224,16 +182,59 @@
             </section>
 
             <section class="analytics-section">
-                <div class="conversion-chart">
-                    <h2><i class="fas fa-chart-line"></i> Conversion Analytics</h2>
+                <div class="conversion-analytics">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Conversion Analytics</h2>
+                        <select id="conversion-time-filter">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
                     <div class="chart-container">
                         <canvas id="conversion-chart"></canvas>
+                    </div>
+                    <div class="funnel-metrics">
+                        <div class="metric-card">
+                            <h4>Total Conversions</h4>
+                            <div class="metric-value" id="total-conversions">0</div>
+                            <div class="metric-change" id="conversion-change">
+                                <i class="fas fa-arrow-up positive"></i> <span>0%</span> vs previous period
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Avg. Time in Funnel</h4>
+                            <div class="metric-value" id="avg-funnel-time">0 days</div>
+                            <div class="metric-change" id="time-change">
+                                <i class="fas fa-arrow-down negative"></i> <span>0%</span> vs previous period
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <h4>Best Performing Content</h4>
+                            <div class="metric-value" id="best-content">-</div>
+                            <div class="metric-subtext" id="best-content-rate">Conversion rate: 0%</div>
+                        </div>
                     </div>
                 </div>
                 <div class="content-performance">
                     <h2><i class="fas fa-chart-pie"></i> Content Performance</h2>
                     <div class="chart-container">
                         <canvas id="content-chart"></canvas>
+                    </div>
+                    <div class="content-stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Most Used Content</span>
+                            <span class="stat-value" id="most-used-content">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Highest Converting</span>
+                            <span class="stat-value" id="highest-converting-content">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Content per Stage</span>
+                            <span class="stat-value" id="content-per-stage">-</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -288,13 +289,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="lead-content">Content Strategy</label>
-                                <select id="lead-content" multiple>
-                                    <option value="blog">Blog Posts</option>
-                                    <option value="ebook">E-books</option>
-                                    <option value="webinar">Webinars</option>
-                                    <option value="casestudy">Case Studies</option>
-                                    <option value="demo">Product Demos</option>
-                                    <option value="trial">Free Trials</option>
+                                <select id="lead-content" class="content-select" multiple>
+                                    <!-- Options will be populated by JavaScript -->
                                 </select>
                             </div>
                         </div>
@@ -306,6 +302,61 @@
                     <div class="form-actions">
                         <button type="button" class="cancel-btn">Cancel</button>
                         <button type="submit" class="submit-btn">Add Lead</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="add-content-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Add Content Strategy</h2>
+                <form id="content-form">
+                    <div class="form-group">
+                        <label for="content-name">Content Name *</label>
+                        <input type="text" id="content-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content-description">Description</label>
+                        <textarea id="content-description" rows="2"></textarea>
+                    </div>
+                    <div class="form-columns">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="content-stage">Funnel Stage *</label>
+                                <select id="content-stage" required>
+                                    <option value="awareness">Awareness</option>
+                                    <option value="interest">Interest</option>
+                                    <option value="consideration">Consideration</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="content-type">Content Type</label>
+                                <select id="content-type">
+                                    <option value="blog">Blog Post</option>
+                                    <option value="ebook">E-book</option>
+                                    <option value="video">Video</option>
+                                    <option value="webinar">Webinar</option>
+                                    <option value="casestudy">Case Study</option>
+                                    <option value="demo">Demo</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="content-link">Link (URL)</label>
+                                <input type="url" id="content-link">
+                            </div>
+                            <div class="form-group">
+                                <label for="content-target-conversion">Target Conversion Rate (%)</label>
+                                <input type="number" id="content-target-conversion" min="0" max="100" step="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Save Content</button>
                     </div>
                 </form>
             </div>
@@ -360,13 +411,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="edit-lead-content">Content Strategy</label>
-                                <select id="edit-lead-content" multiple>
-                                    <option value="blog">Blog Posts</option>
-                                    <option value="ebook">E-books</option>
-                                    <option value="webinar">Webinars</option>
-                                    <option value="casestudy">Case Studies</option>
-                                    <option value="demo">Product Demos</option>
-                                    <option value="trial">Free Trials</option>
+                                <select id="edit-lead-content" class="content-select" multiple>
+                                    <!-- Options will be populated by JavaScript -->
                                 </select>
                             </div>
                         </div>
@@ -433,6 +479,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
