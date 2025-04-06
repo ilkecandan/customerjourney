@@ -53,8 +53,34 @@ function initializeApp() {
     // Initialize default leads if none exist
     if (!localStorage.getItem('leads')) {
         const defaultLeads = {
-            awareness: [],
-            interest: [],
+            awareness: [
+                {
+                    id: 'lead-1',
+                    company: 'Acme Inc',
+                    contact: 'John Smith',
+                    email: 'john@acme.com',
+                    phone: '555-1234',
+                    currentStage: 'awareness',
+                    notes: 'Interested in our blog content',
+                    contentStrategies: ['content-1'],
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString()
+                }
+            ],
+            interest: [
+                {
+                    id: 'lead-2',
+                    company: 'Globex Corp',
+                    contact: 'Sarah Johnson',
+                    email: 'sarah@globex.com',
+                    phone: '555-5678',
+                    currentStage: 'interest',
+                    notes: 'Downloaded our whitepaper',
+                    contentStrategies: ['content-2'],
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString()
+                }
+            ],
             intent: [],
             evaluation: [],
             purchase: []
@@ -110,7 +136,7 @@ function initializeApp() {
     loadContent();
     setupEventListeners();
     updateAnalytics();
-    setupPWA();
+    setupDragAndDrop();
 }
 
 // Populate content options in select elements
@@ -120,19 +146,17 @@ function populateContentOptions() {
     
     selectElements.forEach(select => {
         // Clear existing options
-        select.innerHTML = '';
+        $(select).empty();
         
         // Add new options
         contentItems.forEach(content => {
-            const option = document.createElement('option');
-            option.value = content.id;
-            option.textContent = content.name;
-            select.appendChild(option);
+            const option = new Option(content.name, content.id);
+            $(select).append(option);
         });
     });
 }
 
-// Load leads into the funnel visualization
+// Load leads into the funnel visualization and table
 function loadLeads() {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [],
@@ -142,24 +166,33 @@ function loadLeads() {
         purchase: []
     };
 
-    // Clear existing leads
-    document.querySelectorAll('.stage-leads').forEach(container => {
+    // Clear existing leads in funnel
+    document.querySelectorAll('.stage-body').forEach(container => {
         container.innerHTML = '';
+        if (container.querySelector('.empty')) {
+            container.querySelector('.empty').textContent = 'Drop leads here';
+        } else {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty';
+            emptyDiv.textContent = 'Drop leads here';
+            container.appendChild(emptyDiv);
+        }
     });
 
     // Populate leads for each stage
     for (const [stage, stageLeads] of Object.entries(leads)) {
-        const container = document.querySelector(`.stage-leads[data-drop-target="${stage}"]`);
+        const container = document.querySelector(`.stage-body[data-drop-target="${stage}"]`);
         
         if (!container) continue;
 
         if (stageLeads.length === 0) {
             container.classList.add('empty');
-            container.textContent = 'No leads in this stage';
+            container.querySelector('.empty').textContent = 'Drop leads here';
             continue;
         }
 
         container.classList.remove('empty');
+        container.querySelector('.empty')?.remove();
         
         stageLeads.forEach(lead => {
             const leadCard = createLeadCard(lead);
@@ -176,11 +209,14 @@ function loadLeads() {
         }
     }
 
+    // Update leads table
+    updateLeadsTable();
+
     // Update conversion percentages
     updateConversionPercentages();
 }
 
-// Create a lead card element
+// Create a lead card element for the funnel
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card';
@@ -202,16 +238,142 @@ function createLeadCard(lead) {
     // Add drag events
     leadCard.addEventListener('dragstart', handleDragStart);
 
-    // Add click event to show details
-    leadCard.addEventListener('click', () => showLeadDetails(lead));
+    // Add click event to show edit modal
+    leadCard.addEventListener('click', () => openEditLeadModal(lead));
 
     return leadCard;
+}
+
+// Update the leads table with all leads
+function updateLeadsTable() {
+    const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+    
+    const tableBody = document.getElementById('leads-table-body');
+    tableBody.innerHTML = '';
+
+    // Combine all leads from all stages
+    const allLeads = [];
+    for (const [stage, stageLeads] of Object.entries(leadsData)) {
+        stageLeads.forEach(lead => {
+            allLeads.push({...lead, stage: stage});
+        });
+    }
+
+    if (allLeads.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
+        tableBody.appendChild(row);
+        return;
+    }
+
+    // Sort by date added (newest first)
+    allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+    // Add each lead to the table
+    allLeads.forEach(lead => {
+        const row = document.createElement('tr');
+        row.dataset.leadId = lead.id;
+        row.dataset.stage = lead.stage;
+
+        // Get content names
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const contentUsed = lead.contentStrategies?.map(contentId => {
+            const content = contentItems.find(c => c.id === contentId);
+            return content ? content.name : '';
+        }).filter(name => name) || [];
+
+        // Format last contact date
+        const lastContactDate = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
+
+        row.innerHTML = `
+            <td class="company-cell">${lead.company}</td>
+            <td class="contact-cell">${lead.contact || 'N/A'}</td>
+            <td>${capitalizeFirstLetter(lead.stage)}</td>
+            <td>${contentUsed.join(', ') || 'None'}</td>
+            <td>${lastContactDate}</td>
+            <td>
+                <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+
+    // Add event listeners to the action buttons
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const leadId = btn.dataset.leadId;
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            let foundLead = null;
+            
+            // Search through all stages to find the lead
+            for (const stageLeads of Object.values(leads)) {
+                const lead = stageLeads.find(l => l.id === leadId);
+                if (lead) {
+                    foundLead = lead;
+                    break;
+                }
+            }
+            
+            if (foundLead) {
+                openEditLeadModal(foundLead);
+            }
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const leadId = btn.dataset.leadId;
+            if (confirm('Are you sure you want to delete this lead?')) {
+                deleteLeadById(leadId);
+            }
+        });
+    });
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// Delete lead by ID
+function deleteLeadById(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    let leadFound = false;
+
+    // Search through all stages to find the lead
+    for (const stage of Object.keys(leads)) {
+        const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
+        if (leadIndex !== -1) {
+            leads[stage].splice(leadIndex, 1);
+            leadFound = true;
+            break;
+        }
+    }
+
+    if (leadFound) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead deleted successfully');
+    }
 }
 
 // Load content strategies
 function loadContent() {
     const contentItems = JSON.parse(localStorage.getItem('content')) || [];
     const container = document.getElementById('content-items-container');
+    if (!container) return;
+
     container.innerHTML = '';
 
     contentItems.forEach(content => {
@@ -232,7 +394,7 @@ function loadContent() {
 
         const stageBadge = document.createElement('span');
         stageBadge.className = 'stage-badge';
-        stageBadge.textContent = content.stage.charAt(0).toUpperCase() + content.stage.slice(1);
+        stageBadge.textContent = capitalizeFirstLetter(content.stage);
 
         const actions = document.createElement('div');
         actions.className = 'content-actions';
@@ -302,13 +464,17 @@ function setupEventListeners() {
     });
 
     document.getElementById('delete-lead-btn').addEventListener('click', function() {
-        deleteLead();
+        if (confirm('Are you sure you want to delete this lead?')) {
+            deleteLead();
+        }
     });
 
     // Close modals
-    document.querySelectorAll('.close-modal').forEach(btn => {
+    document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            this.closest('.modal').classList.add('hidden');
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.add('hidden');
+            });
         });
     });
 
@@ -324,31 +490,26 @@ function setupEventListeners() {
     // Export PDF
     document.getElementById('export-pdf').addEventListener('click', exportToPDF);
 
-    // Content filter
-    document.getElementById('content-stage-filter').addEventListener('change', function() {
-        filterContent(this.value);
-    });
-
     // Lead filter
     document.getElementById('lead-stage-filter').addEventListener('change', function() {
         filterLeadsTable(this.value);
     });
 
     // Lead search
-    document.getElementById('lead-search').addEventListener('input', function() {
-        searchLeads(this.value);
-    });
-
-    // Initialize drag and drop
-    setupDragAndDrop();
+    const leadSearch = document.getElementById('lead-search');
+    if (leadSearch) {
+        leadSearch.addEventListener('input', function() {
+            searchLeads(this.value);
+        });
+    }
 }
 
 // Setup drag and drop functionality
 function setupDragAndDrop() {
-    const containers = document.querySelectorAll('.stage-leads');
+    const containers = document.querySelectorAll('.stage-body');
     const drake = dragula(Array.from(containers), {
         moves: function(el, source, handle, sibling) {
-            return handle.classList.contains('lead-card');
+            return el.classList.contains('lead-card');
         }
     });
 
@@ -378,6 +539,7 @@ function moveLead(leadId, fromStage, toStage) {
     
     // Update lead's current stage
     lead.currentStage = toStage;
+    lead.lastContact = new Date().toISOString();
     
     // Add to new stage
     leads[toStage].push(lead);
@@ -390,7 +552,7 @@ function moveLead(leadId, fromStage, toStage) {
     updateAnalytics();
     
     // Show notification
-    showNotification(`Lead moved to ${toStage.charAt(0).toUpperCase() + toStage.slice(1)} stage`);
+    showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
 }
 
 // Drag start handler
@@ -406,11 +568,17 @@ function addLead() {
     const email = document.getElementById('lead-email').value;
     const phone = document.getElementById('lead-phone').value;
     const stage = document.getElementById('lead-stage').value;
+    const source = document.getElementById('lead-source').value;
     const notes = document.getElementById('lead-notes').value;
 
     // Get selected content strategies
     const contentSelect = document.getElementById('lead-content');
-    const contentStrategies = Array.from(contentSelect.selectedOptions).map(opt => opt.value);
+    const contentStrategies = $(contentSelect).val() || [];
+
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
     const newLead = {
         id: 'lead-' + Date.now(),
@@ -418,6 +586,7 @@ function addLead() {
         contact,
         email,
         phone,
+        source,
         currentStage: stage,
         notes,
         contentStrategies,
@@ -449,6 +618,11 @@ function addContent() {
     const link = document.getElementById('content-link').value;
     const targetConversion = document.getElementById('content-target-conversion').value || 0;
 
+    if (!name || !stage) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
     const newContent = {
         id: 'content-' + Date.now(),
         name,
@@ -475,66 +649,6 @@ function addContent() {
     showNotification('Content strategy added successfully');
 }
 
-// Show lead details
-function showLeadDetails(lead) {
-    document.getElementById('detail-company').textContent = lead.company;
-    document.getElementById('detail-contact').textContent = lead.contact || 'Not specified';
-    document.getElementById('detail-email').textContent = lead.email || 'Not specified';
-    document.getElementById('detail-phone').textContent = lead.phone || 'Not specified';
-    document.getElementById('detail-stage').textContent = lead.currentStage.charAt(0).toUpperCase() + lead.currentStage.slice(1);
-    document.getElementById('detail-source').textContent = lead.source || 'Unknown';
-    document.getElementById('detail-date').textContent = new Date(lead.dateAdded).toLocaleDateString();
-    document.getElementById('detail-last-contact').textContent = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
-    document.getElementById('detail-notes').textContent = lead.notes || 'No notes available';
-
-    // Populate content used
-    const contentList = document.getElementById('detail-content-list');
-    contentList.innerHTML = '';
-    
-    if (lead.contentStrategies && lead.contentStrategies.length > 0) {
-        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-        lead.contentStrategies.forEach(contentId => {
-            const content = contentItems.find(c => c.id === contentId);
-            if (content) {
-                const li = document.createElement('li');
-                li.textContent = `${content.name} (${content.type})`;
-                contentList.appendChild(li);
-            }
-        });
-    } else {
-        contentList.innerHTML = '<li>No content used yet</li>';
-    }
-
-    // Populate timeline
-    const timeline = document.getElementById('detail-timeline');
-    timeline.innerHTML = '';
-
-    // Add stage changes to timeline
-    const stages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
-    const currentStageIndex = stages.indexOf(lead.currentStage);
-    
-    for (let i = 0; i <= currentStageIndex; i++) {
-        const stage = stages[i];
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-        
-        const dot = document.createElement('div');
-        dot.className = 'timeline-dot';
-        
-        const content = document.createElement('div');
-        content.className = 'timeline-content';
-        content.innerHTML = `<strong>${stage.charAt(0).toUpperCase() + stage.slice(1)}</strong><br>
-                            <small>${i === 0 ? 'Added' : 'Moved'} on ${new Date(lead.dateAdded).toLocaleDateString()}</small>`;
-        
-        item.appendChild(dot);
-        item.appendChild(content);
-        timeline.appendChild(item);
-    }
-
-    // Show modal
-    document.getElementById('lead-details-modal').classList.remove('hidden');
-}
-
 // Open edit lead modal
 function openEditLeadModal(lead) {
     document.getElementById('edit-lead-id').value = lead.id;
@@ -543,16 +657,12 @@ function openEditLeadModal(lead) {
     document.getElementById('edit-lead-email').value = lead.email || '';
     document.getElementById('edit-lead-phone').value = lead.phone || '';
     document.getElementById('edit-lead-stage').value = lead.currentStage;
+    document.getElementById('edit-lead-source').value = lead.source || 'website';
     document.getElementById('edit-lead-notes').value = lead.notes || '';
 
     // Set content strategies
     const contentSelect = document.getElementById('edit-lead-content');
-    Array.from(contentSelect.options).forEach(option => {
-        option.selected = lead.contentStrategies && lead.contentStrategies.includes(option.value);
-    });
-
-    // Refresh Select2
-    $(contentSelect).trigger('change');
+    $(contentSelect).val(lead.contentStrategies || []).trigger('change');
 
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
@@ -565,11 +675,17 @@ function saveLeadChanges() {
     const email = document.getElementById('edit-lead-email').value;
     const phone = document.getElementById('edit-lead-phone').value;
     const stage = document.getElementById('edit-lead-stage').value;
+    const source = document.getElementById('edit-lead-source').value;
     const notes = document.getElementById('edit-lead-notes').value;
 
     // Get selected content strategies
     const contentSelect = document.getElementById('edit-lead-content');
-    const contentStrategies = Array.from(contentSelect.selectedOptions).map(opt => opt.value);
+    const contentStrategies = $(contentSelect).val() || [];
+
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
     // Update lead in storage
     const leads = JSON.parse(localStorage.getItem('leads'));
@@ -590,6 +706,7 @@ function saveLeadChanges() {
                 lead.contact = contact;
                 lead.email = email;
                 lead.phone = phone;
+                lead.source = source;
                 lead.currentStage = stage;
                 lead.notes = notes;
                 lead.contentStrategies = contentStrategies;
@@ -604,6 +721,7 @@ function saveLeadChanges() {
                 lead.contact = contact;
                 lead.email = email;
                 lead.phone = phone;
+                lead.source = source;
                 lead.notes = notes;
                 lead.contentStrategies = contentStrategies;
                 lead.lastContact = new Date().toISOString();
@@ -623,45 +741,18 @@ function saveLeadChanges() {
     }
 }
 
-// Delete lead
+// Delete lead from edit modal
 function deleteLead() {
-    if (confirm('Are you sure you want to delete this lead?')) {
-        const leadId = document.getElementById('edit-lead-id').value;
-        const leads = JSON.parse(localStorage.getItem('leads'));
-        let leadFound = false;
-
-        // Search through all stages to find the lead
-        for (const stageLeads of Object.values(leads)) {
-            const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
-            
-            if (leadIndex !== -1) {
-                stageLeads.splice(leadIndex, 1);
-                leadFound = true;
-                break;
-            }
-        }
-
-        if (leadFound) {
-            localStorage.setItem('leads', JSON.stringify(leads));
-            document.getElementById('edit-lead-modal').classList.add('hidden');
-            loadLeads();
-            updateAnalytics();
-            showNotification('Lead deleted successfully');
-        }
-    }
+    const leadId = document.getElementById('edit-lead-id').value;
+    deleteLeadById(leadId);
+    document.getElementById('edit-lead-modal').classList.add('hidden');
 }
 
 // Open edit content modal
 function openEditContentModal(content) {
-    document.getElementById('edit-content-id').value = content.id;
-    document.getElementById('edit-content-name').value = content.name;
-    document.getElementById('edit-content-description').value = content.description;
-    document.getElementById('edit-content-stage').value = content.stage;
-    document.getElementById('edit-content-type').value = content.type;
-    document.getElementById('edit-content-link').value = content.link;
-    document.getElementById('edit-content-target-conversion').value = content.targetConversion;
-
-    document.getElementById('edit-content-modal').classList.remove('hidden');
+    // You would implement this similarly to openEditLeadModal
+    // For now, we'll just show a notification
+    showNotification('Edit content functionality would be implemented here');
 }
 
 // Update conversion percentages between stages
@@ -679,13 +770,15 @@ function updateConversionPercentages() {
     const interestCount = leads.interest.length;
     const awarenessInterestRate = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
     document.getElementById('awareness-interest-rate').textContent = `${awarenessInterestRate}%`;
-    document.getElementById('awareness-conversion-rate').textContent = `${awarenessInterestRate}%`;
+    const awarenessConvElement = document.getElementById('awareness-conversion-rate');
+    if (awarenessConvElement) awarenessConvElement.textContent = `${awarenessInterestRate}%`;
 
     // Interest → Consideration (average of intent, evaluation, purchase)
     const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
     const interestConsiderationRate = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
     document.getElementById('interest-consideration-rate').textContent = `${interestConsiderationRate}%`;
-    document.getElementById('interest-conversion-rate').textContent = `${interestConsiderationRate}%`;
+    const interestConvElement = document.getElementById('interest-conversion-rate');
+    if (interestConvElement) interestConvElement.textContent = `${interestConsiderationRate}%`;
 
     // Overall conversion rate (awareness → purchase)
     const purchaseCount = leads.purchase.length;
@@ -709,220 +802,6 @@ function updateAnalytics() {
 
     // Update conversion percentages
     updateConversionPercentages();
-
-    // Update conversion chart
-    updateConversionChart(leads);
-
-    // Update content performance metrics
-    updateContentMetrics();
-}
-
-// Update conversion chart
-function updateConversionChart(leads) {
-    const ctx = document.getElementById('conversion-chart').getContext('2d');
-    
-    // Destroy previous chart if it exists
-    if (window.conversionChart) {
-        window.conversionChart.destroy();
-    }
-    
-    const stageData = [
-        leads.awareness.length,
-        leads.interest.length,
-        leads.intent.length,
-        leads.evaluation.length,
-        leads.purchase.length
-    ];
-    
-    window.conversionChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Awareness', 'Interest', 'Intent', 'Evaluation', 'Purchase'],
-            datasets: [{
-                label: 'Number of Leads',
-                data: stageData,
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(255, 159, 64, 0.7)',
-                    'rgba(153, 102, 255, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(255, 159, 64, 1)',
-                    'rgba(153, 102, 255, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Number of Leads'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Funnel Stage'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        afterLabel: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const index = context.dataIndex;
-                            
-                            if (index === 0) {
-                                const nextValue = stageData[1] || 0;
-                                return `Conversion to Interest: ${Math.round((nextValue / value) * 100)}%`;
-                            } else if (index === 1) {
-                                const nextValue = stageData[2] + stageData[3] + stageData[4];
-                                return `Conversion to Consideration: ${Math.round((nextValue / value) * 100)}%`;
-                            } else if (index === 4) {
-                                const firstValue = stageData[0] || 1;
-                                return `Overall Conversion: ${Math.round((value / firstValue) * 100)}%`;
-                            }
-                            return '';
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Update content performance metrics
-function updateContentMetrics() {
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
-    };
-
-    // Calculate most used content
-    const contentUsage = {};
-    contentItems.forEach(content => {
-        contentUsage[content.id] = 0;
-    });
-
-    // Count usage across all leads
-    Object.values(leads).forEach(stageLeads => {
-        stageLeads.forEach(lead => {
-            if (lead.contentStrategies) {
-                lead.contentStrategies.forEach(contentId => {
-                    if (contentUsage[contentId] !== undefined) {
-                        contentUsage[contentId]++;
-                    }
-                });
-            }
-        });
-    });
-
-    // Find most used content
-    let mostUsedContent = '-';
-    let maxUsage = 0;
-    for (const [contentId, usage] of Object.entries(contentUsage)) {
-        if (usage > maxUsage) {
-            const content = contentItems.find(c => c.id === contentId);
-            if (content) {
-                mostUsedContent = content.name;
-                maxUsage = usage;
-            }
-        }
-    }
-    document.getElementById('most-used-content').textContent = mostUsedContent;
-
-    // Update content chart
-    updateContentChart(contentItems, contentUsage);
-}
-
-// Update content chart
-function updateContentChart(contentItems, contentUsage) {
-    const ctx = document.getElementById('content-chart').getContext('2d');
-    
-    // Destroy previous chart if it exists
-    if (window.contentChart) {
-        window.contentChart.destroy();
-    }
-    
-    // Prepare data
-    const labels = contentItems.map(content => content.name);
-    const data = contentItems.map(content => contentUsage[content.id] || 0);
-    const backgroundColors = contentItems.map(content => {
-        const colors = {
-            blog: 'rgba(54, 162, 235, 0.7)',
-            ebook: 'rgba(255, 99, 132, 0.7)',
-            video: 'rgba(255, 206, 86, 0.7)',
-            webinar: 'rgba(75, 192, 192, 0.7)',
-            casestudy: 'rgba(153, 102, 255, 0.7)',
-            demo: 'rgba(255, 159, 64, 0.7)',
-            other: 'rgba(199, 199, 199, 0.7)'
-        };
-        return colors[content.type] || colors.other;
-    });
-    
-    window.contentChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: backgroundColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Filter content by stage
-function filterContent(stage) {
-    const contentItems = document.querySelectorAll('.content-item');
-    
-    contentItems.forEach(item => {
-        if (stage === 'all' || item.dataset.stage === stage) {
-            item.style.display = 'flex';
-        } else {
-            item.style.display = 'none';
-        }
-    });
 }
 
 // Filter leads table by stage
@@ -930,6 +809,8 @@ function filterLeadsTable(stage) {
     const rows = document.querySelectorAll('#leads-table-body tr');
     
     rows.forEach(row => {
+        if (row.dataset.leadId === undefined) return; // Skip the "no leads" row
+        
         const rowStage = row.dataset.stage;
         if (stage === 'all' || rowStage === stage) {
             row.style.display = '';
@@ -945,6 +826,12 @@ function searchLeads(query) {
     const normalizedQuery = query.toLowerCase();
     
     rows.forEach(row => {
+        if (row.dataset.leadId === undefined) {
+            // Show the "no leads" row only if there's no search query
+            row.style.display = query ? 'none' : '';
+            return;
+        }
+        
         const company = row.querySelector('.company-cell').textContent.toLowerCase();
         const contact = row.querySelector('.contact-cell').textContent.toLowerCase();
         
@@ -1042,39 +929,17 @@ function exportToPDF() {
 }
 
 // Show notification
-function showNotification(message) {
+function showNotification(message, type = 'success') {
     const toast = document.getElementById('toast');
     toast.textContent = message;
-    toast.classList.add('show');
+    toast.className = 'toast show';
+    if (type === 'error') {
+        toast.style.backgroundColor = '#ff4444';
+    } else {
+        toast.style.backgroundColor = '#4CAF50';
+    }
     
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
-}
-
-// PWA Installation
-function setupPWA() {
-    let deferredPrompt;
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('install-btn').classList.remove('hidden');
-    });
-    
-    document.getElementById('install-btn').addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response to the install prompt: ${outcome}`);
-            document.getElementById('install-btn').classList.add('hidden');
-            deferredPrompt = null;
-        }
-    });
-    
-    window.addEventListener('appinstalled', () => {
-        document.getElementById('install-btn').classList.add('hidden');
-        deferredPrompt = null;
-        console.log('PWA was installed');
-    });
 }
