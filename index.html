@@ -6,6 +6,7 @@
     <title>Marketing Funnel Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,7 +24,7 @@
             <div class="header-left">
                 <h1>FunnelFlow</h1>
                 <div class="header-actions">
-                    <button id="add-funnel" class="action-btn">New Funnel</button>
+                    <button id="add-lead-btn" class="action-btn">+ Add Lead</button>
                     <button id="export-pdf" class="action-btn">Export PDF</button>
                 </div>
             </div>
@@ -34,16 +35,16 @@
                         <span id="total-leads">0</span>
                     </div>
                     <div class="analytics-item">
-                        <span>TOF→MOF</span>
-                        <span id="tof-mof-rate">0%</span>
+                        <span>Awareness→Interest</span>
+                        <span id="awareness-interest-rate">0%</span>
                     </div>
                     <div class="analytics-item">
-                        <span>MOF→BOF</span>
-                        <span id="mof-bof-rate">0%</span>
+                        <span>Interest→Consideration</span>
+                        <span id="interest-consideration-rate">0%</span>
                     </div>
                     <div class="analytics-item">
-                        <span>Overall</span>
-                        <span id="overall-rate">0%</span>
+                        <span>Conversion Rate</span>
+                        <span id="conversion-rate">0%</span>
                     </div>
                 </div>
                 <button id="install-btn" class="install-btn hidden">Install App</button>
@@ -51,104 +52,261 @@
         </header>
 
         <main>
-            <section class="leads-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Lead Management</h2>
-                    <div class="lead-actions">
-                        <button id="add-lead-btn" class="action-btn">Add Lead</button>
-                        <div class="lead-search">
-                            <input type="text" placeholder="Search leads...">
-                            <i class="fas fa-search"></i>
+            <section class="funnel-visualization">
+                <div class="funnel-stages">
+                    <div class="funnel-stage" data-stage="awareness">
+                        <h3>Awareness</h3>
+                        <div class="stage-content">
+                            <div class="stage-leads" data-drop-target="awareness">
+                                <!-- Leads will be populated here -->
+                            </div>
+                            <div class="stage-stats">
+                                <span class="lead-count">0</span>
+                                <span class="percentage">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="funnel-stage" data-stage="interest">
+                        <h3>Interest</h3>
+                        <div class="stage-content">
+                            <div class="stage-leads" data-drop-target="interest">
+                                <!-- Leads will be populated here -->
+                            </div>
+                            <div class="stage-stats">
+                                <span class="lead-count">0</span>
+                                <span class="percentage">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="funnel-stage" data-stage="consideration">
+                        <h3>Consideration</h3>
+                        <div class="stage-sublevels">
+                            <div class="sublevel" data-sublevel="intent">
+                                <h4>Intent</h4>
+                                <div class="stage-leads" data-drop-target="intent">
+                                    <!-- Leads will be populated here -->
+                                </div>
+                                <div class="stage-stats">
+                                    <span class="lead-count">0</span>
+                                </div>
+                            </div>
+                            <div class="sublevel" data-sublevel="evaluation">
+                                <h4>Evaluation</h4>
+                                <div class="stage-leads" data-drop-target="evaluation">
+                                    <!-- Leads will be populated here -->
+                                </div>
+                                <div class="stage-stats">
+                                    <span class="lead-count">0</span>
+                                </div>
+                            </div>
+                            <div class="sublevel" data-sublevel="purchase">
+                                <h4>Purchase</h4>
+                                <div class="stage-leads" data-drop-target="purchase">
+                                    <!-- Leads will be populated here -->
+                                </div>
+                                <div class="stage-stats">
+                                    <span class="lead-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stage-stats">
+                            <span class="lead-count">0</span>
+                            <span class="percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dashboard-content">
+                <div class="content-strategy">
+                    <div class="section-header">
+                        <h2><i class="fas fa-lightbulb"></i> Content Strategy</h2>
+                        <div class="content-filter">
+                            <select id="content-stage-filter">
+                                <option value="all">All Stages</option>
+                                <option value="awareness">Awareness</option>
+                                <option value="interest">Interest</option>
+                                <option value="consideration">Consideration</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="content-items">
+                        <div class="content-item" data-stage="awareness">
+                            <h4>Blog Posts</h4>
+                            <p>Educational content to attract potential customers</p>
+                            <div class="content-stats">
+                                <span><i class="fas fa-users"></i> 12 leads</span>
+                                <span><i class="fas fa-percentage"></i> 15%</span>
+                            </div>
+                        </div>
+                        <div class="content-item" data-stage="awareness">
+                            <h4>Social Media</h4>
+                            <p>Engaging posts to build brand awareness</p>
+                            <div class="content-stats">
+                                <span><i class="fas fa-users"></i> 24 leads</span>
+                                <span><i class="fas fa-percentage"></i> 8%</span>
+                            </div>
+                        </div>
+                        <div class="content-item" data-stage="interest">
+                            <h4>E-books</h4>
+                            <p>In-depth resources for leads showing interest</p>
+                            <div class="content-stats">
+                                <span><i class="fas fa-users"></i> 8 leads</span>
+                                <span><i class="fas fa-percentage"></i> 32%</span>
+                            </div>
+                        </div>
+                        <div class="content-item" data-stage="interest">
+                            <h4>Webinars</h4>
+                            <p>Interactive sessions to demonstrate expertise</p>
+                            <div class="content-stats">
+                                <span><i class="fas fa-users"></i> 15 leads</span>
+                                <span><i class="fas fa-percentage"></i> 45%</span>
+                            </div>
+                        </div>
+                        <div class="content-item" data-stage="consideration">
+                            <h4>Case Studies</h4>
+                            <p>Success stories to help evaluation</p>
+                            <div class="content-stats">
+                                <span><i class="fas fa-users"></i> 6 leads</span>
+                                <span><i class="fas fa-percentage"></i> 68%</span>
+                            </div>
+                        </div>
+                        <div class="content-item" data-stage="consideration">
+                            <h4>Product Demos</h4>
+                            <p>Show features to leads with purchase intent</p>
+                            <div class="content-stats">
+                                <span><i class="fas fa-users"></i> 5 leads</span>
+                                <span><i class="fas fa-percentage"></i> 80%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="leads-grid">
-                    <!-- Leads will be populated here by JavaScript -->
+                <div class="leads-management">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> Lead Management</h2>
+                        <div class="lead-actions">
+                            <div class="lead-search">
+                                <input type="text" id="lead-search" placeholder="Search leads...">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <select id="lead-stage-filter">
+                                <option value="all">All Stages</option>
+                                <option value="awareness">Awareness</option>
+                                <option value="interest">Interest</option>
+                                <option value="intent">Intent</option>
+                                <option value="evaluation">Evaluation</option>
+                                <option value="purchase">Purchase</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="leads-table-container">
+                        <table class="leads-table">
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Stage</th>
+                                    <th>Content Used</th>
+                                    <th>Last Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leads-table-body">
+                                <!-- Leads will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <aside class="funnel-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-filter"></i> Funnel View</h2>
+            <section class="analytics-section">
+                <div class="conversion-chart">
+                    <h2><i class="fas fa-chart-line"></i> Conversion Analytics</h2>
+                    <div class="chart-container">
+                        <canvas id="conversion-chart"></canvas>
+                    </div>
                 </div>
-                
-                <div id="funnels-container" class="compact-funnels">
-                    <!-- Funnels will be populated here by JavaScript -->
+                <div class="content-performance">
+                    <h2><i class="fas fa-chart-pie"></i> Content Performance</h2>
+                    <div class="chart-container">
+                        <canvas id="content-chart"></canvas>
+                    </div>
                 </div>
-
-                <div class="chart-container">
-                    <canvas id="conversion-chart"></canvas>
-                </div>
-            </aside>
+            </section>
         </main>
 
         <!-- Modals -->
-        <div id="add-funnel-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Add New Funnel</h2>
-                <form id="funnel-form">
-                    <input type="hidden" id="funnel-id">
-                    <div class="form-group">
-                        <label for="funnel-name">Funnel Name</label>
-                        <input type="text" id="funnel-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="funnel-type">Funnel Type</label>
-                        <select id="funnel-type" required>
-                            <option value="TOF">Top of Funnel (TOF)</option>
-                            <option value="MOF">Middle of Funnel (MOF)</option>
-                            <option value="BOF">Bottom of Funnel (BOF)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="funnel-description">Description</label>
-                        <textarea id="funnel-description"></textarea>
-                    </div>
-                    <button type="submit" class="submit-btn">Save Funnel</button>
-                </form>
-            </div>
-        </div>
-
         <div id="add-lead-modal" class="modal hidden">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
                 <h2>Add New Lead</h2>
                 <form id="lead-form">
-                    <input type="hidden" id="lead-funnel-id">
-                    <div class="form-group">
-                        <label for="lead-company">Company Name</label>
-                        <input type="text" id="lead-company" required>
+                    <div class="form-columns">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="lead-company">Company Name *</label>
+                                <input type="text" id="lead-company" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lead-contact">Contact Person *</label>
+                                <input type="text" id="lead-contact" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lead-email">Email *</label>
+                                <input type="email" id="lead-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lead-phone">Phone</label>
+                                <input type="tel" id="lead-phone">
+                            </div>
+                        </div>
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="lead-stage">Initial Stage *</label>
+                                <select id="lead-stage" required>
+                                    <option value="awareness">Awareness</option>
+                                    <option value="interest">Interest</option>
+                                    <option value="intent">Intent</option>
+                                    <option value="evaluation">Evaluation</option>
+                                    <option value="purchase">Purchase</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="lead-source">Source</label>
+                                <select id="lead-source">
+                                    <option value="website">Website</option>
+                                    <option value="social">Social Media</option>
+                                    <option value="referral">Referral</option>
+                                    <option value="event">Event</option>
+                                    <option value="ad">Advertisement</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="lead-content">Content Strategy</label>
+                                <select id="lead-content" multiple>
+                                    <option value="blog">Blog Posts</option>
+                                    <option value="ebook">E-books</option>
+                                    <option value="webinar">Webinars</option>
+                                    <option value="casestudy">Case Studies</option>
+                                    <option value="demo">Product Demos</option>
+                                    <option value="trial">Free Trials</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="lead-email">Email</label>
-                        <input type="email" id="lead-email">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-phone">Phone</label>
-                        <input type="tel" id="lead-phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="lead-website">Website</label>
-                        <input type="url" id="lead-website">
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group full-width">
                         <label for="lead-notes">Notes</label>
-                        <textarea id="lead-notes"></textarea>
+                        <textarea id="lead-notes" rows="3"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="lead-content-strategy">Content Strategy</label>
-                        <select id="lead-content-strategy" multiple>
-                            <option value="blog">Blog Posts</option>
-                            <option value="ebook">E-books</option>
-                            <option value="webinar">Webinars</option>
-                            <option value="casestudy">Case Studies</option>
-                            <option value="demo">Product Demos</option>
-                            <option value="trial">Free Trials</option>
-                        </select>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Add Lead</button>
                     </div>
-                    <button type="submit" class="submit-btn">Add Lead</button>
                 </form>
             </div>
         </div>
@@ -159,42 +317,63 @@
                 <h2>Edit Lead</h2>
                 <form id="edit-lead-form">
                     <input type="hidden" id="edit-lead-id">
-                    <div class="form-group">
-                        <label for="edit-lead-company">Company Name</label>
-                        <input type="text" id="edit-lead-company" required>
+                    <div class="form-columns">
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="edit-lead-company">Company Name *</label>
+                                <input type="text" id="edit-lead-company" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-lead-contact">Contact Person *</label>
+                                <input type="text" id="edit-lead-contact" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-lead-email">Email *</label>
+                                <input type="email" id="edit-lead-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-lead-phone">Phone</label>
+                                <input type="tel" id="edit-lead-phone">
+                            </div>
+                        </div>
+                        <div class="form-column">
+                            <div class="form-group">
+                                <label for="edit-lead-stage">Current Stage *</label>
+                                <select id="edit-lead-stage" required>
+                                    <option value="awareness">Awareness</option>
+                                    <option value="interest">Interest</option>
+                                    <option value="intent">Intent</option>
+                                    <option value="evaluation">Evaluation</option>
+                                    <option value="purchase">Purchase</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-lead-source">Source</label>
+                                <select id="edit-lead-source">
+                                    <option value="website">Website</option>
+                                    <option value="social">Social Media</option>
+                                    <option value="referral">Referral</option>
+                                    <option value="event">Event</option>
+                                    <option value="ad">Advertisement</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-lead-content">Content Strategy</label>
+                                <select id="edit-lead-content" multiple>
+                                    <option value="blog">Blog Posts</option>
+                                    <option value="ebook">E-books</option>
+                                    <option value="webinar">Webinars</option>
+                                    <option value="casestudy">Case Studies</option>
+                                    <option value="demo">Product Demos</option>
+                                    <option value="trial">Free Trials</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="edit-lead-email">Email</label>
-                        <input type="email" id="edit-lead-email">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-phone">Phone</label>
-                        <input type="tel" id="edit-lead-phone">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-website">Website</label>
-                        <input type="url" id="edit-lead-website">
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group full-width">
                         <label for="edit-lead-notes">Notes</label>
-                        <textarea id="edit-lead-notes"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-content-strategy">Content Strategy</label>
-                        <select id="edit-lead-content-strategy" multiple>
-                            <option value="blog">Blog Posts</option>
-                            <option value="ebook">E-books</option>
-                            <option value="webinar">Webinars</option>
-                            <option value="casestudy">Case Studies</option>
-                            <option value="demo">Product Demos</option>
-                            <option value="trial">Free Trials</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-lead-funnel">Move to Funnel</label>
-                        <select id="edit-lead-funnel">
-                            <!-- Options will be populated by JavaScript -->
-                        </select>
+                        <textarea id="edit-lead-notes" rows="3"></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
@@ -204,11 +383,56 @@
             </div>
         </div>
 
+        <div id="lead-details-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Lead Details</h2>
+                <div class="lead-details">
+                    <div class="detail-header">
+                        <h3 id="detail-company">Company Name</h3>
+                        <span class="stage-badge" id="detail-stage">Awareness</span>
+                    </div>
+                    <div class="detail-contact">
+                        <p><i class="fas fa-user"></i> <span id="detail-contact">Contact Name</span></p>
+                        <p><i class="fas fa-envelope"></i> <span id="detail-email">email@example.com</span></p>
+                        <p><i class="fas fa-phone"></i> <span id="detail-phone">+1 234 567 890</span></p>
+                    </div>
+                    <div class="detail-meta">
+                        <p><strong>Source:</strong> <span id="detail-source">Website</span></p>
+                        <p><strong>Added:</strong> <span id="detail-date">Jan 1, 2023</span></p>
+                        <p><strong>Last Contact:</strong> <span id="detail-last-contact">2 days ago</span></p>
+                    </div>
+                    <div class="detail-content">
+                        <h4>Content Used</h4>
+                        <ul id="detail-content-list">
+                            <li>Blog Posts</li>
+                            <li>E-books</li>
+                        </ul>
+                    </div>
+                    <div class="detail-notes">
+                        <h4>Notes</h4>
+                        <p id="detail-notes">No notes available for this lead.</p>
+                    </div>
+                    <div class="detail-history">
+                        <h4>Stage History</h4>
+                        <div class="timeline" id="detail-timeline">
+                            <!-- Timeline items will be added here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="edit-lead-btn">Edit Lead</button>
+                    <button type="button" class="cancel-btn">Close</button>
+                </div>
+            </div>
+        </div>
+
         <div id="toast" class="toast"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
