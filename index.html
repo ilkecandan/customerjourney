@@ -136,52 +136,68 @@
         .sublevel .stage-body {
             min-height: 80px;
         }
-        
-        /* Lead card styling */
-        .lead-card {
+
+        /* Auth screen styles */
+        .auth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0d47a1, #1976d2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .auth-box {
             background: white;
-            border-radius: 6px;
-            padding: 0.5rem;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
-            cursor: grab;
-            transition: all 0.2s ease;
-            border-left: 3px solid #0d47a1;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 300px;
+            text-align: center;
         }
-        
-        .lead-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-        }
-        
-        .lead-card .company {
-            font-weight: 600;
+
+        .auth-box h2 {
             color: #0d47a1;
-            margin-bottom: 0.2rem;
+            margin-bottom: 1.5rem;
         }
-        
-        .lead-card .contact {
-            font-size: 0.7rem;
-            color: #555;
+
+        .auth-box input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
         }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .stage-interest {
-                width: 90%;
-            }
-            
-            .stage-consideration {
-                width: 80%;
-            }
-            
-            .stage-sublevels {
-                flex-direction: column;
-            }
-            
-            .sublevel {
-                width: 100%;
-            }
+
+        .error-message {
+            color: #d32f2f;
+            margin-bottom: 1rem;
+            min-height: 1.5rem;
+        }
+
+        .auth-btn {
+            background: #0d47a1;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .auth-btn:hover {
+            background: #1565c0;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
     <link rel="stylesheet" href="style.css">
@@ -674,6 +690,8 @@
         <div id="toast" class="toast"></div>
     </div>
 
+    <!-- Add jQuery before Select2 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
