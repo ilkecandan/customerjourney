@@ -14,14 +14,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Authentication setup with configurable PINs
+// Authentication setup
 function setupAuth() {
     const pinInput = document.getElementById('pin-input');
     const loginBtn = document.getElementById('login-btn');
     const pinError = document.getElementById('pin-error');
     
-    // Configurable PINs (can be extended or loaded from server)
-    const validPins = ['1234', '4321', '0000']; // Add more PINs as needed
+    // Configurable PINs
+    const validPins = ['1234', '4321', '0000'];
 
     // Focus on the PIN input when the page loads
     pinInput.focus();
@@ -106,7 +106,7 @@ function initializeApp() {
     if (!localStorage.getItem('content')) {
         const defaultContent = [
             {
-                id: 'content-' + Date.now(),
+                id: 'content-1',
                 name: 'Introductory Blog Post',
                 description: 'Basic introduction to our product',
                 stage: 'awareness',
@@ -115,7 +115,7 @@ function initializeApp() {
                 targetConversion: 5
             },
             {
-                id: 'content-' + Date.now(),
+                id: 'content-2',
                 name: 'Product Demo Video',
                 description: 'Detailed product demonstration',
                 stage: 'interest',
@@ -124,7 +124,7 @@ function initializeApp() {
                 targetConversion: 15
             },
             {
-                id: 'content-' + Date.now(),
+                id: 'content-3',
                 name: 'Case Study',
                 description: 'Success story from existing customer',
                 stage: 'consideration',
@@ -151,11 +151,9 @@ function initializeApp() {
     setupEventListeners();
     updateAnalytics();
     setupDragAndDrop();
-    
-    // Set up export/import buttons
-    setupDataTransfer();
 }
-// Update loadLeads function
+
+// Load leads with content badges
 function loadLeads() {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
@@ -210,204 +208,77 @@ function loadLeads() {
     updateConversionPercentages();
 }
 
-// New drag handler for content
+// Handle content drag start
 function handleContentDragStart(e) {
     e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
     e.target.classList.add('dragging-content');
 }
 
-// Update CSS
-.content-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px dashed rgba(0,0,0,0.1);
-}
-
-.content-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    cursor: grab;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(25, 118, 210, 0.2);
-}
-
-.content-badge:hover {
-    background: #bbdefb;
-    transform: translateY(-1px);
-}
-
-.content-badge i {
-    font-size: 0.7rem;
-}
-
-.content-badge.dragging-content {
-    opacity: 0.8;
-    transform: scale(1.1);
-}
-
-/* Make lead cards slightly different to distinguish */
-.lead-card {
-    background: white;
-    /* ... rest of your lead card styles ... */
-}
-
-// Set up data export/import functionality
-function setupDataTransfer() {
-    document.getElementById('export-data')?.addEventListener('click', exportLeads);
-    document.getElementById('import-data')?.addEventListener('change', function(e) {
-        if (e.target.files.length) importLeads(e.target.files[0]);
-    });
-}
-
-// Export leads and content as JSON file
-function exportLeads() {
-    const leads = JSON.parse(localStorage.getItem('leads'));
-    const content = JSON.parse(localStorage.getItem('content'));
-    const metadata = JSON.parse(localStorage.getItem('funnel_metadata'));
-    
-    const data = { 
-        leads, 
-        content, 
-        metadata,
-        exported: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `funnel-data-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    showNotification('Data exported successfully');
-}
-
-// Import leads and content from JSON file
-function importLeads(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            
-            if (data.leads && data.content) {
-                if (confirm('Importing data will overwrite your current leads and content. Continue?')) {
-                    localStorage.setItem('leads', JSON.stringify(data.leads));
-                    localStorage.setItem('content', JSON.stringify(data.content));
-                    
-                    // Update metadata but keep original creation date
-                    const existingMeta = JSON.parse(localStorage.getItem('funnel_metadata'));
-                    localStorage.setItem('funnel_metadata', JSON.stringify({
-                        ...existingMeta,
-                        last_updated: new Date().toISOString(),
-                        imported: new Date().toISOString()
-                    }));
-                    
-                    // Refresh UI
-                    loadLeads();
-                    loadContent();
-                    populateContentOptions();
-                    updateAnalytics();
-                    showNotification('Data imported successfully');
-                }
-            } else {
-                showNotification('Invalid data format', 'error');
-            }
-        } catch (error) {
-            showNotification('Error importing data', 'error');
-            console.error('Import error:', error);
-        }
-    };
-    reader.readAsText(file);
-}
-
-// Populate content options in select elements
-function populateContentOptions() {
+// Load content in the content section
+function loadContent() {
     const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-    const selectElements = document.querySelectorAll('.content-select');
-    
-    selectElements.forEach(select => {
-        // Clear existing options
-        $(select).empty();
-        
-        // Add new options
-        contentItems.forEach(content => {
-            const option = new Option(content.name, content.id);
-            $(select).append(option);
-        });
-    });
-}
+    const container = document.getElementById('content-items-container');
+    if (!container) return;
 
-// Load leads into the funnel visualization and table
-function loadLeads() {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
-    };
+    container.innerHTML = '';
 
-    // Clear existing leads in funnel
-    document.querySelectorAll('.stage-body').forEach(container => {
-        container.innerHTML = '';
-        if (container.querySelector('.empty')) {
-            container.querySelector('.empty').textContent = 'Drop leads here';
-        } else {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'empty';
-            emptyDiv.textContent = 'Drop leads here';
-            container.appendChild(emptyDiv);
-        }
-    });
-
-    // Populate leads for each stage
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const container = document.querySelector(`.stage-body[data-drop-target="${stage}"]`);
-        
-        if (!container) continue;
-
-        if (stageLeads.length === 0) {
-            container.classList.add('empty');
-            container.querySelector('.empty').textContent = 'Drop leads here';
-            continue;
-        }
-
-        container.classList.remove('empty');
-        container.querySelector('.empty')?.remove();
-        
-        stageLeads.forEach(lead => {
-            const leadCard = createLeadCard(lead);
-            container.appendChild(leadCard);
-        });
-
-        // Update stage stats
-        const stageElement = document.querySelector(`.funnel-stage[data-stage="${stage}"]`);
-        if (stageElement) {
-            const countElement = stageElement.querySelector('.lead-count');
-            if (countElement) {
-                countElement.textContent = stageLeads.length;
-            }
-        }
+    if (contentItems.length === 0) {
+        container.innerHTML = '<div class="empty-content">No content strategies added yet</div>';
+        return;
     }
 
-    // Update leads table
-    updateLeadsTable();
+    contentItems.forEach(content => {
+        const item = document.createElement('div');
+        item.className = 'content-item';
+        item.dataset.contentId = content.id;
+        item.dataset.stage = content.stage;
 
-    // Update conversion percentages
-    updateConversionPercentages();
+        const icon = document.createElement('i');
+        icon.className = getContentIcon(content.type);
+
+        const name = document.createElement('h4');
+        name.textContent = content.name;
+
+        const desc = document.createElement('p');
+        desc.className = 'content-description';
+        desc.textContent = content.description;
+
+        const stageBadge = document.createElement('span');
+        stageBadge.className = 'stage-badge';
+        stageBadge.textContent = capitalizeFirstLetter(content.stage);
+
+        const link = document.createElement('a');
+        link.href = content.link || '#';
+        link.target = '_blank';
+        link.className = 'content-link';
+        link.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
+
+        const actions = document.createElement('div');
+        actions.className = 'content-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-content';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditContentModal(content);
+        });
+
+        actions.appendChild(editBtn);
+
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.appendChild(desc);
+        item.appendChild(stageBadge);
+        item.appendChild(link);
+        item.appendChild(actions);
+
+        container.appendChild(item);
+    });
 }
 
 // Create a lead card element for the funnel
 function createLeadCard(lead) {
-    const fragment = document.createDocumentFragment();
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card';
     leadCard.draggable = true;
@@ -431,18 +302,13 @@ function createLeadCard(lead) {
     // Add click event to show edit modal
     leadCard.addEventListener('click', () => openEditLeadModal(lead));
 
-    fragment.appendChild(leadCard);
-    return fragment;
+    return leadCard;
 }
 
 // Update the leads table with all leads
 function updateLeadsTable() {
     const leadsData = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
     
     const tableBody = document.getElementById('leads-table-body');
@@ -559,57 +425,6 @@ function deleteLeadById(leadId) {
     }
 }
 
-// Load content strategies
-function loadContent() {
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-    const container = document.getElementById('content-items-container');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    contentItems.forEach(content => {
-        const item = document.createElement('div');
-        item.className = 'content-item';
-        item.dataset.contentId = content.id;
-        item.dataset.stage = content.stage;
-
-        const icon = document.createElement('i');
-        icon.className = getContentIcon(content.type);
-
-        const name = document.createElement('h4');
-        name.textContent = content.name;
-
-        const desc = document.createElement('p');
-        desc.className = 'content-description';
-        desc.textContent = content.description;
-
-        const stageBadge = document.createElement('span');
-        stageBadge.className = 'stage-badge';
-        stageBadge.textContent = capitalizeFirstLetter(content.stage);
-
-        const actions = document.createElement('div');
-        actions.className = 'content-actions';
-
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-content';
-        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openEditContentModal(content);
-        });
-
-        actions.appendChild(editBtn);
-
-        item.appendChild(icon);
-        item.appendChild(name);
-        item.appendChild(desc);
-        item.appendChild(stageBadge);
-        item.appendChild(actions);
-
-        container.appendChild(item);
-    });
-}
-
 // Get appropriate icon for content type
 function getContentIcon(type) {
     const icons = {
@@ -635,9 +450,9 @@ function toggleModal(modalId, show = true) {
     }
 }
 
-// Setup event listeners with improved event delegation
+// Setup event listeners
 function setupEventListeners() {
-    // Use event delegation for buttons since they might not exist yet
+    // Use event delegation for buttons
     document.addEventListener('click', function(e) {
         // Add Lead Button
         if (e.target.matches('#add-lead-btn, #add-lead-btn *')) {
@@ -648,7 +463,7 @@ function setupEventListeners() {
             return;
         }
         
-        // Add Content Button - Fixed to properly show modal
+        // Add Content Button
         if (e.target.matches('#add-content-btn, #add-content-btn *')) {
             document.getElementById('content-form').reset();
             const modal = document.getElementById('add-content-modal');
@@ -680,6 +495,11 @@ function setupEventListeners() {
     document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
         e.preventDefault();
         saveLeadChanges();
+    });
+
+    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveContentChanges();
     });
 
     document.getElementById('delete-lead-btn')?.addEventListener('click', function() {
@@ -717,32 +537,36 @@ function setupEventListeners() {
     }
 }
 
-// Setup drag and drop functionality with improved initialization
+// Setup drag and drop functionality
 function setupDragAndDrop() {
-    // Wait a brief moment to ensure DOM is ready
     setTimeout(() => {
         const containers = Array.from(document.querySelectorAll('.stage-body'));
-        console.log('Dragula containers found:', containers.length);
         
-        // Only initialize if we found containers
         if (containers.length > 0) {
             const drake = dragula(containers, {
                 moves: function(el, source, handle, sibling) {
-                    return el.classList.contains('lead-card');
+                    return el.classList.contains('lead-card') || el.classList.contains('content-badge');
                 }
             });
 
             drake.on('drop', function(el, target, source, sibling) {
-                const leadId = el.dataset.leadId;
                 const fromStage = source.dataset.dropTarget;
                 const toStage = target.dataset.dropTarget;
                 
-                if (fromStage && toStage && fromStage !== toStage) {
-                    moveLead(leadId, fromStage, toStage);
+                if (el.classList.contains('lead-card')) {
+                    // Handle lead movement
+                    const leadId = el.dataset.leadId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        moveLead(leadId, fromStage, toStage);
+                    }
+                } else if (el.classList.contains('content-badge')) {
+                    // Handle content movement between stages
+                    const contentId = el.dataset.contentId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        moveContentToStage(contentId, toStage);
+                    }
                 }
             });
-        } else {
-            console.error('No dragula containers found');
         }
     }, 100);
 }
@@ -776,6 +600,20 @@ function moveLead(leadId, fromStage, toStage) {
     
     // Show notification
     showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
+}
+
+// Move content to different stage
+function moveContentToStage(contentId, newStage) {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const contentIndex = contentItems.findIndex(c => c.id === contentId);
+    
+    if (contentIndex !== -1) {
+        contentItems[contentIndex].stage = newStage;
+        localStorage.setItem('content', JSON.stringify(contentItems));
+        loadLeads();
+        loadContent();
+        showNotification(`Content moved to ${capitalizeFirstLetter(newStage)} stage`);
+    }
 }
 
 // Drag start handler
@@ -867,8 +705,9 @@ function addContent() {
     document.getElementById('content-form').reset();
 
     // Update UI
+    loadLeads();
     loadContent();
-    populateContentOptions(); // Refresh content options in selects
+    populateContentOptions();
     showNotification('Content strategy added successfully');
 }
 
@@ -964,6 +803,58 @@ function saveLeadChanges() {
     }
 }
 
+// Open edit content modal
+function openEditContentModal(content) {
+    document.getElementById('edit-content-id').value = content.id;
+    document.getElementById('edit-content-name').value = content.name;
+    document.getElementById('edit-content-description').value = content.description;
+    document.getElementById('edit-content-stage').value = content.stage;
+    document.getElementById('edit-content-type').value = content.type;
+    document.getElementById('edit-content-link').value = content.link;
+    document.getElementById('edit-content-target-conversion').value = content.targetConversion;
+
+    document.getElementById('edit-content-modal').classList.remove('hidden');
+}
+
+// Save content changes
+function saveContentChanges() {
+    const contentId = document.getElementById('edit-content-id').value;
+    const name = document.getElementById('edit-content-name').value;
+    const description = document.getElementById('edit-content-description').value;
+    const stage = document.getElementById('edit-content-stage').value;
+    const type = document.getElementById('edit-content-type').value;
+    const link = document.getElementById('edit-content-link').value;
+    const targetConversion = document.getElementById('edit-content-target-conversion').value;
+
+    if (!name || !stage) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Update content in storage
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const contentIndex = contentItems.findIndex(c => c.id === contentId);
+    
+    if (contentIndex !== -1) {
+        contentItems[contentIndex] = {
+            ...contentItems[contentIndex],
+            name,
+            description,
+            stage,
+            type,
+            link,
+            targetConversion: parseInt(targetConversion)
+        };
+        
+        localStorage.setItem('content', JSON.stringify(contentItems));
+        document.getElementById('edit-content-modal').classList.add('hidden');
+        loadLeads();
+        loadContent();
+        populateContentOptions();
+        showNotification('Content updated successfully');
+    }
+}
+
 // Delete lead from edit modal
 function deleteLead() {
     const leadId = document.getElementById('edit-lead-id').value;
@@ -971,21 +862,27 @@ function deleteLead() {
     document.getElementById('edit-lead-modal').classList.add('hidden');
 }
 
-// Open edit content modal
-function openEditContentModal(content) {
-    // You would implement this similarly to openEditLeadModal
-    // For now, we'll just show a notification
-    showNotification('Edit content functionality would be implemented here');
+// Populate content options in select elements
+function populateContentOptions() {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const selectElements = document.querySelectorAll('.content-select');
+    
+    selectElements.forEach(select => {
+        // Clear existing options
+        $(select).empty();
+        
+        // Add new options
+        contentItems.forEach(content => {
+            const option = new Option(content.name, content.id);
+            $(select).append(option);
+        });
+    });
 }
 
 // Update conversion percentages between stages
 function updateConversionPercentages() {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
     // Awareness → Interest
@@ -1012,11 +909,7 @@ function updateConversionPercentages() {
 // Update analytics charts and metrics
 function updateAnalytics() {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
     // Update total leads count
@@ -1081,11 +974,7 @@ function exportToPDF() {
     
     // Add funnel data
     const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
     
     let yPosition = 50;
