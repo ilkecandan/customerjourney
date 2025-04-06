@@ -434,6 +434,17 @@ function getContentIcon(type) {
     };
     return icons[type] || icons.other;
 }
+function toggleModal(modalId, show = true) {
+    const modal = document.getElementById(modalId);
+    if (show) {
+        modal.classList.remove('hidden');
+        modal.classList.add('show');
+    } else {
+        modal.classList.remove('show');
+        modal.classList.add('hidden');
+    }
+}
+
 
 // Setup event listeners with improved event delegation
 function setupEventListeners() {
@@ -442,7 +453,9 @@ function setupEventListeners() {
         // Add Lead Button
         if (e.target.matches('#add-lead-btn, #add-lead-btn *')) {
             document.getElementById('lead-form').reset();
-            document.getElementById('add-lead-modal').classList.remove('hidden');
+const modal = document.getElementById('add-lead-modal');
+modal.classList.remove('hidden');
+modal.classList.add('show');
             return;
         }
         
