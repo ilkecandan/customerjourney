@@ -155,6 +155,110 @@ function initializeApp() {
     // Set up export/import buttons
     setupDataTransfer();
 }
+// Update loadLeads function
+function loadLeads() {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+    document.querySelectorAll('.stage-body').forEach(container => {
+        container.innerHTML = '';
+        const stage = container.dataset.dropTarget;
+        
+        // Add content badges for this stage
+        const stageContent = contentItems.filter(c => c.stage === stage);
+        if (stageContent.length > 0) {
+            const contentBadges = document.createElement('div');
+            contentBadges.className = 'content-badges';
+            
+            stageContent.forEach(content => {
+                const badge = document.createElement('div');
+                badge.className = 'content-badge';
+                badge.dataset.contentId = content.id;
+                badge.draggable = true;
+                badge.title = `${content.name}\n${content.description}`;
+                
+                badge.innerHTML = `
+                    <i class="${getContentIcon(content.type)}"></i>
+                    <span>${content.name.substring(0, 3)}</span>
+                `;
+                
+                badge.addEventListener('dragstart', handleContentDragStart);
+                badge.addEventListener('click', () => openEditContentModal(content));
+                
+                contentBadges.appendChild(badge);
+            });
+            
+            container.appendChild(contentBadges);
+        }
+
+        // Add leads
+        if (leads[stage].length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty';
+            emptyDiv.textContent = 'Drop leads here';
+            container.appendChild(emptyDiv);
+        } else {
+            leads[stage].forEach(lead => {
+                container.appendChild(createLeadCard(lead));
+            });
+        }
+    });
+
+    updateLeadsTable();
+    updateConversionPercentages();
+}
+
+// New drag handler for content
+function handleContentDragStart(e) {
+    e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
+    e.target.classList.add('dragging-content');
+}
+
+// Update CSS
+.content-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(0,0,0,0.1);
+}
+
+.content-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    cursor: grab;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(25, 118, 210, 0.2);
+}
+
+.content-badge:hover {
+    background: #bbdefb;
+    transform: translateY(-1px);
+}
+
+.content-badge i {
+    font-size: 0.7rem;
+}
+
+.content-badge.dragging-content {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+/* Make lead cards slightly different to distinguish */
+.lead-card {
+    background: white;
+    /* ... rest of your lead card styles ... */
+}
 
 // Set up data export/import functionality
 function setupDataTransfer() {
