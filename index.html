@@ -8,6 +8,182 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css">
+    <style>
+        /* Funnel visualization styles */
+        .funnel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin: 2rem 0;
+            position: relative;
+        }
+        
+        .funnel-stage {
+            width: 100%;
+            position: relative;
+            margin: 0;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-awareness {
+            width: 100%;
+            background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 2px solid #90caf9;
+        }
+        
+        .stage-interest {
+            width: 80%;
+            background: linear-gradient(145deg, #bbdefb, #90caf9);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 2px solid #64b5f6;
+        }
+        
+        .stage-consideration {
+            width: 60%;
+            background: linear-gradient(145deg, #90caf9, #64b5f6);
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stage-header h3 {
+            margin: 0;
+            color: #0d47a1;
+            font-weight: 600;
+        }
+        
+        .stage-stats {
+            background: rgba(255,255,255,0.8);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #0d47a1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stage-body {
+            min-height: 100px;
+            padding: 0.5rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.4);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-body.empty {
+            background: rgba(255,255,255,0.2);
+            border: 2px dashed rgba(13,71,161,0.3);
+            align-items: center;
+            justify-content: center;
+            color: rgba(13,71,161,0.5);
+            font-weight: 500;
+        }
+        
+        .stage-footer {
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        .conversion-arrow {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            color: #0d47a1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .conversion-arrow i {
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+        
+        .stage-sublevels {
+            display: flex;
+            width: 100%;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .sublevel {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255,255,255,0.3);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .sublevel h4 {
+            margin: 0 0 0.5rem 0;
+            color: #0d47a1;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        .sublevel .stage-body {
+            min-height: 80px;
+        }
+        
+        /* Lead card styling */
+        .lead-card {
+            background: white;
+            border-radius: 6px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            cursor: grab;
+            transition: all 0.2s ease;
+            border-left: 3px solid #0d47a1;
+        }
+        
+        .lead-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+        
+        .lead-card .company {
+            font-weight: 600;
+            color: #0d47a1;
+            margin-bottom: 0.2rem;
+        }
+        
+        .lead-card .contact {
+            font-size: 0.7rem;
+            color: #555;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stage-interest {
+                width: 90%;
+            }
+            
+            .stage-consideration {
+                width: 80%;
+            }
+            
+            .stage-sublevels {
+                flex-direction: column;
+            }
+            
+            .sublevel {
+                width: 100%;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -55,67 +231,89 @@
 
         <main>
             <section class="funnel-visualization">
-                <div class="funnel-stages">
-                    <div class="funnel-stage" data-stage="awareness">
-                        <h3>Awareness</h3>
-                        <div class="stage-content">
-                            <div class="stage-leads" data-drop-target="awareness">
-                                <!-- Leads will be populated here -->
-                            </div>
+                <div class="funnel-container">
+                    <!-- Awareness Stage -->
+                    <div class="funnel-stage stage-awareness" data-stage="awareness">
+                        <div class="stage-header">
+                            <h3>Awareness</h3>
                             <div class="stage-stats">
                                 <span class="lead-count">0</span>
                                 <span class="percentage">0%</span>
                             </div>
                         </div>
+                        <div class="stage-body" data-drop-target="awareness">
+                            <!-- Leads will be populated here -->
+                        </div>
+                        <div class="stage-footer">
+                            <div class="conversion-arrow">
+                                <span id="awareness-conversion-rate">0%</span>
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="funnel-stage" data-stage="interest">
-                        <h3>Interest</h3>
-                        <div class="stage-content">
-                            <div class="stage-leads" data-drop-target="interest">
-                                <!-- Leads will be populated here -->
-                            </div>
+                    <!-- Interest Stage -->
+                    <div class="funnel-stage stage-interest" data-stage="interest">
+                        <div class="stage-header">
+                            <h3>Interest</h3>
                             <div class="stage-stats">
                                 <span class="lead-count">0</span>
                                 <span class="percentage">0%</span>
                             </div>
                         </div>
+                        <div class="stage-body" data-drop-target="interest">
+                            <!-- Leads will be populated here -->
+                        </div>
+                        <div class="stage-footer">
+                            <div class="conversion-arrow">
+                                <span id="interest-conversion-rate">0%</span>
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="funnel-stage" data-stage="consideration">
-                        <h3>Consideration</h3>
+                    <!-- Consideration Stage -->
+                    <div class="funnel-stage stage-consideration" data-stage="consideration">
+                        <div class="stage-header">
+                            <h3>Consideration</h3>
+                            <div class="stage-stats">
+                                <span class="lead-count">0</span>
+                                <span class="percentage">0%</span>
+                            </div>
+                        </div>
                         <div class="stage-sublevels">
+                            <!-- Intent Sublevel -->
                             <div class="sublevel" data-sublevel="intent">
                                 <h4>Intent</h4>
-                                <div class="stage-leads" data-drop-target="intent">
+                                <div class="stage-body" data-drop-target="intent">
                                     <!-- Leads will be populated here -->
                                 </div>
                                 <div class="stage-stats">
                                     <span class="lead-count">0</span>
                                 </div>
                             </div>
+                            
+                            <!-- Evaluation Sublevel -->
                             <div class="sublevel" data-sublevel="evaluation">
                                 <h4>Evaluation</h4>
-                                <div class="stage-leads" data-drop-target="evaluation">
+                                <div class="stage-body" data-drop-target="evaluation">
                                     <!-- Leads will be populated here -->
                                 </div>
                                 <div class="stage-stats">
                                     <span class="lead-count">0</span>
                                 </div>
                             </div>
+                            
+                            <!-- Purchase Sublevel -->
                             <div class="sublevel" data-sublevel="purchase">
                                 <h4>Purchase</h4>
-                                <div class="stage-leads" data-drop-target="purchase">
+                                <div class="stage-body" data-drop-target="purchase">
                                     <!-- Leads will be populated here -->
                                 </div>
                                 <div class="stage-stats">
                                     <span class="lead-count">0</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="stage-stats">
-                            <span class="lead-count">0</span>
-                            <span class="percentage">0%</span>
                         </div>
                     </div>
                 </div>
