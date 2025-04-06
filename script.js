@@ -34,112 +34,106 @@ function setupAuth() {
 
 // Main application initialization
 function initializeApp() {
-    // Initialize default funnels if none exist
-    if (!localStorage.getItem('funnels')) {
-        const defaultFunnels = [
-            {
-                id: 'tof-' + Date.now(),
-                name: 'Top of Funnel (TOF)',
-                type: 'TOF',
-                description: 'Awareness stage - attracting potential customers',
-                leads: [],
-                contentStrategy: []
-            },
-            {
-                id: 'mof-' + Date.now(),
-                name: 'Middle of Funnel (MOF)',
-                type: 'MOF',
-                description: 'Consideration stage - nurturing leads',
-                leads: [],
-                contentStrategy: []
-            },
-            {
-                id: 'bof-' + Date.now(),
-                name: 'Bottom of Funnel (BOF)',
-                type: 'BOF',
-                description: 'Decision stage - converting leads to customers',
-                leads: [],
-                contentStrategy: []
-            }
-        ];
-        localStorage.setItem('funnels', JSON.stringify(defaultFunnels));
+    // Initialize default leads if none exist
+    if (!localStorage.getItem('leads')) {
+        const defaultLeads = {
+            awareness: [],
+            interest: [],
+            intent: [],
+            evaluation: [],
+            purchase: []
+        };
+        localStorage.setItem('leads', JSON.stringify(defaultLeads));
     }
 
-    // Load funnels and leads
-    loadFunnels();
+    // Initialize default content if none exists
+    if (!localStorage.getItem('content')) {
+        const defaultContent = [
+            {
+                id: 'content-1',
+                name: 'Introductory Blog Post',
+                description: 'Basic introduction to our product',
+                stage: 'awareness',
+                type: 'blog',
+                link: 'https://example.com/blog/intro',
+                targetConversion: 5
+            },
+            {
+                id: 'content-2',
+                name: 'Product Demo Video',
+                description: 'Detailed product demonstration',
+                stage: 'interest',
+                type: 'video',
+                link: 'https://example.com/demo',
+                targetConversion: 15
+            },
+            {
+                id: 'content-3',
+                name: 'Case Study',
+                description: 'Success story from existing customer',
+                stage: 'consideration',
+                type: 'casestudy',
+                link: 'https://example.com/case-study',
+                targetConversion: 25
+            }
+        ];
+        localStorage.setItem('content', JSON.stringify(defaultContent));
+    }
+
+    // Load data and setup UI
     loadLeads();
-    
-    // Setup event listeners
+    loadContent();
     setupEventListeners();
-    
-    // Initialize analytics
     updateAnalytics();
-    
-    // Setup PWA installation
     setupPWA();
 }
 
-// Load funnels from localStorage and render them
-function loadFunnels() {
-    const funnelsContainer = document.getElementById('funnels-container');
-    funnelsContainer.innerHTML = '';
-    
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
-    
-    funnels.forEach(funnel => {
-        const funnelElement = createFunnelElement(funnel);
-        funnelsContainer.appendChild(funnelElement);
-    });
-}
-
-// Create a funnel DOM element
-function createFunnelElement(funnel) {
-    const funnelElement = document.createElement('div');
-    funnelElement.className = 'compact-funnel';
-    funnelElement.dataset.funnelId = funnel.id;
-    funnelElement.dataset.funnelType = funnel.type;
-    
-    // Funnel header
-    const header = document.createElement('div');
-    header.className = 'funnel-header';
-    
-    const title = document.createElement('h3');
-    title.textContent = funnel.name;
-    
-    const count = document.createElement('div');
-    count.className = 'funnel-count';
-    count.textContent = funnel.leads.length;
-    
-    header.appendChild(title);
-    header.appendChild(count);
-    
-    // Funnel body (drop zone)
-    const body = document.createElement('div');
-    body.className = 'funnel-body';
-    body.addEventListener('dragover', handleDragOver);
-    body.addEventListener('dragleave', handleDragLeave);
-    body.addEventListener('drop', handleDrop);
-    
-    funnelElement.appendChild(header);
-    funnelElement.appendChild(body);
-    
-    return funnelElement;
-}
-
-// Load leads from all funnels and render them
+// Load leads into the funnel visualization
 function loadLeads() {
-    const leadsGrid = document.querySelector('.leads-grid');
-    leadsGrid.innerHTML = '';
-    
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
-    const allLeads = funnels.flatMap(funnel => 
-        funnel.leads.map(lead => ({ ...lead, funnelId: funnel.id }))
-    );
-    
-    allLeads.forEach(lead => {
-        const leadCard = createLeadCard(lead);
-        leadsGrid.appendChild(leadCard);
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+
+    // Clear existing leads
+    document.querySelectorAll('.stage-leads').forEach(container => {
+        container.innerHTML = '';
     });
+
+    // Populate leads for each stage
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const container = document.querySelector(`.stage-leads[data-drop-target="${stage}"]`);
+        
+        if (!container) continue;
+
+        if (stageLeads.length === 0) {
+            container.classList.add('empty');
+            container.textContent = 'No leads in this stage';
+            continue;
+        }
+
+        container.classList.remove('empty');
+        
+        stageLeads.forEach(lead => {
+            const leadCard = createLeadCard(lead);
+            container.appendChild(leadCard);
+        });
+
+        // Update stage stats
+        const stageElement = document.querySelector(`.funnel-stage[data-stage="${stage}"]`);
+        if (stageElement) {
+            const countElement = stageElement.querySelector('.lead-count');
+            if (countElement) {
+                countElement.textContent = stageLeads.length;
+            }
+        }
+    }
+
+    // Update conversion percentages
+    updateConversionPercentages();
 }
 
 // Create a lead card element
@@ -148,168 +142,132 @@ function createLeadCard(lead) {
     leadCard.className = 'lead-card';
     leadCard.draggable = true;
     leadCard.dataset.leadId = lead.id;
-    leadCard.dataset.funnelId = lead.funnelId;
-    
+    leadCard.dataset.currentStage = lead.currentStage;
+
     const company = document.createElement('div');
-    company.className = 'lead-company';
+    company.className = 'company';
     company.textContent = lead.company;
-    
-    const info = document.createElement('div');
-    info.className = 'lead-info';
-    
-    if (lead.email) {
-        const email = document.createElement('div');
-        email.className = 'lead-email';
-        email.innerHTML = `<i class="fas fa-envelope"></i> ${lead.email}`;
-        info.appendChild(email);
-    }
-    
-    if (lead.phone) {
-        const phone = document.createElement('div');
-        phone.className = 'lead-phone';
-        phone.innerHTML = `<i class="fas fa-phone"></i> ${lead.phone}`;
-        info.appendChild(phone);
-    }
-    
-    const stage = document.createElement('div');
-    stage.className = 'lead-stage';
-    stage.textContent = lead.funnelId.startsWith('tof') ? 'TOF' : 
-                       lead.funnelId.startsWith('mof') ? 'MOF' : 'BOF';
-    
-    const actions = document.createElement('div');
-    actions.className = 'lead-actions';
-    
-    const editBtn = document.createElement('button');
-    editBtn.className = 'lead-action-btn';
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    editBtn.addEventListener('click', () => openEditLeadModal(lead, lead.funnelId));
-    
-    actions.appendChild(editBtn);
-    
+
+    const contact = document.createElement('div');
+    contact.className = 'contact';
+    contact.textContent = lead.contact || 'No contact';
+
     leadCard.appendChild(company);
-    leadCard.appendChild(info);
-    leadCard.appendChild(stage);
-    leadCard.appendChild(actions);
-    
-    // Drag events
+    leadCard.appendChild(contact);
+
+    // Add drag events
     leadCard.addEventListener('dragstart', handleDragStart);
-    
+
+    // Add click event to show details
+    leadCard.addEventListener('click', () => showLeadDetails(lead));
+
     return leadCard;
 }
 
-// Drag and drop handlers
-function handleDragStart(e) {
-    e.dataTransfer.setData('text/plain', JSON.stringify({
-        leadId: e.target.dataset.leadId,
-        sourceFunnelId: e.target.dataset.funnelId
-    }));
-    e.target.classList.add('dragging');
-}
+// Load content strategies
+function loadContent() {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const container = document.getElementById('content-items-container');
+    container.innerHTML = '';
 
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
-}
+    contentItems.forEach(content => {
+        const item = document.createElement('div');
+        item.className = 'content-item';
+        item.dataset.contentId = content.id;
+        item.dataset.stage = content.stage;
 
-function handleDragLeave(e) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-}
+        const icon = document.createElement('i');
+        icon.className = getContentIcon(content.type);
 
-function handleDrop(e) {
-    e.preventDefault();
-    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-    const leadId = data.leadId;
-    const sourceFunnelId = data.sourceFunnelId;
-    const targetFunnelId = e.currentTarget.closest('.compact-funnel').dataset.funnelId;
-    
-    e.currentTarget.classList.remove('drag-over');
-    
-    if (sourceFunnelId !== targetFunnelId) {
-        moveLeadToFunnel(leadId, sourceFunnelId, targetFunnelId);
-    }
-    
-    // Reset dragged element
-    const draggingElement = document.querySelector('.lead-card.dragging');
-    if (draggingElement) {
-        draggingElement.classList.remove('dragging');
-    }
-}
+        const name = document.createElement('h4');
+        name.textContent = content.name;
 
-// Move lead to another funnel
-function moveLeadToFunnel(leadId, sourceFunnelId, targetFunnelId) {
-    const funnels = JSON.parse(localStorage.getItem('funnels'));
-    
-    // Find source funnel and lead
-    const sourceFunnel = funnels.find(f => f.id === sourceFunnelId);
-    const leadIndex = sourceFunnel.leads.findIndex(l => l.id === leadId);
-    
-    if (leadIndex === -1) return;
-    
-    const lead = sourceFunnel.leads[leadIndex];
-    
-    // Remove from source funnel
-    sourceFunnel.leads.splice(leadIndex, 1);
-    
-    // Add to target funnel
-    const targetFunnel = funnels.find(f => f.id === targetFunnelId);
-    targetFunnel.leads.push(lead);
-    
-    // Save to localStorage
-    localStorage.setItem('funnels', JSON.stringify(funnels));
-    
-    // Reload UI
-    loadFunnels();
-    loadLeads();
-    updateAnalytics();
-    
-    // Show notification
-    showNotification(`Lead moved to ${targetFunnel.name}`);
-}
+        const desc = document.createElement('p');
+        desc.className = 'content-description';
+        desc.textContent = content.description;
 
-// Setup event listeners for modals and buttons
-function setupEventListeners() {
-    // Add Funnel Modal
-    document.getElementById('add-funnel').addEventListener('click', () => {
-        document.getElementById('funnel-form').reset();
-        document.getElementById('funnel-form').onsubmit = function(e) {
-            e.preventDefault();
-            addFunnel();
-        };
-        document.getElementById('add-funnel-modal').classList.remove('hidden');
+        const stageBadge = document.createElement('span');
+        stageBadge.className = 'stage-badge';
+        stageBadge.textContent = content.stage.charAt(0).toUpperCase() + content.stage.slice(1);
+
+        const actions = document.createElement('div');
+        actions.className = 'content-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-content';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditContentModal(content);
+        });
+
+        actions.appendChild(editBtn);
+
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.appendChild(desc);
+        item.appendChild(stageBadge);
+        item.appendChild(actions);
+
+        container.appendChild(item);
     });
-    
+}
+
+// Get appropriate icon for content type
+function getContentIcon(type) {
+    const icons = {
+        blog: 'fas fa-file-alt',
+        ebook: 'fas fa-book',
+        video: 'fas fa-video',
+        webinar: 'fas fa-chalkboard-teacher',
+        casestudy: 'fas fa-chart-line',
+        demo: 'fas fa-desktop',
+        other: 'fas fa-file'
+    };
+    return icons[type] || icons.other;
+}
+
+// Setup event listeners
+function setupEventListeners() {
     // Add Lead Modal
     document.getElementById('add-lead-btn').addEventListener('click', () => {
         document.getElementById('lead-form').reset();
         document.getElementById('add-lead-modal').classList.remove('hidden');
     });
-    
+
     document.getElementById('lead-form').addEventListener('submit', function(e) {
         e.preventDefault();
         addLead();
     });
-    
+
+    // Add Content Modal
+    document.getElementById('add-content-btn').addEventListener('click', () => {
+        document.getElementById('content-form').reset();
+        document.getElementById('add-content-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('content-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        addContent();
+    });
+
     // Edit Lead Modal
     document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
         e.preventDefault();
         saveLeadChanges();
     });
-    
+
     document.getElementById('delete-lead-btn').addEventListener('click', function() {
-        const leadId = document.getElementById('edit-lead-id').value;
-        const funnelId = document.getElementById('edit-lead-form').dataset.funnelId;
-        deleteLead(leadId, funnelId);
-        document.getElementById('edit-lead-modal').classList.add('hidden');
+        deleteLead();
     });
-    
+
     // Close modals
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', function() {
             this.closest('.modal').classList.add('hidden');
         });
     });
-    
+
     // Click outside modal to close
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', function(e) {
@@ -318,223 +276,399 @@ function setupEventListeners() {
             }
         });
     });
-    
+
     // Export PDF
     document.getElementById('export-pdf').addEventListener('click', exportToPDF);
+
+    // Content filter
+    document.getElementById('content-stage-filter').addEventListener('change', function() {
+        filterContent(this.value);
+    });
+
+    // Lead filter
+    document.getElementById('lead-stage-filter').addEventListener('change', function() {
+        filterLeadsTable(this.value);
+    });
+
+    // Lead search
+    document.getElementById('lead-search').addEventListener('input', function() {
+        searchLeads(this.value);
+    });
+
+    // Initialize drag and drop
+    setupDragAndDrop();
 }
 
-// Add a new funnel
-function addFunnel() {
-    const name = document.getElementById('funnel-name').value;
-    const type = document.getElementById('funnel-type').value;
-    const description = document.getElementById('funnel-description').value;
+// Setup drag and drop functionality
+function setupDragAndDrop() {
+    const containers = document.querySelectorAll('.stage-leads');
+    const drake = dragula(Array.from(containers), {
+        moves: function(el, source, handle, sibling) {
+            return handle.classList.contains('lead-card');
+        }
+    });
+
+    drake.on('drop', function(el, target, source, sibling) {
+        const leadId = el.dataset.leadId;
+        const fromStage = source.dataset.dropTarget;
+        const toStage = target.dataset.dropTarget;
+        
+        if (fromStage !== toStage) {
+            moveLead(leadId, fromStage, toStage);
+        }
+    });
+}
+
+// Move lead between stages
+function moveLead(leadId, fromStage, toStage) {
+    const leads = JSON.parse(localStorage.getItem('leads'));
     
-    const newFunnel = {
-        id: 'funnel-' + Date.now(),
-        name: name,
-        type: type,
-        description: description,
-        leads: [],
-        contentStrategy: []
-    };
+    // Find the lead
+    const leadIndex = leads[fromStage].findIndex(lead => lead.id === leadId);
+    if (leadIndex === -1) return;
+
+    const lead = leads[fromStage][leadIndex];
     
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
-    funnels.push(newFunnel);
-    localStorage.setItem('funnels', JSON.stringify(funnels));
+    // Remove from old stage
+    leads[fromStage].splice(leadIndex, 1);
     
-    document.getElementById('add-funnel-modal').classList.add('hidden');
-    loadFunnels();
-    showNotification('Funnel added successfully');
+    // Update lead's current stage
+    lead.currentStage = toStage;
+    
+    // Add to new stage
+    leads[toStage].push(lead);
+    
+    // Save to storage
+    localStorage.setItem('leads', JSON.stringify(leads));
+    
+    // Update UI
+    loadLeads();
+    updateAnalytics();
+    
+    // Show notification
+    showNotification(`Lead moved to ${toStage.charAt(0).toUpperCase() + toStage.slice(1)} stage`);
+}
+
+// Drag start handler
+function handleDragStart(e) {
+    e.dataTransfer.setData('text/plain', e.target.dataset.leadId);
+    e.target.classList.add('dragging');
 }
 
 // Add a new lead
 function addLead() {
     const company = document.getElementById('lead-company').value;
+    const contact = document.getElementById('lead-contact').value;
     const email = document.getElementById('lead-email').value;
     const phone = document.getElementById('lead-phone').value;
-    const website = document.getElementById('lead-website').value;
+    const stage = document.getElementById('lead-stage').value;
     const notes = document.getElementById('lead-notes').value;
-    
-    const contentStrategySelect = document.getElementById('lead-content-strategy');
-    const contentStrategy = Array.from(contentStrategySelect.selectedOptions).map(opt => opt.value);
-    
-    // Default to TOF if no funnel specified
-    const funnels = JSON.parse(localStorage.getItem('funnels'));
-    const tofFunnel = funnels.find(f => f.type === 'TOF');
-    
+
+    // Get selected content strategies
+    const contentSelect = document.getElementById('lead-content');
+    const contentStrategies = Array.from(contentSelect.selectedOptions).map(opt => opt.value);
+
     const newLead = {
         id: 'lead-' + Date.now(),
-        company: company,
-        email: email,
-        phone: phone,
-        website: website,
-        notes: notes,
-        contentStrategy: contentStrategy,
-        dateAdded: new Date().toISOString()
+        company,
+        contact,
+        email,
+        phone,
+        currentStage: stage,
+        notes,
+        contentStrategies,
+        dateAdded: new Date().toISOString(),
+        lastContact: new Date().toISOString()
     };
+
+    // Add to storage
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    leads[stage].push(newLead);
+    localStorage.setItem('leads', JSON.stringify(leads));
+
+    // Close modal and reset form
+    document.getElementById('add-lead-modal').classList.add('hidden');
+    document.getElementById('lead-form').reset();
+
+    // Update UI
+    loadLeads();
+    updateAnalytics();
+    showNotification('Lead added successfully');
+}
+
+// Add new content strategy
+function addContent() {
+    const name = document.getElementById('content-name').value;
+    const description = document.getElementById('content-description').value;
+    const stage = document.getElementById('content-stage').value;
+    const type = document.getElementById('content-type').value;
+    const link = document.getElementById('content-link').value;
+    const targetConversion = document.getElementById('content-target-conversion').value || 0;
+
+    const newContent = {
+        id: 'content-' + Date.now(),
+        name,
+        description,
+        stage,
+        type,
+        link,
+        targetConversion: parseInt(targetConversion),
+        dateCreated: new Date().toISOString()
+    };
+
+    // Add to storage
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    contentItems.push(newContent);
+    localStorage.setItem('content', JSON.stringify(contentItems));
+
+    // Close modal and reset form
+    document.getElementById('add-content-modal').classList.add('hidden');
+    document.getElementById('content-form').reset();
+
+    // Update UI
+    loadContent();
+    showNotification('Content strategy added successfully');
+}
+
+// Show lead details
+function showLeadDetails(lead) {
+    document.getElementById('detail-company').textContent = lead.company;
+    document.getElementById('detail-contact').textContent = lead.contact || 'Not specified';
+    document.getElementById('detail-email').textContent = lead.email || 'Not specified';
+    document.getElementById('detail-phone').textContent = lead.phone || 'Not specified';
+    document.getElementById('detail-stage').textContent = lead.currentStage.charAt(0).toUpperCase() + lead.currentStage.slice(1);
+    document.getElementById('detail-source').textContent = lead.source || 'Unknown';
+    document.getElementById('detail-date').textContent = new Date(lead.dateAdded).toLocaleDateString();
+    document.getElementById('detail-last-contact').textContent = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
+    document.getElementById('detail-notes').textContent = lead.notes || 'No notes available';
+
+    // Populate content used
+    const contentList = document.getElementById('detail-content-list');
+    contentList.innerHTML = '';
     
-    if (tofFunnel) {
-        tofFunnel.leads.push(newLead);
-        localStorage.setItem('funnels', JSON.stringify(funnels));
-        
-        document.getElementById('add-lead-modal').classList.add('hidden');
-        document.getElementById('lead-form').reset();
-        loadLeads();
-        loadFunnels();
-        updateAnalytics();
-        showNotification('Lead added successfully');
+    if (lead.contentStrategies && lead.contentStrategies.length > 0) {
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        lead.contentStrategies.forEach(contentId => {
+            const content = contentItems.find(c => c.id === contentId);
+            if (content) {
+                const li = document.createElement('li');
+                li.textContent = `${content.name} (${content.type})`;
+                contentList.appendChild(li);
+            }
+        });
+    } else {
+        contentList.innerHTML = '<li>No content used yet</li>';
     }
+
+    // Populate timeline
+    const timeline = document.getElementById('detail-timeline');
+    timeline.innerHTML = '';
+
+    // Add stage changes to timeline
+    const stages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
+    const currentStageIndex = stages.indexOf(lead.currentStage);
+    
+    for (let i = 0; i <= currentStageIndex; i++) {
+        const stage = stages[i];
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        
+        const dot = document.createElement('div');
+        dot.className = 'timeline-dot';
+        
+        const content = document.createElement('div');
+        content.className = 'timeline-content';
+        content.innerHTML = `<strong>${stage.charAt(0).toUpperCase() + stage.slice(1)}</strong><br>
+                            <small>${i === 0 ? 'Added' : 'Moved'} on ${new Date(lead.dateAdded).toLocaleDateString()}</small>`;
+        
+        item.appendChild(dot);
+        item.appendChild(content);
+        timeline.appendChild(item);
+    }
+
+    // Show modal
+    document.getElementById('lead-details-modal').classList.remove('hidden');
 }
 
 // Open edit lead modal
-function openEditLeadModal(lead, funnelId) {
+function openEditLeadModal(lead) {
+    document.getElementById('edit-lead-id').value = lead.id;
     document.getElementById('edit-lead-company').value = lead.company;
+    document.getElementById('edit-lead-contact').value = lead.contact || '';
     document.getElementById('edit-lead-email').value = lead.email || '';
     document.getElementById('edit-lead-phone').value = lead.phone || '';
-    document.getElementById('edit-lead-website').value = lead.website || '';
+    document.getElementById('edit-lead-stage').value = lead.currentStage;
     document.getElementById('edit-lead-notes').value = lead.notes || '';
-    document.getElementById('edit-lead-id').value = lead.id;
-    
-    // Set content strategy
-    const contentStrategySelect = document.getElementById('edit-lead-content-strategy');
-    Array.from(contentStrategySelect.options).forEach(option => {
-        option.selected = lead.contentStrategy.includes(option.value);
+
+    // Set content strategies
+    const contentSelect = document.getElementById('edit-lead-content');
+    Array.from(contentSelect.options).forEach(option => {
+        option.selected = lead.contentStrategies && lead.contentStrategies.includes(option.value);
     });
-    
-    // Set funnel dropdown
-    const funnelSelect = document.getElementById('edit-lead-funnel');
-    funnelSelect.innerHTML = '';
-    
-    const funnels = JSON.parse(localStorage.getItem('funnels'));
-    funnels.forEach(funnel => {
-        const option = document.createElement('option');
-        option.value = funnel.id;
-        option.textContent = funnel.name;
-        option.selected = funnel.id === funnelId;
-        funnelSelect.appendChild(option);
-    });
-    
-    // Store funnelId on form for delete operation
-    document.getElementById('edit-lead-form').dataset.funnelId = funnelId;
-    
+
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
 // Save lead changes
 function saveLeadChanges() {
     const leadId = document.getElementById('edit-lead-id').value;
-    const currentFunnelId = document.getElementById('edit-lead-form').dataset.funnelId;
-    const newFunnelId = document.getElementById('edit-lead-funnel').value;
-    
     const company = document.getElementById('edit-lead-company').value;
+    const contact = document.getElementById('edit-lead-contact').value;
     const email = document.getElementById('edit-lead-email').value;
     const phone = document.getElementById('edit-lead-phone').value;
-    const website = document.getElementById('edit-lead-website').value;
+    const stage = document.getElementById('edit-lead-stage').value;
     const notes = document.getElementById('edit-lead-notes').value;
-    
-    const contentStrategySelect = document.getElementById('edit-lead-content-strategy');
-    const contentStrategy = Array.from(contentStrategySelect.selectedOptions).map(opt => opt.value);
-    
-    const funnels = JSON.parse(localStorage.getItem('funnels'));
-    
-    // Find current funnel and lead
-    const currentFunnel = funnels.find(f => f.id === currentFunnelId);
-    const leadIndex = currentFunnel.leads.findIndex(l => l.id === leadId);
-    
-    if (leadIndex === -1) return;
-    
-    // Update lead data
-    const updatedLead = {
-        ...currentFunnel.leads[leadIndex],
-        company: company,
-        email: email,
-        phone: phone,
-        website: website,
-        notes: notes,
-        contentStrategy: contentStrategy
-    };
-    
-    if (currentFunnelId !== newFunnelId) {
-        // Move to new funnel
-        currentFunnel.leads.splice(leadIndex, 1);
-        const newFunnel = funnels.find(f => f.id === newFunnelId);
-        newFunnel.leads.push(updatedLead);
-    } else {
-        // Update in current funnel
-        currentFunnel.leads[leadIndex] = updatedLead;
+
+    // Get selected content strategies
+    const contentSelect = document.getElementById('edit-lead-content');
+    const contentStrategies = Array.from(contentSelect.selectedOptions).map(opt => opt.value);
+
+    // Update lead in storage
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    let leadFound = false;
+
+    // Search through all stages to find the lead
+    for (const [stageKey, stageLeads] of Object.entries(leads)) {
+        const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+        
+        if (leadIndex !== -1) {
+            // If stage changed, move the lead
+            if (stageKey !== stage) {
+                const lead = stageLeads[leadIndex];
+                stageLeads.splice(leadIndex, 1);
+                
+                // Update lead properties
+                lead.company = company;
+                lead.contact = contact;
+                lead.email = email;
+                lead.phone = phone;
+                lead.currentStage = stage;
+                lead.notes = notes;
+                lead.contentStrategies = contentStrategies;
+                lead.lastContact = new Date().toISOString();
+                
+                // Add to new stage
+                leads[stage].push(lead);
+            } else {
+                // Just update the lead
+                const lead = stageLeads[leadIndex];
+                lead.company = company;
+                lead.contact = contact;
+                lead.email = email;
+                lead.phone = phone;
+                lead.notes = notes;
+                lead.contentStrategies = contentStrategies;
+                lead.lastContact = new Date().toISOString();
+            }
+            
+            leadFound = true;
+            break;
+        }
     }
-    
-    localStorage.setItem('funnels', JSON.stringify(funnels));
-    document.getElementById('edit-lead-modal').classList.add('hidden');
-    loadLeads();
-    loadFunnels();
-    updateAnalytics();
-    showNotification('Lead updated successfully');
+
+    if (leadFound) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+    }
 }
 
-// Delete a lead
-function deleteLead(leadId, funnelId) {
+// Delete lead
+function deleteLead() {
     if (confirm('Are you sure you want to delete this lead?')) {
-        const funnels = JSON.parse(localStorage.getItem('funnels'));
-        const funnel = funnels.find(f => f.id === funnelId);
-        
-        if (funnel) {
-            funnel.leads = funnel.leads.filter(lead => lead.id !== leadId);
-            localStorage.setItem('funnels', JSON.stringify(funnels));
+        const leadId = document.getElementById('edit-lead-id').value;
+        const leads = JSON.parse(localStorage.getItem('leads'));
+        let leadFound = false;
+
+        // Search through all stages to find the lead
+        for (const stageLeads of Object.values(leads)) {
+            const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+            
+            if (leadIndex !== -1) {
+                stageLeads.splice(leadIndex, 1);
+                leadFound = true;
+                break;
+            }
+        }
+
+        if (leadFound) {
+            localStorage.setItem('leads', JSON.stringify(leads));
+            document.getElementById('edit-lead-modal').classList.add('hidden');
             loadLeads();
-            loadFunnels();
             updateAnalytics();
             showNotification('Lead deleted successfully');
         }
     }
 }
 
-// Update analytics
+// Open edit content modal
+function openEditContentModal(content) {
+    document.getElementById('edit-content-id').value = content.id;
+    document.getElementById('edit-content-name').value = content.name;
+    document.getElementById('edit-content-description').value = content.description;
+    document.getElementById('edit-content-stage').value = content.stage;
+    document.getElementById('edit-content-type').value = content.type;
+    document.getElementById('edit-content-link').value = content.link;
+    document.getElementById('edit-content-target-conversion').value = content.targetConversion;
+
+    document.getElementById('edit-content-modal').classList.remove('hidden');
+}
+
+// Update conversion percentages between stages
+function updateConversionPercentages() {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+
+    // Awareness → Interest
+    const awarenessCount = leads.awareness.length;
+    const interestCount = leads.interest.length;
+    const awarenessInterestRate = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
+    document.getElementById('awareness-interest-rate').textContent = `${awarenessInterestRate}%`;
+
+    // Interest → Consideration (average of intent, evaluation, purchase)
+    const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
+    const interestConsiderationRate = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
+    document.getElementById('interest-consideration-rate').textContent = `${interestConsiderationRate}%`;
+
+    // Overall conversion rate (awareness → purchase)
+    const purchaseCount = leads.purchase.length;
+    const overallConversionRate = awarenessCount > 0 ? Math.round((purchaseCount / awarenessCount) * 100) : 0;
+    document.getElementById('conversion-rate').textContent = `${overallConversionRate}%`;
+}
+
+// Update analytics charts and metrics
 function updateAnalytics() {
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
-    
-    // Calculate total leads
-    const totalLeads = funnels.reduce((sum, funnel) => sum + funnel.leads.length, 0);
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+
+    // Update total leads count
+    const totalLeads = Object.values(leads).reduce((sum, stageLeads) => sum + stageLeads.length, 0);
     document.getElementById('total-leads').textContent = totalLeads;
-    
-    // Find TOF, MOF, BOF funnels
-    const tofFunnel = funnels.find(f => f.type === 'TOF');
-    const mofFunnel = funnels.find(f => f.type === 'MOF');
-    const bofFunnel = funnels.find(f => f.type === 'BOF');
-    
-    // Calculate conversion rates
-    let tofMofRate = '0%';
-    let mofBofRate = '0%';
-    let overallRate = '0%';
-    
-    if (tofFunnel && mofFunnel) {
-        const tofCount = tofFunnel.leads.length;
-        const mofCount = mofFunnel.leads.length;
-        tofMofRate = tofCount > 0 ? `${Math.round((mofCount / tofCount) * 100)}%` : '0%';
-    }
-    
-    if (mofFunnel && bofFunnel) {
-        const mofCount = mofFunnel.leads.length;
-        const bofCount = bofFunnel.leads.length;
-        mofBofRate = mofCount > 0 ? `${Math.round((bofCount / mofCount) * 100)}%` : '0%';
-    }
-    
-    if (tofFunnel && bofFunnel) {
-        const tofCount = tofFunnel.leads.length;
-        const bofCount = bofFunnel.leads.length;
-        overallRate = tofCount > 0 ? `${Math.round((bofCount / tofCount) * 100)}%` : '0%';
-    }
-    
-    document.getElementById('tof-mof-rate').textContent = tofMofRate;
-    document.getElementById('mof-bof-rate').textContent = mofBofRate;
-    document.getElementById('overall-rate').textContent = overallRate;
-    
-    // Update chart
-    updateConversionChart(tofFunnel, mofFunnel, bofFunnel);
+
+    // Update conversion percentages
+    updateConversionPercentages();
+
+    // Update conversion chart
+    updateConversionChart(leads);
+
+    // Update content performance metrics
+    updateContentMetrics();
 }
 
 // Update conversion chart
-function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
+function updateConversionChart(leads) {
     const ctx = document.getElementById('conversion-chart').getContext('2d');
     
     // Destroy previous chart if it exists
@@ -542,26 +676,34 @@ function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
         window.conversionChart.destroy();
     }
     
-    const tofCount = tofFunnel ? tofFunnel.leads.length : 0;
-    const mofCount = mofFunnel ? mofFunnel.leads.length : 0;
-    const bofCount = bofFunnel ? bofFunnel.leads.length : 0;
+    const stageData = [
+        leads.awareness.length,
+        leads.interest.length,
+        leads.intent.length,
+        leads.evaluation.length,
+        leads.purchase.length
+    ];
     
     window.conversionChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['TOF (Awareness)', 'MOF (Consideration)', 'BOF (Decision)'],
+            labels: ['Awareness', 'Interest', 'Intent', 'Evaluation', 'Purchase'],
             datasets: [{
                 label: 'Number of Leads',
-                data: [tofCount, mofCount, bofCount],
+                data: stageData,
                 backgroundColor: [
                     'rgba(54, 162, 235, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
                     'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)'
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
                 ],
                 borderColor: [
                     'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
                     'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)'
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(153, 102, 255, 1)'
                 ],
                 borderWidth: 1
             }]
@@ -593,17 +735,173 @@ function updateConversionChart(tofFunnel, mofFunnel, bofFunnel) {
                         afterLabel: function(context) {
                             const label = context.label || '';
                             const value = context.raw || 0;
+                            const index = context.dataIndex;
                             
-                            if (label.includes('TOF') && mofCount > 0) {
-                                return `TOF → MOF Conversion: ${Math.round((mofCount / tofCount) * 100)}%`;
-                            } else if (label.includes('MOF') && bofCount > 0) {
-                                return `MOF → BOF Conversion: ${Math.round((bofCount / mofCount) * 100)}%`;
+                            if (index === 0) {
+                                const nextValue = stageData[1] || 0;
+                                return `Conversion to Interest: ${Math.round((nextValue / value) * 100)}%`;
+                            } else if (index === 1) {
+                                const nextValue = stageData[2] + stageData[3] + stageData[4];
+                                return `Conversion to Consideration: ${Math.round((nextValue / value) * 100)}%`;
+                            } else if (index === 4) {
+                                const firstValue = stageData[0] || 1;
+                                return `Overall Conversion: ${Math.round((value / firstValue) * 100)}%`;
                             }
                             return '';
                         }
                     }
                 }
             }
+        }
+    });
+}
+
+// Update content performance metrics
+function updateContentMetrics() {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+
+    // Calculate most used content
+    const contentUsage = {};
+    contentItems.forEach(content => {
+        contentUsage[content.id] = 0;
+    });
+
+    // Count usage across all leads
+    Object.values(leads).forEach(stageLeads => {
+        stageLeads.forEach(lead => {
+            if (lead.contentStrategies) {
+                lead.contentStrategies.forEach(contentId => {
+                    if (contentUsage[contentId] !== undefined) {
+                        contentUsage[contentId]++;
+                    }
+                });
+            }
+        });
+    });
+
+    // Find most used content
+    let mostUsedContent = '-';
+    let maxUsage = 0;
+    for (const [contentId, usage] of Object.entries(contentUsage)) {
+        if (usage > maxUsage) {
+            const content = contentItems.find(c => c.id === contentId);
+            if (content) {
+                mostUsedContent = content.name;
+                maxUsage = usage;
+            }
+        }
+    }
+    document.getElementById('most-used-content').textContent = mostUsedContent;
+
+    // Update content chart
+    updateContentChart(contentItems, contentUsage);
+}
+
+// Update content chart
+function updateContentChart(contentItems, contentUsage) {
+    const ctx = document.getElementById('content-chart').getContext('2d');
+    
+    // Destroy previous chart if it exists
+    if (window.contentChart) {
+        window.contentChart.destroy();
+    }
+    
+    // Prepare data
+    const labels = contentItems.map(content => content.name);
+    const data = contentItems.map(content => contentUsage[content.id] || 0);
+    const backgroundColors = contentItems.map(content => {
+        const colors = {
+            blog: 'rgba(54, 162, 235, 0.7)',
+            ebook: 'rgba(255, 99, 132, 0.7)',
+            video: 'rgba(255, 206, 86, 0.7)',
+            webinar: 'rgba(75, 192, 192, 0.7)',
+            casestudy: 'rgba(153, 102, 255, 0.7)',
+            demo: 'rgba(255, 159, 64, 0.7)',
+            other: 'rgba(199, 199, 199, 0.7)'
+        };
+        return colors[content.type] || colors.other;
+    });
+    
+    window.contentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: backgroundColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Filter content by stage
+function filterContent(stage) {
+    const contentItems = document.querySelectorAll('.content-item');
+    
+    contentItems.forEach(item => {
+        if (stage === 'all' || item.dataset.stage === stage) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Filter leads table by stage
+function filterLeadsTable(stage) {
+    const rows = document.querySelectorAll('#leads-table-body tr');
+    
+    rows.forEach(row => {
+        const rowStage = row.dataset.stage;
+        if (stage === 'all' || rowStage === stage) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Search leads
+function searchLeads(query) {
+    const rows = document.querySelectorAll('#leads-table-body tr');
+    const normalizedQuery = query.toLowerCase();
+    
+    rows.forEach(row => {
+        const company = row.querySelector('.company-cell').textContent.toLowerCase();
+        const contact = row.querySelector('.contact-cell').textContent.toLowerCase();
+        
+        if (company.includes(normalizedQuery) || contact.includes(normalizedQuery)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
     });
 }
@@ -622,56 +920,71 @@ function exportToPDF() {
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
     
     // Add funnel data
-    const funnels = JSON.parse(localStorage.getItem('funnels')) || [];
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+    
     let yPosition = 50;
     
-    funnels.forEach(funnel => {
-        // Funnel header
+    // Add funnel visualization summary
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 255);
+    doc.text('Funnel Summary', 14, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Awareness: ${leads.awareness.length} leads`, 14, yPosition);
+    yPosition += 7;
+    doc.text(`Interest: ${leads.interest.length} leads`, 14, yPosition);
+    yPosition += 7;
+    doc.text(`Consideration: ${leads.intent.length + leads.evaluation.length + leads.purchase.length} leads`, 14, yPosition);
+    yPosition += 7;
+    doc.text(`Purchases: ${leads.purchase.length} leads`, 14, yPosition);
+    yPosition += 15;
+    
+    // Add conversion rates
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 255);
+    doc.text('Conversion Rates', 14, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Awareness → Interest: ${document.getElementById('awareness-interest-rate').textContent}`, 14, yPosition);
+    yPosition += 7;
+    doc.text(`Interest → Consideration: ${document.getElementById('interest-consideration-rate').textContent}`, 14, yPosition);
+    yPosition += 7;
+    doc.text(`Overall Conversion: ${document.getElementById('conversion-rate').textContent}`, 14, yPosition);
+    yPosition += 15;
+    
+    // Add content strategy summary
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    if (contentItems.length > 0) {
         doc.setFontSize(14);
         doc.setTextColor(0, 0, 255);
-        doc.text(`${funnel.name} (${funnel.type})`, 14, yPosition);
+        doc.text('Content Strategy', 14, yPosition);
         yPosition += 10;
         
-        // Funnel description
         doc.setFontSize(10);
         doc.setTextColor(0, 0, 0);
-        doc.text(`Description: ${funnel.description}`, 14, yPosition);
-        yPosition += 10;
         
-        // Content strategy
-        doc.text(`Content Strategy: ${funnel.contentStrategy.join(', ') || 'None defined'}`, 14, yPosition);
-        yPosition += 10;
-        
-        // Leads count
-        doc.text(`Leads: ${funnel.leads.length}`, 14, yPosition);
-        yPosition += 10;
-        
-        // Add space between funnels
-        yPosition += 10;
-        
-        // Check if we need a new page
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
-        }
-    });
-    
-    // Add analytics
-    doc.addPage();
-    doc.setFontSize(16);
-    doc.text('Funnel Analytics', 105, 20, { align: 'center' });
-    
-    // Get analytics data
-    const totalLeads = document.getElementById('total-leads').textContent;
-    const tofMofRate = document.getElementById('tof-mof-rate').textContent;
-    const mofBofRate = document.getElementById('mof-bof-rate').textContent;
-    const overallRate = document.getElementById('overall-rate').textContent;
-    
-    doc.setFontSize(12);
-    doc.text(`Total Leads: ${totalLeads}`, 14, 40);
-    doc.text(`TOF → MOF Conversion Rate: ${tofMofRate}`, 14, 50);
-    doc.text(`MOF → BOF Conversion Rate: ${mofBofRate}`, 14, 60);
-    doc.text(`Overall Conversion Rate: ${overallRate}`, 14, 70);
+        contentItems.forEach(content => {
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 20;
+            }
+            
+            doc.text(`${content.name} (${content.type}) - ${content.stage} stage`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Target conversion: ${content.targetConversion}%`, 20, yPosition);
+            yPosition += 7;
+        });
+    }
     
     // Save the PDF
     doc.save('Marketing_Funnel_Report.pdf');
