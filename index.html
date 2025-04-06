@@ -8,9 +8,61 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css">
+    <style>
+        /* Auth screen styles - kept inline since not in provided CSS */
+        .auth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-box h2 {
+            color: #4361ee;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-box input:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Auth Screen -->
     <div id="auth-screen" class="auth-container">
         <div class="auth-box">
             <h2>FunnelFlow Login</h2>
@@ -20,16 +72,24 @@
         </div>
     </div>
 
+    <!-- Main App Container -->
     <div id="app-container" class="hidden">
+        <!-- Header -->
         <header>
             <div class="header-left">
                 <h1>FunnelFlow</h1>
             </div>
             <div class="header-right">
                 <div class="header-actions">
-                    <button id="add-lead-btn" class="action-btn">+ Add Lead</button>
-                    <button id="add-content-btn" class="action-btn">+ Add Content</button>
-                    <button id="export-pdf" class="action-btn">Export PDF</button>
+                    <button id="add-lead-btn" class="action-btn">
+                        <i class="fas fa-plus"></i> Add Lead
+                    </button>
+                    <button id="add-content-btn" class="action-btn">
+                        <i class="fas fa-file-alt"></i> Add Content
+                    </button>
+                    <button id="export-pdf" class="action-btn">
+                        <i class="fas fa-file-pdf"></i> Export
+                    </button>
                 </div>
                 <div class="analytics-summary">
                     <div class="analytics-item">
@@ -52,9 +112,13 @@
             </div>
         </header>
 
+        <!-- Main Content - 50/50 Split -->
         <main class="main-content">
-            <!-- Funnel Visualization (Left Side) -->
+            <!-- Left Side: Compact Funnel Visualization -->
             <div class="funnel-sidebar">
+                <div class="section-header">
+                    <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
+                </div>
                 <div class="funnel-container">
                     <!-- Awareness Stage -->
                     <div class="funnel-stage stage-awareness" data-stage="awareness">
@@ -66,7 +130,6 @@
                             </div>
                         </div>
                         <div class="stage-body" data-drop-target="awareness">
-                            <!-- Leads will be populated here -->
                             <div class="stage-body empty">Drop leads here</div>
                         </div>
                         <div class="stage-footer">
@@ -87,7 +150,6 @@
                             </div>
                         </div>
                         <div class="stage-body" data-drop-target="interest">
-                            <!-- Leads will be populated here -->
                             <div class="stage-body empty">Drop leads here</div>
                         </div>
                         <div class="stage-footer">
@@ -112,7 +174,6 @@
                             <div class="sublevel" data-sublevel="intent">
                                 <h4>Intent</h4>
                                 <div class="stage-body" data-drop-target="intent">
-                                    <!-- Leads will be populated here -->
                                     <div class="stage-body empty">Drop leads here</div>
                                 </div>
                                 <div class="stage-stats">
@@ -124,7 +185,6 @@
                             <div class="sublevel" data-sublevel="evaluation">
                                 <h4>Evaluation</h4>
                                 <div class="stage-body" data-drop-target="evaluation">
-                                    <!-- Leads will be populated here -->
                                     <div class="stage-body empty">Drop leads here</div>
                                 </div>
                                 <div class="stage-stats">
@@ -136,7 +196,6 @@
                             <div class="sublevel" data-sublevel="purchase">
                                 <h4>Purchase</h4>
                                 <div class="stage-body" data-drop-target="purchase">
-                                    <!-- Leads will be populated here -->
                                     <div class="stage-body empty">Drop leads here</div>
                                 </div>
                                 <div class="stage-stats">
@@ -148,7 +207,7 @@
                 </div>
             </div>
 
-            <!-- Lead Management (Right Side) -->
+            <!-- Right Side: Lead Management -->
             <div class="leads-management">
                 <div class="section-header">
                     <h2><i class="fas fa-users"></i> Lead Management</h2>
@@ -181,7 +240,6 @@
                             </tr>
                         </thead>
                         <tbody id="leads-table-body">
-                            <!-- Leads will be populated here -->
                             <tr>
                                 <td colspan="6" style="text-align: center;">No leads found</td>
                             </tr>
@@ -191,10 +249,10 @@
             </div>
         </main>
 
-        <!-- Modals -->
+        <!-- Add Lead Modal -->
         <div id="add-lead-modal" class="modal hidden">
             <div class="modal-content">
-                <span class="close-modal">&times;</span>
+                <button class="close-modal">&times;</button>
                 <h2>Add New Lead</h2>
                 <form id="lead-form">
                     <div class="form-columns">
@@ -239,7 +297,9 @@
                     <div class="form-group full-width">
                         <label for="lead-content">Content Strategy</label>
                         <select id="lead-content" class="content-select" multiple>
-                            <!-- Options will be populated by JavaScript -->
+                            <option value="blog1">Blog: Product Benefits</option>
+                            <option value="ebook1">E-book: Industry Trends</option>
+                            <option value="video1">Video: Product Demo</option>
                         </select>
                     </div>
                     <div class="form-group full-width">
@@ -254,9 +314,10 @@
             </div>
         </div>
 
+        <!-- Add Content Modal -->
         <div id="add-content-modal" class="modal hidden">
             <div class="modal-content">
-                <span class="close-modal">&times;</span>
+                <button class="close-modal">&times;</button>
                 <h2>Add Content Strategy</h2>
                 <form id="content-form">
                     <div class="form-group">
@@ -305,9 +366,10 @@
             </div>
         </div>
 
+        <!-- Edit Lead Modal -->
         <div id="edit-lead-modal" class="modal hidden">
             <div class="modal-content">
-                <span class="close-modal">&times;</span>
+                <button class="close-modal">&times;</button>
                 <h2>Edit Lead</h2>
                 <form id="edit-lead-form">
                     <input type="hidden" id="edit-lead-id">
@@ -353,7 +415,9 @@
                     <div class="form-group full-width">
                         <label for="edit-lead-content">Content Strategy</label>
                         <select id="edit-lead-content" class="content-select" multiple>
-                            <!-- Options will be populated by JavaScript -->
+                            <option value="blog1">Blog: Product Benefits</option>
+                            <option value="ebook1">E-book: Industry Trends</option>
+                            <option value="video1">Video: Product Demo</option>
                         </select>
                     </div>
                     <div class="form-group full-width">
@@ -368,10 +432,11 @@
             </div>
         </div>
 
+        <!-- Toast Notification -->
         <div id="toast" class="toast"></div>
     </div>
 
-    <!-- Add jQuery before Select2 -->
+    <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
