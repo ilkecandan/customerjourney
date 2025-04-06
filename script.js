@@ -14,17 +14,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// Authentication setup
+// Authentication setup with configurable PINs
 function setupAuth() {
     const pinInput = document.getElementById('pin-input');
     const loginBtn = document.getElementById('login-btn');
     const pinError = document.getElementById('pin-error');
+    
+    // Configurable PINs (can be extended or loaded from server)
+    const validPins = ['1234', '4321', '0000']; // Add more PINs as needed
 
     // Focus on the PIN input when the page loads
     pinInput.focus();
 
     loginBtn.addEventListener('click', function() {
-        if (pinInput.value === '1234') {
+        if (validPins.includes(pinInput.value)) {
             localStorage.setItem('authenticated', 'true');
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
@@ -52,12 +55,21 @@ function setupAuth() {
 function initializeApp() {
     console.log('Initializing app...');
     
+    // Initialize metadata if none exists
+    if (!localStorage.getItem('funnel_metadata')) {
+        localStorage.setItem('funnel_metadata', JSON.stringify({
+            created: new Date().toISOString(),
+            version: '1.1',
+            last_updated: new Date().toISOString()
+        }));
+    }
+    
     // Initialize default leads if none exist
     if (!localStorage.getItem('leads')) {
         const defaultLeads = {
             awareness: [
                 {
-                    id: 'lead-1',
+                    id: 'lead-' + Date.now(),
                     company: 'Acme Inc',
                     contact: 'John Smith',
                     email: 'john@acme.com',
@@ -71,7 +83,7 @@ function initializeApp() {
             ],
             interest: [
                 {
-                    id: 'lead-2',
+                    id: 'lead-' + Date.now(),
                     company: 'Globex Corp',
                     contact: 'Sarah Johnson',
                     email: 'sarah@globex.com',
@@ -94,7 +106,7 @@ function initializeApp() {
     if (!localStorage.getItem('content')) {
         const defaultContent = [
             {
-                id: 'content-1',
+                id: 'content-' + Date.now(),
                 name: 'Introductory Blog Post',
                 description: 'Basic introduction to our product',
                 stage: 'awareness',
@@ -103,7 +115,7 @@ function initializeApp() {
                 targetConversion: 5
             },
             {
-                id: 'content-2',
+                id: 'content-' + Date.now(),
                 name: 'Product Demo Video',
                 description: 'Detailed product demonstration',
                 stage: 'interest',
@@ -112,7 +124,7 @@ function initializeApp() {
                 targetConversion: 15
             },
             {
-                id: 'content-3',
+                id: 'content-' + Date.now(),
                 name: 'Case Study',
                 description: 'Success story from existing customer',
                 stage: 'consideration',
@@ -139,6 +151,77 @@ function initializeApp() {
     setupEventListeners();
     updateAnalytics();
     setupDragAndDrop();
+    
+    // Set up export/import buttons
+    setupDataTransfer();
+}
+
+// Set up data export/import functionality
+function setupDataTransfer() {
+    document.getElementById('export-data')?.addEventListener('click', exportLeads);
+    document.getElementById('import-data')?.addEventListener('change', function(e) {
+        if (e.target.files.length) importLeads(e.target.files[0]);
+    });
+}
+
+// Export leads and content as JSON file
+function exportLeads() {
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    const content = JSON.parse(localStorage.getItem('content'));
+    const metadata = JSON.parse(localStorage.getItem('funnel_metadata'));
+    
+    const data = { 
+        leads, 
+        content, 
+        metadata,
+        exported: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `funnel-data-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    showNotification('Data exported successfully');
+}
+
+// Import leads and content from JSON file
+function importLeads(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (data.leads && data.content) {
+                if (confirm('Importing data will overwrite your current leads and content. Continue?')) {
+                    localStorage.setItem('leads', JSON.stringify(data.leads));
+                    localStorage.setItem('content', JSON.stringify(data.content));
+                    
+                    // Update metadata but keep original creation date
+                    const existingMeta = JSON.parse(localStorage.getItem('funnel_metadata'));
+                    localStorage.setItem('funnel_metadata', JSON.stringify({
+                        ...existingMeta,
+                        last_updated: new Date().toISOString(),
+                        imported: new Date().toISOString()
+                    }));
+                    
+                    // Refresh UI
+                    loadLeads();
+                    loadContent();
+                    populateContentOptions();
+                    updateAnalytics();
+                    showNotification('Data imported successfully');
+                }
+            } else {
+                showNotification('Invalid data format', 'error');
+            }
+        } catch (error) {
+            showNotification('Error importing data', 'error');
+            console.error('Import error:', error);
+        }
+    };
+    reader.readAsText(file);
 }
 
 // Populate content options in select elements
@@ -220,6 +303,7 @@ function loadLeads() {
 
 // Create a lead card element for the funnel
 function createLeadCard(lead) {
+    const fragment = document.createDocumentFragment();
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card';
     leadCard.draggable = true;
@@ -243,7 +327,8 @@ function createLeadCard(lead) {
     // Add click event to show edit modal
     leadCard.addEventListener('click', () => openEditLeadModal(lead));
 
-    return leadCard;
+    fragment.appendChild(leadCard);
+    return fragment;
 }
 
 // Update the leads table with all leads
@@ -434,6 +519,7 @@ function getContentIcon(type) {
     };
     return icons[type] || icons.other;
 }
+
 function toggleModal(modalId, show = true) {
     const modal = document.getElementById(modalId);
     if (show) {
@@ -445,7 +531,6 @@ function toggleModal(modalId, show = true) {
     }
 }
 
-
 // Setup event listeners with improved event delegation
 function setupEventListeners() {
     // Use event delegation for buttons since they might not exist yet
@@ -453,16 +538,18 @@ function setupEventListeners() {
         // Add Lead Button
         if (e.target.matches('#add-lead-btn, #add-lead-btn *')) {
             document.getElementById('lead-form').reset();
-const modal = document.getElementById('add-lead-modal');
-modal.classList.remove('hidden');
-modal.classList.add('show');
+            const modal = document.getElementById('add-lead-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('show');
             return;
         }
         
-        // Add Content Button
+        // Add Content Button - Fixed to properly show modal
         if (e.target.matches('#add-content-btn, #add-content-btn *')) {
             document.getElementById('content-form').reset();
-            document.getElementById('add-content-modal').classList.remove('hidden');
+            const modal = document.getElementById('add-content-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('show');
             return;
         }
         
@@ -514,11 +601,14 @@ modal.classList.add('show');
         filterLeadsTable(this.value);
     });
 
-    // Lead search
+    // Lead search with debounce
     const leadSearch = document.getElementById('lead-search');
     if (leadSearch) {
         leadSearch.addEventListener('input', function() {
-            searchLeads(this.value);
+            clearTimeout(searchLeads.debounce);
+            searchLeads.debounce = setTimeout(() => {
+                searchLeads(this.value);
+            }, 300);
         });
     }
 }
