@@ -50,6 +50,8 @@ function setupAuth() {
 
 // Main application initialization
 function initializeApp() {
+    console.log('Initializing app...');
+    
     // Initialize default leads if none exist
     if (!localStorage.getItem('leads')) {
         const defaultLeads = {
@@ -433,49 +435,53 @@ function getContentIcon(type) {
     return icons[type] || icons.other;
 }
 
-// Setup event listeners
+// Setup event listeners with improved event delegation
 function setupEventListeners() {
-    // Add Lead Modal
-    document.getElementById('add-lead-btn').addEventListener('click', () => {
-        document.getElementById('lead-form').reset();
-        document.getElementById('add-lead-modal').classList.remove('hidden');
+    // Use event delegation for buttons since they might not exist yet
+    document.addEventListener('click', function(e) {
+        // Add Lead Button
+        if (e.target.matches('#add-lead-btn, #add-lead-btn *')) {
+            document.getElementById('lead-form').reset();
+            document.getElementById('add-lead-modal').classList.remove('hidden');
+            return;
+        }
+        
+        // Add Content Button
+        if (e.target.matches('#add-content-btn, #add-content-btn *')) {
+            document.getElementById('content-form').reset();
+            document.getElementById('add-content-modal').classList.remove('hidden');
+            return;
+        }
+        
+        // Close buttons
+        if (e.target.matches('.close-modal, .close-modal *, .cancel-btn, .cancel-btn *')) {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.add('hidden');
+            });
+            return;
+        }
     });
 
-    document.getElementById('lead-form').addEventListener('submit', function(e) {
+    // Form submissions
+    document.getElementById('lead-form')?.addEventListener('submit', function(e) {
         e.preventDefault();
         addLead();
     });
 
-    // Add Content Modal
-    document.getElementById('add-content-btn').addEventListener('click', () => {
-        document.getElementById('content-form').reset();
-        document.getElementById('add-content-modal').classList.remove('hidden');
-    });
-
-    document.getElementById('content-form').addEventListener('submit', function(e) {
+    document.getElementById('content-form')?.addEventListener('submit', function(e) {
         e.preventDefault();
         addContent();
     });
 
-    // Edit Lead Modal
-    document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
+    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
         e.preventDefault();
         saveLeadChanges();
     });
 
-    document.getElementById('delete-lead-btn').addEventListener('click', function() {
+    document.getElementById('delete-lead-btn')?.addEventListener('click', function() {
         if (confirm('Are you sure you want to delete this lead?')) {
             deleteLead();
         }
-    });
-
-    // Close modals
-    document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.add('hidden');
-            });
-        });
     });
 
     // Click outside modal to close
@@ -488,10 +494,10 @@ function setupEventListeners() {
     });
 
     // Export PDF
-    document.getElementById('export-pdf').addEventListener('click', exportToPDF);
+    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
 
     // Lead filter
-    document.getElementById('lead-stage-filter').addEventListener('change', function() {
+    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
         filterLeadsTable(this.value);
     });
 
@@ -504,24 +510,34 @@ function setupEventListeners() {
     }
 }
 
-// Setup drag and drop functionality
+// Setup drag and drop functionality with improved initialization
 function setupDragAndDrop() {
-    const containers = document.querySelectorAll('.stage-body');
-    const drake = dragula(Array.from(containers), {
-        moves: function(el, source, handle, sibling) {
-            return el.classList.contains('lead-card');
-        }
-    });
-
-    drake.on('drop', function(el, target, source, sibling) {
-        const leadId = el.dataset.leadId;
-        const fromStage = source.dataset.dropTarget;
-        const toStage = target.dataset.dropTarget;
+    // Wait a brief moment to ensure DOM is ready
+    setTimeout(() => {
+        const containers = Array.from(document.querySelectorAll('.stage-body'));
+        console.log('Dragula containers found:', containers.length);
         
-        if (fromStage !== toStage) {
-            moveLead(leadId, fromStage, toStage);
+        // Only initialize if we found containers
+        if (containers.length > 0) {
+            const drake = dragula(containers, {
+                moves: function(el, source, handle, sibling) {
+                    return el.classList.contains('lead-card');
+                }
+            });
+
+            drake.on('drop', function(el, target, source, sibling) {
+                const leadId = el.dataset.leadId;
+                const fromStage = source.dataset.dropTarget;
+                const toStage = target.dataset.dropTarget;
+                
+                if (fromStage && toStage && fromStage !== toStage) {
+                    moveLead(leadId, fromStage, toStage);
+                }
+            });
+        } else {
+            console.error('No dragula containers found');
         }
-    });
+    }, 100);
 }
 
 // Move lead between stages
