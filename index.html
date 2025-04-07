@@ -9,7 +9,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css">
     <style>
-        /* Auth screen styles - kept inline since not in provided CSS */
+        /* Base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Auth screen styles */
         .auth-container {
             position: fixed;
             top: 0;
@@ -22,7 +36,7 @@
             align-items: center;
             z-index: 1000;
         }
-
+        
         .auth-box {
             background: white;
             padding: 2rem;
@@ -32,13 +46,13 @@
             max-width: 400px;
             text-align: center;
         }
-
+        
         .auth-box h2 {
             color: #4361ee;
             margin-bottom: 1.5rem;
             font-weight: 700;
         }
-
+        
         .auth-box input {
             width: 100%;
             padding: 0.75rem;
@@ -48,18 +62,582 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-
+        
         .auth-box input:focus {
             outline: none;
             border-color: #4361ee;
             box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
         }
-
+        
+        .auth-btn {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .auth-btn:hover {
+            background-color: #3a56d4;
+        }
+        
+        .error-message {
+            color: #ff4444;
+            margin-bottom: 1rem;
+            min-height: 1.5rem;
+        }
+        
+        /* App container */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* Header styles */
+        header {
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            color: #4361ee;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background-color: #3a56d4;
+        }
+        
+        .analytics-summary {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .analytics-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .analytics-item span:first-child {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .analytics-item span:last-child {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #4361ee;
+        }
+        
+        /* Main content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+        
+        .funnel-sidebar {
+            flex: 1;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .leads-management {
+            flex: 1;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header h2 {
+            font-size: 1.25rem;
+            color: #4361ee;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Funnel visualization */
+        .funnel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .funnel-stage {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stage-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .stage-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .lead-count {
+            background-color: #4361ee;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .percentage {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .stage-body {
+            min-height: 100px;
+            padding: 1rem;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .stage-body.empty {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #999;
+            font-size: 0.9rem;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+        }
+        
+        .stage-footer {
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+        
+        .conversion-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: #4361ee;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* Stage-specific colors */
+        .stage-awareness .stage-header {
+            background-color: #e3f2fd;
+        }
+        
+        .stage-interest .stage-header {
+            background-color: #e8f5e9;
+        }
+        
+        .stage-consideration .stage-header {
+            background-color: #fff8e1;
+        }
+        
+        /* Sublevels */
+        .stage-sublevels {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: white;
+        }
+        
+        .sublevel {
+            flex: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .sublevel h4 {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        
+        /* Lead cards */
+        .lead-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .lead-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .lead-card .company {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .lead-card .contact {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        /* Content badges */
+        .content-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .content-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #4361ee;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .content-badge:hover {
+            transform: scale(1.1);
+        }
+        
+        .content-badge i {
+            font-size: 0.8rem;
+        }
+        
+        /* Leads table */
+        .leads-table-container {
+            overflow-x: auto;
+        }
+        
+        .leads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .leads-table th, .leads-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .leads-table th {
+            font-weight: 600;
+            color: #4361ee;
+            background-color: #f8f9fa;
+        }
+        
+        .leads-table tr:hover {
+            background-color: #f5f7fa;
+        }
+        
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 0.25rem;
+            transition: color 0.3s ease;
+        }
+        
+        .edit-btn:hover {
+            color: #4361ee;
+        }
+        
+        .delete-btn:hover {
+            color: #ff4444;
+        }
+        
+        /* Lead search and filter */
+        .lead-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .lead-search {
+            position: relative;
+        }
+        
+        .lead-search input {
+            padding: 0.5rem 1rem 0.5rem 2rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            width: 200px;
+        }
+        
+        .lead-search i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        
+        .lead-stage-filter {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background-color: white;
+        }
+        
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            padding: 2rem;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #4361ee;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .cancel-btn, .submit-btn, .delete-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .cancel-btn {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #eee;
+        }
+        
+        .submit-btn {
+            background-color: #4361ee;
+            border: none;
+            color: white;
+        }
+        
+        .submit-btn:hover {
+            background-color: #3a56d4;
+        }
+        
+        .delete-btn {
+            background-color: #ff4444;
+            border: none;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+        
+        /* Select2 customization */
+        .select2-container {
+            width: 100% !important;
+        }
+        
+        .select2-selection {
+            min-height: 45px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Dragula/drag and drop styles */
+        .gu-mirror {
+            opacity: 0.8;
+            transform: rotate(5deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .gu-transit {
+            opacity: 0.2;
+        }
+        
+        .dragging {
+            opacity: 0.5;
+        }
+        
         .hidden {
             display: none !important;
         }
     </style>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Auth Screen -->
@@ -130,7 +708,7 @@
                             </div>
                         </div>
                         <div class="stage-body" data-drop-target="awareness">
-                            <div class="stage-body empty">Drop leads here</div>
+                            <div class="empty">Drop leads here</div>
                         </div>
                         <div class="stage-footer">
                             <div class="conversion-arrow">
@@ -150,7 +728,7 @@
                             </div>
                         </div>
                         <div class="stage-body" data-drop-target="interest">
-                            <div class="stage-body empty">Drop leads here</div>
+                            <div class="empty">Drop leads here</div>
                         </div>
                         <div class="stage-footer">
                             <div class="conversion-arrow">
@@ -174,7 +752,7 @@
                             <div class="sublevel" data-sublevel="intent">
                                 <h4>Intent</h4>
                                 <div class="stage-body" data-drop-target="intent">
-                                    <div class="stage-body empty">Drop leads here</div>
+                                    <div class="empty">Drop leads here</div>
                                 </div>
                                 <div class="stage-stats">
                                     <span class="lead-count">0</span>
@@ -185,7 +763,7 @@
                             <div class="sublevel" data-sublevel="evaluation">
                                 <h4>Evaluation</h4>
                                 <div class="stage-body" data-drop-target="evaluation">
-                                    <div class="stage-body empty">Drop leads here</div>
+                                    <div class="empty">Drop leads here</div>
                                 </div>
                                 <div class="stage-stats">
                                     <span class="lead-count">0</span>
@@ -196,7 +774,7 @@
                             <div class="sublevel" data-sublevel="purchase">
                                 <h4>Purchase</h4>
                                 <div class="stage-body" data-drop-target="purchase">
-                                    <div class="stage-body empty">Drop leads here</div>
+                                    <div class="empty">Drop leads here</div>
                                 </div>
                                 <div class="stage-stats">
                                     <span class="lead-count">0</span>
@@ -428,6 +1006,59 @@
             </div>
         </div>
 
+        <!-- Edit Content Modal -->
+        <div id="edit-content-modal" class="modal hidden">
+            <div class="modal-content">
+                <button class="close-modal" type="button">&times;</button>
+                <h2>Edit Content Strategy</h2>
+                <form id="edit-content-form">
+                    <input type="hidden" id="edit-content-id">
+                    <div class="form-group">
+                        <label for="edit-content-name">Content Name *</label>
+                        <input type="text" id="edit-content-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-content-description">Description</label>
+                        <textarea id="edit-content-description" rows="2"></textarea>
+                    </div>
+                    <div class="form-columns">
+                        <div class="form-group">
+                            <label for="edit-content-stage">Funnel Stage *</label>
+                            <select id="edit-content-stage" required>
+                                <option value="awareness">Awareness</option>
+                                <option value="interest">Interest</option>
+                                <option value="consideration">Consideration</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-content-type">Content Type</label>
+                            <select id="edit-content-type">
+                                <option value="blog">Blog Post</option>
+                                <option value="ebook">E-book</option>
+                                <option value="video">Video</option>
+                                <option value="webinar">Webinar</option>
+                                <option value="casestudy">Case Study</option>
+                                <option value="demo">Demo</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-content-link">Link (URL)</label>
+                            <input type="url" id="edit-content-link">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-content-target-conversion">Target Conversion Rate (%)</label>
+                            <input type="number" id="edit-content-target-conversion" min="0" max="100" step="1">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Toast Notification -->
         <div id="toast" class="toast"></div>
     </div>
@@ -438,6 +1069,1064 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // First hide the app container
+            document.getElementById('app-container').classList.add('hidden');
+            
+            // Check authentication status
+            const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+
+            if (isAuthenticated) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                initializeApp();
+            } else {
+                setupAuth();
+            }
+        });
+
+        // Authentication setup
+        function setupAuth() {
+            const pinInput = document.getElementById('pin-input');
+            const loginBtn = document.getElementById('login-btn');
+            const pinError = document.getElementById('pin-error');
+            
+            // Configurable PINs
+            const validPins = ['1234', '4321', '0000'];
+
+            // Focus on the PIN input when the page loads
+            pinInput.focus();
+
+            loginBtn.addEventListener('click', function() {
+                if (validPins.includes(pinInput.value)) {
+                    localStorage.setItem('authenticated', 'true');
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
+                    initializeApp();
+                } else {
+                    pinError.textContent = 'Incorrect PIN. Please try again.';
+                    pinInput.value = '';
+                    pinInput.focus();
+                }
+            });
+
+            // Also allow login on Enter key press
+            pinInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loginBtn.click();
+                }
+            });
+
+            pinInput.addEventListener('input', function() {
+                pinError.textContent = '';
+            });
+        }
+
+        // Main application initialization
+        function initializeApp() {
+            console.log('Initializing app...');
+            
+            // Initialize metadata if none exists
+            if (!localStorage.getItem('funnel_metadata')) {
+                localStorage.setItem('funnel_metadata', JSON.stringify({
+                    created: new Date().toISOString(),
+                    version: '1.1',
+                    last_updated: new Date().toISOString()
+                }));
+            }
+            
+            // Initialize default leads if none exist
+            if (!localStorage.getItem('leads')) {
+                const defaultLeads = {
+                    awareness: [
+                        {
+                            id: 'lead-' + Date.now(),
+                            company: 'Acme Inc',
+                            contact: 'John Smith',
+                            email: 'john@acme.com',
+                            phone: '555-1234',
+                            currentStage: 'awareness',
+                            notes: 'Interested in our blog content',
+                            contentStrategies: ['content-1'],
+                            dateAdded: new Date().toISOString(),
+                            lastContact: new Date().toISOString()
+                        }
+                    ],
+                    interest: [
+                        {
+                            id: 'lead-' + Date.now(),
+                            company: 'Globex Corp',
+                            contact: 'Sarah Johnson',
+                            email: 'sarah@globex.com',
+                            phone: '555-5678',
+                            currentStage: 'interest',
+                            notes: 'Downloaded our whitepaper',
+                            contentStrategies: ['content-2'],
+                            dateAdded: new Date().toISOString(),
+                            lastContact: new Date().toISOString()
+                        }
+                    ],
+                    intent: [],
+                    evaluation: [],
+                    purchase: []
+                };
+                localStorage.setItem('leads', JSON.stringify(defaultLeads));
+            }
+
+            // Initialize default content if none exists
+            if (!localStorage.getItem('content')) {
+                const defaultContent = [
+                    {
+                        id: 'content-1',
+                        name: 'Introductory Blog Post',
+                        description: 'Basic introduction to our product',
+                        stage: 'awareness',
+                        type: 'blog',
+                        link: 'https://example.com/blog/intro',
+                        targetConversion: 5
+                    },
+                    {
+                        id: 'content-2',
+                        name: 'Product Demo Video',
+                        description: 'Detailed product demonstration',
+                        stage: 'interest',
+                        type: 'video',
+                        link: 'https://example.com/demo',
+                        targetConversion: 15
+                    },
+                    {
+                        id: 'content-3',
+                        name: 'Case Study',
+                        description: 'Success story from existing customer',
+                        stage: 'consideration',
+                        type: 'casestudy',
+                        link: 'https://example.com/case-study',
+                        targetConversion: 25
+                    }
+                ];
+                localStorage.setItem('content', JSON.stringify(defaultContent));
+            }
+
+            // Initialize Select2 for content selection
+            $('.content-select').select2({
+                placeholder: 'Select content strategies',
+                width: '100%'
+            });
+
+            // Populate content options
+            populateContentOptions();
+
+            // Load data and setup UI
+            loadLeads();
+            loadContent();
+            setupEventListeners();
+            updateAnalytics();
+            setupDragAndDrop();
+        }
+
+        // Load leads with content badges
+        function loadLeads() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+            document.querySelectorAll('.stage-body').forEach(container => {
+                container.innerHTML = '';
+                const stage = container.dataset.dropTarget;
+                
+                // Add content badges for this stage
+                const stageContent = contentItems.filter(c => c.stage === stage);
+                if (stageContent.length > 0) {
+                    const contentBadges = document.createElement('div');
+                    contentBadges.className = 'content-badges';
+                    
+                    stageContent.forEach(content => {
+                        const badge = document.createElement('div');
+                        badge.className = 'content-badge';
+                        badge.dataset.contentId = content.id;
+                        badge.draggable = true;
+                        badge.title = `${content.name}\n${content.description}`;
+                        
+                        badge.innerHTML = `
+                            <i class="${getContentIcon(content.type)}"></i>
+                            <span>${content.name.substring(0, 3)}</span>
+                        `;
+                        
+                        badge.addEventListener('dragstart', handleContentDragStart);
+                        badge.addEventListener('click', () => openEditContentModal(content));
+                        
+                        contentBadges.appendChild(badge);
+                    });
+                    
+                    container.appendChild(contentBadges);
+                }
+
+                // Add leads
+                if (leads[stage] && leads[stage].length === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'empty';
+                    emptyDiv.textContent = 'Drop leads here';
+                    container.appendChild(emptyDiv);
+                } else if (leads[stage]) {
+                    leads[stage].forEach(lead => {
+                        container.appendChild(createLeadCard(lead));
+                    });
+                }
+            });
+
+            updateLeadsTable();
+            updateConversionPercentages();
+        }
+
+        // Handle content drag start
+        function handleContentDragStart(e) {
+            e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
+            e.target.classList.add('dragging-content');
+        }
+
+        // Load content in the content section
+        function loadContent() {
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            const container = document.getElementById('content-items-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (contentItems.length === 0) {
+                container.innerHTML = '<div class="empty-content">No content strategies added yet</div>';
+                return;
+            }
+
+            contentItems.forEach(content => {
+                const item = document.createElement('div');
+                item.className = 'content-item';
+                item.dataset.contentId = content.id;
+                item.dataset.stage = content.stage;
+
+                const icon = document.createElement('i');
+                icon.className = getContentIcon(content.type);
+
+                const name = document.createElement('h4');
+                name.textContent = content.name;
+
+                const desc = document.createElement('p');
+                desc.className = 'content-description';
+                desc.textContent = content.description;
+
+                const stageBadge = document.createElement('span');
+                stageBadge.className = 'stage-badge';
+                stageBadge.textContent = capitalizeFirstLetter(content.stage);
+
+                const link = document.createElement('a');
+                link.href = content.link || '#';
+                link.target = '_blank';
+                link.className = 'content-link';
+                link.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
+
+                const actions = document.createElement('div');
+                actions.className = 'content-actions';
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-content';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditContentModal(content);
+                });
+
+                actions.appendChild(editBtn);
+
+                item.appendChild(icon);
+                item.appendChild(name);
+                item.appendChild(desc);
+                item.appendChild(stageBadge);
+                item.appendChild(link);
+                item.appendChild(actions);
+
+                container.appendChild(item);
+            });
+        }
+
+        // Create a lead card element for the funnel
+        function createLeadCard(lead) {
+            const leadCard = document.createElement('div');
+            leadCard.className = 'lead-card';
+            leadCard.draggable = true;
+            leadCard.dataset.leadId = lead.id;
+            leadCard.dataset.currentStage = lead.currentStage;
+
+            const company = document.createElement('div');
+            company.className = 'company';
+            company.textContent = lead.company;
+
+            const contact = document.createElement('div');
+            contact.className = 'contact';
+            contact.textContent = lead.contact || 'No contact';
+
+            leadCard.appendChild(company);
+            leadCard.appendChild(contact);
+
+            // Add drag events
+            leadCard.addEventListener('dragstart', handleDragStart);
+
+            // Add click event to show edit modal
+            leadCard.addEventListener('click', () => openEditLeadModal(lead));
+
+            return leadCard;
+        }
+
+        // Update the leads table with all leads
+        function updateLeadsTable() {
+            const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            
+            const tableBody = document.getElementById('leads-table-body');
+            tableBody.innerHTML = '';
+
+            // Combine all leads from all stages
+            const allLeads = [];
+            for (const [stage, stageLeads] of Object.entries(leadsData)) {
+                stageLeads.forEach(lead => {
+                    allLeads.push({...lead, stage: stage});
+                });
+            }
+
+            if (allLeads.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+
+            // Sort by date added (newest first)
+            allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+            // Add each lead to the table
+            allLeads.forEach(lead => {
+                const row = document.createElement('tr');
+                row.dataset.leadId = lead.id;
+                row.dataset.stage = lead.stage;
+
+                // Get content names
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const contentUsed = lead.contentStrategies?.map(contentId => {
+                    const content = contentItems.find(c => c.id === contentId);
+                    return content ? content.name : '';
+                }).filter(name => name) || [];
+
+                // Format last contact date
+                const lastContactDate = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
+
+                row.innerHTML = `
+                    <td class="company-cell">${lead.company}</td>
+                    <td class="contact-cell">${lead.contact || 'N/A'}</td>
+                    <td>${capitalizeFirstLetter(lead.stage)}</td>
+                    <td>${contentUsed.join(', ') || 'None'}</td>
+                    <td>${lastContactDate}</td>
+                    <td>
+                        <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                        <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+
+            // Add event listeners to the action buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const leadId = btn.dataset.leadId;
+                    const leads = JSON.parse(localStorage.getItem('leads'));
+                    let foundLead = null;
+                    
+                    // Search through all stages to find the lead
+                    for (const stageLeads of Object.values(leads)) {
+                        const lead = stageLeads.find(l => l.id === leadId);
+                        if (lead) {
+                            foundLead = lead;
+                            break;
+                        }
+                    }
+                    
+                    if (foundLead) {
+                        openEditLeadModal(foundLead);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const leadId = btn.dataset.leadId;
+                    if (confirm('Are you sure you want to delete this lead?')) {
+                        deleteLeadById(leadId);
+                    }
+                });
+            });
+        }
+
+        // Helper function to capitalize first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Delete lead by ID
+        function deleteLeadById(leadId) {
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            let leadFound = false;
+
+            // Search through all stages to find the lead
+            for (const stage of Object.keys(leads)) {
+                const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
+                if (leadIndex !== -1) {
+                    leads[stage].splice(leadIndex, 1);
+                    leadFound = true;
+                    break;
+                }
+            }
+
+            if (leadFound) {
+                localStorage.setItem('leads', JSON.stringify(leads));
+                loadLeads();
+                updateAnalytics();
+                showNotification('Lead deleted successfully');
+            }
+        }
+
+        // Get appropriate icon for content type
+        function getContentIcon(type) {
+            const icons = {
+                blog: 'fas fa-file-alt',
+                ebook: 'fas fa-book',
+                video: 'fas fa-video',
+                webinar: 'fas fa-chalkboard-teacher',
+                casestudy: 'fas fa-chart-line',
+                demo: 'fas fa-desktop',
+                other: 'fas fa-file'
+            };
+            return icons[type] || icons.other;
+        }
+
+        function toggleModal(modalId, show = true) {
+            const modal = document.getElementById(modalId);
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+            } else {
+                modal.classList.remove('show');
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Use event delegation for buttons
+            document.addEventListener('click', function(e) {
+                // Add Lead Button
+                if (e.target.matches('#add-lead-btn, #add-lead-btn *')) {
+                    document.getElementById('lead-form').reset();
+                    const modal = document.getElementById('add-lead-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('show');
+                    return;
+                }
+                
+                // Add Content Button
+                if (e.target.matches('#add-content-btn, #add-content-btn *')) {
+                    document.getElementById('content-form').reset();
+                    const modal = document.getElementById('add-content-modal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('show');
+                    return;
+                }
+                
+                // Close buttons
+                if (e.target.matches('.close-modal, .close-modal *, .cancel-btn, .cancel-btn *')) {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.classList.add('hidden');
+                    });
+                    return;
+                }
+            });
+
+            // Form submissions
+            document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                addLead();
+            });
+
+            document.getElementById('content-form')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                addContent();
+            });
+
+            document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveLeadChanges();
+            });
+
+            document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveContentChanges();
+            });
+
+            document.getElementById('delete-lead-btn')?.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this lead?')) {
+                    deleteLead();
+                }
+            });
+
+            // Click outside modal to close
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Export PDF
+            document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+
+            // Lead filter
+            document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+                filterLeadsTable(this.value);
+            });
+
+            // Lead search with debounce
+            const leadSearch = document.getElementById('lead-search');
+            if (leadSearch) {
+                leadSearch.addEventListener('input', function() {
+                    clearTimeout(searchLeads.debounce);
+                    searchLeads.debounce = setTimeout(() => {
+                        searchLeads(this.value);
+                    }, 300);
+                });
+            }
+        }
+
+        // Setup drag and drop functionality
+        function setupDragAndDrop() {
+            setTimeout(() => {
+                const containers = Array.from(document.querySelectorAll('.stage-body'));
+                
+                if (containers.length > 0) {
+                    const drake = dragula(containers, {
+                        moves: function(el, source, handle, sibling) {
+                            return el.classList.contains('lead-card') || el.classList.contains('content-badge');
+                        }
+                    });
+
+                    drake.on('drop', function(el, target, source, sibling) {
+                        const fromStage = source.dataset.dropTarget;
+                        const toStage = target.dataset.dropTarget;
+                        
+                        if (el.classList.contains('lead-card')) {
+                            // Handle lead movement
+                            const leadId = el.dataset.leadId;
+                            if (fromStage && toStage && fromStage !== toStage) {
+                                moveLead(leadId, fromStage, toStage);
+                            }
+                        } else if (el.classList.contains('content-badge')) {
+                            // Handle content movement between stages
+                            const contentId = el.dataset.contentId;
+                            if (fromStage && toStage && fromStage !== toStage) {
+                                moveContentToStage(contentId, toStage);
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        // Move lead between stages
+        function moveLead(leadId, fromStage, toStage) {
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            
+            // Find the lead
+            const leadIndex = leads[fromStage].findIndex(lead => lead.id === leadId);
+            if (leadIndex === -1) return;
+
+            const lead = leads[fromStage][leadIndex];
+            
+            // Remove from old stage
+            leads[fromStage].splice(leadIndex, 1);
+            
+            // Update lead's current stage
+            lead.currentStage = toStage;
+            lead.lastContact = new Date().toISOString();
+            
+            // Add to new stage
+            leads[toStage].push(lead);
+            
+            // Save to storage
+            localStorage.setItem('leads', JSON.stringify(leads));
+            
+            // Update UI
+            loadLeads();
+            updateAnalytics();
+            
+            // Show notification
+            showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
+        }
+
+        // Move content to different stage
+        function moveContentToStage(contentId, newStage) {
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            const contentIndex = contentItems.findIndex(c => c.id === contentId);
+            
+            if (contentIndex !== -1) {
+                contentItems[contentIndex].stage = newStage;
+                localStorage.setItem('content', JSON.stringify(contentItems));
+                loadLeads();
+                loadContent();
+                showNotification(`Content moved to ${capitalizeFirstLetter(newStage)} stage`);
+            }
+        }
+
+        // Drag start handler
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.leadId);
+            e.target.classList.add('dragging');
+        }
+
+        // Add a new lead
+        function addLead() {
+            const company = document.getElementById('lead-company').value;
+            const contact = document.getElementById('lead-contact').value;
+            const email = document.getElementById('lead-email').value;
+            const phone = document.getElementById('lead-phone').value;
+            const stage = document.getElementById('lead-stage').value;
+            const source = document.getElementById('lead-source').value;
+            const notes = document.getElementById('lead-notes').value;
+
+            // Get selected content strategies
+            const contentSelect = document.getElementById('lead-content');
+            const contentStrategies = $(contentSelect).val() || [];
+
+            if (!company || !contact || !email) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const newLead = {
+                id: 'lead-' + Date.now(),
+                company,
+                contact,
+                email,
+                phone,
+                source,
+                currentStage: stage,
+                notes,
+                contentStrategies,
+                dateAdded: new Date().toISOString(),
+                lastContact: new Date().toISOString()
+            };
+
+            // Add to storage
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            leads[stage].push(newLead);
+            localStorage.setItem('leads', JSON.stringify(leads));
+
+            // Close modal and reset form
+            document.getElementById('add-lead-modal').classList.add('hidden');
+            document.getElementById('lead-form').reset();
+
+            // Update UI
+            loadLeads();
+            updateAnalytics();
+            showNotification('Lead added successfully');
+        }
+
+        // Add new content strategy
+        function addContent() {
+            const name = document.getElementById('content-name').value;
+            const description = document.getElementById('content-description').value;
+            const stage = document.getElementById('content-stage').value;
+            const type = document.getElementById('content-type').value;
+            const link = document.getElementById('content-link').value;
+            const targetConversion = document.getElementById('content-target-conversion').value || 0;
+
+            if (!name || !stage) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const newContent = {
+                id: 'content-' + Date.now(),
+                name,
+                description,
+                stage,
+                type,
+                link,
+                targetConversion: parseInt(targetConversion),
+                dateCreated: new Date().toISOString()
+            };
+
+            // Add to storage
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            contentItems.push(newContent);
+            localStorage.setItem('content', JSON.stringify(contentItems));
+
+            // Close modal and reset form
+            document.getElementById('add-content-modal').classList.add('hidden');
+            document.getElementById('content-form').reset();
+
+            // Update UI
+            loadLeads();
+            loadContent();
+            populateContentOptions();
+            showNotification('Content strategy added successfully');
+        }
+
+        // Open edit lead modal
+        function openEditLeadModal(lead) {
+            document.getElementById('edit-lead-id').value = lead.id;
+            document.getElementById('edit-lead-company').value = lead.company;
+            document.getElementById('edit-lead-contact').value = lead.contact || '';
+            document.getElementById('edit-lead-email').value = lead.email || '';
+            document.getElementById('edit-lead-phone').value = lead.phone || '';
+            document.getElementById('edit-lead-stage').value = lead.currentStage;
+            document.getElementById('edit-lead-source').value = lead.source || 'website';
+            document.getElementById('edit-lead-notes').value = lead.notes || '';
+
+            // Set content strategies
+            const contentSelect = document.getElementById('edit-lead-content');
+            $(contentSelect).val(lead.contentStrategies || []).trigger('change');
+
+            document.getElementById('edit-lead-modal').classList.remove('hidden');
+        }
+
+        // Save lead changes
+        function saveLeadChanges() {
+            const leadId = document.getElementById('edit-lead-id').value;
+            const company = document.getElementById('edit-lead-company').value;
+            const contact = document.getElementById('edit-lead-contact').value;
+            const email = document.getElementById('edit-lead-email').value;
+            const phone = document.getElementById('edit-lead-phone').value;
+            const stage = document.getElementById('edit-lead-stage').value;
+            const source = document.getElementById('edit-lead-source').value;
+            const notes = document.getElementById('edit-lead-notes').value;
+
+            // Get selected content strategies
+            const contentSelect = document.getElementById('edit-lead-content');
+            const contentStrategies = $(contentSelect).val() || [];
+
+            if (!company || !contact || !email) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Update lead in storage
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            let leadFound = false;
+
+            // Search through all stages to find the lead
+            for (const [stageKey, stageLeads] of Object.entries(leads)) {
+                const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+                
+                if (leadIndex !== -1) {
+                    // If stage changed, move the lead
+                    if (stageKey !== stage) {
+                        const lead = stageLeads[leadIndex];
+                        stageLeads.splice(leadIndex, 1);
+                        
+                        // Update lead properties
+                        lead.company = company;
+                        lead.contact = contact;
+                        lead.email = email;
+                        lead.phone = phone;
+                        lead.source = source;
+                        lead.currentStage = stage;
+                        lead.notes = notes;
+                        lead.contentStrategies = contentStrategies;
+                        lead.lastContact = new Date().toISOString();
+                        
+                        // Add to new stage
+                        leads[stage].push(lead);
+                    } else {
+                        // Just update the lead
+                        const lead = stageLeads[leadIndex];
+                        lead.company = company;
+                        lead.contact = contact;
+                        lead.email = email;
+                        lead.phone = phone;
+                        lead.source = source;
+                        lead.notes = notes;
+                        lead.contentStrategies = contentStrategies;
+                        lead.lastContact = new Date().toISOString();
+                    }
+                    
+                    leadFound = true;
+                    break;
+                }
+            }
+
+            if (leadFound) {
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('edit-lead-modal').classList.add('hidden');
+                loadLeads();
+                updateAnalytics();
+                showNotification('Lead updated successfully');
+            }
+        }
+
+        // Open edit content modal
+        function openEditContentModal(content) {
+            document.getElementById('edit-content-id').value = content.id;
+            document.getElementById('edit-content-name').value = content.name;
+            document.getElementById('edit-content-description').value = content.description;
+            document.getElementById('edit-content-stage').value = content.stage;
+            document.getElementById('edit-content-type').value = content.type;
+            document.getElementById('edit-content-link').value = content.link;
+            document.getElementById('edit-content-target-conversion').value = content.targetConversion;
+
+            document.getElementById('edit-content-modal').classList.remove('hidden');
+        }
+
+        // Save content changes
+        function saveContentChanges() {
+            const contentId = document.getElementById('edit-content-id').value;
+            const name = document.getElementById('edit-content-name').value;
+            const description = document.getElementById('edit-content-description').value;
+            const stage = document.getElementById('edit-content-stage').value;
+            const type = document.getElementById('edit-content-type').value;
+            const link = document.getElementById('edit-content-link').value;
+            const targetConversion = document.getElementById('edit-content-target-conversion').value;
+
+            if (!name || !stage) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Update content in storage
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            const contentIndex = contentItems.findIndex(c => c.id === contentId);
+            
+            if (contentIndex !== -1) {
+                contentItems[contentIndex] = {
+                    ...contentItems[contentIndex],
+                    name,
+                    description,
+                    stage,
+                    type,
+                    link,
+                    targetConversion: parseInt(targetConversion)
+                };
+                
+                localStorage.setItem('content', JSON.stringify(contentItems));
+                document.getElementById('edit-content-modal').classList.add('hidden');
+                loadLeads();
+                loadContent();
+                populateContentOptions();
+                showNotification('Content updated successfully');
+            }
+        }
+
+        // Delete lead from edit modal
+        function deleteLead() {
+            const leadId = document.getElementById('edit-lead-id').value;
+            deleteLeadById(leadId);
+            document.getElementById('edit-lead-modal').classList.add('hidden');
+        }
+
+        // Populate content options in select elements
+        function populateContentOptions() {
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            const selectElements = document.querySelectorAll('.content-select');
+            
+            selectElements.forEach(select => {
+                // Clear existing options
+                $(select).empty();
+                
+                // Add new options
+                contentItems.forEach(content => {
+                    const option = new Option(content.name, content.id);
+                    $(select).append(option);
+                });
+            });
+        }
+
+        // Update conversion percentages between stages
+        function updateConversionPercentages() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+
+            // Awareness → Interest
+            const awarenessCount = leads.awareness.length;
+            const interestCount = leads.interest.length;
+            const awarenessInterestRate = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
+            document.getElementById('awareness-interest-rate').textContent = `${awarenessInterestRate}%`;
+            const awarenessConvElement = document.getElementById('awareness-conversion-rate');
+            if (awarenessConvElement) awarenessConvElement.textContent = `${awarenessInterestRate}%`;
+
+            // Interest → Consideration (average of intent, evaluation, purchase)
+            const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
+            const interestConsiderationRate = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
+            document.getElementById('interest-consideration-rate').textContent = `${interestConsiderationRate}%`;
+            const interestConvElement = document.getElementById('interest-conversion-rate');
+            if (interestConvElement) interestConvElement.textContent = `${interestConsiderationRate}%`;
+
+            // Overall conversion rate (awareness → purchase)
+            const purchaseCount = leads.purchase.length;
+            const overallConversionRate = awarenessCount > 0 ? Math.round((purchaseCount / awarenessCount) * 100) : 0;
+            document.getElementById('conversion-rate').textContent = `${overallConversionRate}%`;
+        }
+
+        // Update analytics charts and metrics
+        function updateAnalytics() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+
+            // Update total leads count
+            const totalLeads = Object.values(leads).reduce((sum, stageLeads) => sum + stageLeads.length, 0);
+            document.getElementById('total-leads').textContent = totalLeads;
+
+            // Update conversion percentages
+            updateConversionPercentages();
+        }
+
+        // Filter leads table by stage
+        function filterLeadsTable(stage) {
+            const rows = document.querySelectorAll('#leads-table-body tr');
+            
+            rows.forEach(row => {
+                if (row.dataset.leadId === undefined) return; // Skip the "no leads" row
+                
+                const rowStage = row.dataset.stage;
+                if (stage === 'all' || rowStage === stage) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Search leads
+        function searchLeads(query) {
+            const rows = document.querySelectorAll('#leads-table-body tr');
+            const normalizedQuery = query.toLowerCase();
+            
+            rows.forEach(row => {
+                if (row.dataset.leadId === undefined) {
+                    // Show the "no leads" row only if there's no search query
+                    row.style.display = query ? 'none' : '';
+                    return;
+                }
+                
+                const company = row.querySelector('.company-cell').textContent.toLowerCase();
+                const contact = row.querySelector('.contact-cell').textContent.toLowerCase();
+                
+                if (company.includes(normalizedQuery) || contact.includes(normalizedQuery)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.text('Marketing Funnel Report', 105, 20, { align: 'center' });
+            
+            // Add date
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+            
+            // Add funnel data
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            
+            let yPosition = 50;
+            
+            // Add funnel visualization summary
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 255);
+            doc.text('Funnel Summary', 14, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Awareness: ${leads.awareness.length} leads`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Interest: ${leads.interest.length} leads`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Consideration: ${leads.intent.length + leads.evaluation.length + leads.purchase.length} leads`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Purchases: ${leads.purchase.length} leads`, 14, yPosition);
+            yPosition += 15;
+            
+            // Add conversion rates
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 255);
+            doc.text('Conversion Rates', 14, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Awareness → Interest: ${document.getElementById('awareness-interest-rate').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Interest → Consideration: ${document.getElementById('interest-consideration-rate').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Overall Conversion: ${document.getElementById('conversion-rate').textContent}`, 14, yPosition);
+            yPosition += 15;
+            
+            // Add content strategy summary
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            if (contentItems.length > 0) {
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 255);
+                doc.text('Content Strategy', 14, yPosition);
+                yPosition += 10;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 0, 0);
+                
+                contentItems.forEach(content => {
+                    if (yPosition > 250) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    doc.text(`${content.name} (${content.type}) - ${content.stage} stage`, 14, yPosition);
+                    yPosition += 7;
+                    doc.text(`Target conversion: ${content.targetConversion}%`, 20, yPosition);
+                    yPosition += 7;
+                });
+            }
+            
+            // Save the PDF
+            doc.save('Marketing_Funnel_Report.pdf');
+            showNotification('PDF exported successfully');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            if (type === 'error') {
+                toast.style.backgroundColor = '#ff4444';
+            } else {
+                toast.style.backgroundColor = '#4CAF50';
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
