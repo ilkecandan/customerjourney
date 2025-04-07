@@ -23,6 +23,36 @@
             line-height: 1.6;
         }
         
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
         /* Auth screen styles */
         .auth-container {
             position: fixed;
@@ -210,14 +240,24 @@
         .funnel-container {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            align-items: center;
+            gap: 0;
+            width: 100%;
         }
         
         .funnel-stage {
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            transition: all 0.3s ease;
+            position: relative;
         }
+        
+        /* Make the funnel shape more obvious */
+        .funnel-stage:nth-child(1) { width: 100%; }
+        .funnel-stage:nth-child(2) { width: 85%; }
+        .funnel-stage:nth-child(3) { width: 70%; }
         
         .stage-header {
             display: flex;
@@ -226,6 +266,7 @@
             padding: 0.75rem 1rem;
             background-color: #f8f9fa;
             border-bottom: 1px solid #eee;
+            cursor: pointer;
         }
         
         .stage-header h3 {
@@ -274,6 +315,7 @@
             padding: 0.5rem;
             background-color: #f8f9fa;
             border-top: 1px solid #eee;
+            text-align: center;
         }
         
         .conversion-arrow {
@@ -330,6 +372,7 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .lead-card:hover {
@@ -453,6 +496,102 @@
             border-radius: 20px;
             font-size: 0.9rem;
             background-color: white;
+        }
+        
+        /* Content management section */
+        .content-items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .content-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .content-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .content-item h4 {
+            margin-bottom: 0.5rem;
+            color: #4361ee;
+        }
+        
+        .content-description {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stage-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background-color: #f0f0f0;
+            color: #333;
+            margin-right: 0.5rem;
+        }
+        
+        .content-link {
+            color: #4361ee;
+            font-size: 0.8rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .content-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .edit-content {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .edit-content:hover {
+            color: #4361ee;
+        }
+        
+        /* Install button */
+        .install-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .install-btn:hover {
+            background-color: #3a56d4;
+            transform: scale(1.1);
         }
         
         /* Modals */
@@ -637,6 +776,47 @@
         .hidden {
             display: none !important;
         }
+        
+        /* Onboarding tooltip */
+        .onboarding-tooltip {
+            position: absolute;
+            background-color: #4361ee;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            z-index: 1000;
+            max-width: 250px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .onboarding-tooltip:after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #4361ee transparent transparent transparent;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -655,36 +835,47 @@
         <!-- Header -->
         <header>
             <div class="header-left">
-                <h1>FunnelFlow</h1>
+                <h1>FunnelFlow <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Drag & drop leads through your marketing funnel. Track conversions and optimize your content strategy.</span></span></h1>
             </div>
             <div class="header-right">
                 <div class="header-actions">
-                    <button id="add-lead-btn" class="action-btn" type="button">
+                    <button id="add-lead-btn" class="action-btn tooltip" type="button">
                         <i class="fas fa-plus"></i> Add Lead
+                        <span class="tooltiptext">Add a new lead to your marketing funnel</span>
                     </button>
-                    <button id="add-content-btn" class="action-btn" type="button">
+                    <button id="add-content-btn" class="action-btn tooltip" type="button">
                         <i class="fas fa-file-alt"></i> Add Content
+                        <span class="tooltiptext">Add content assets to move leads through the funnel</span>
                     </button>
-                    <button id="export-pdf" class="action-btn" type="button">
-                        <i class="fas fa-file-pdf"></i> Export
+                    <button id="export-pdf" class="action-btn tooltip" type="button">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                        <span class="tooltiptext">Export a PDF report of your funnel</span>
+                    </button>
+                    <button id="export-excel" class="action-btn tooltip" type="button">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                        <span class="tooltiptext">Export all leads to Excel</span>
                     </button>
                 </div>
                 <div class="analytics-summary">
-                    <div class="analytics-item">
+                    <div class="analytics-item tooltip">
                         <span>Total Leads</span>
                         <span id="total-leads">0</span>
+                        <span class="tooltiptext">Total number of leads in your funnel</span>
                     </div>
-                    <div class="analytics-item">
+                    <div class="analytics-item tooltip">
                         <span>Awareness→Interest</span>
                         <span id="awareness-interest-rate">0%</span>
+                        <span class="tooltiptext">Conversion rate from Awareness to Interest stage</span>
                     </div>
-                    <div class="analytics-item">
+                    <div class="analytics-item tooltip">
                         <span>Interest→Consideration</span>
                         <span id="interest-consideration-rate">0%</span>
+                        <span class="tooltiptext">Conversion rate from Interest to Consideration stage</span>
                     </div>
-                    <div class="analytics-item">
+                    <div class="analytics-item tooltip">
                         <span>Conversion Rate</span>
                         <span id="conversion-rate">0%</span>
+                        <span class="tooltiptext">Overall conversion rate from first contact to purchase</span>
                     </div>
                 </div>
             </div>
@@ -695,20 +886,20 @@
             <!-- Left Side: Compact Funnel Visualization -->
             <div class="funnel-sidebar">
                 <div class="section-header">
-                    <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
+                    <h2><i class="fas fa-filter"></i> Funnel Visualization <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Drag leads between stages to track their progress. Click on leads to edit them.</span></span></h2>
                 </div>
                 <div class="funnel-container">
                     <!-- Awareness Stage -->
                     <div class="funnel-stage stage-awareness" data-stage="awareness">
                         <div class="stage-header">
-                            <h3>Awareness</h3>
+                            <h3>Awareness <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Leads who have shown initial interest (visited website, downloaded content, etc.)</span></span></h3>
                             <div class="stage-stats">
                                 <span class="lead-count">0</span>
                                 <span class="percentage">0%</span>
                             </div>
                         </div>
                         <div class="stage-body" data-drop-target="awareness">
-                            <div class="empty">Drop leads here</div>
+                            <div class="empty">Drop leads here or click "Add Lead"</div>
                         </div>
                         <div class="stage-footer">
                             <div class="conversion-arrow">
@@ -721,7 +912,7 @@
                     <!-- Interest Stage -->
                     <div class="funnel-stage stage-interest" data-stage="interest">
                         <div class="stage-header">
-                            <h3>Interest</h3>
+                            <h3>Interest <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Leads who have engaged with your brand (requested demo, attended webinar, etc.)</span></span></h3>
                             <div class="stage-stats">
                                 <span class="lead-count">0</span>
                                 <span class="percentage">0%</span>
@@ -741,7 +932,7 @@
                     <!-- Consideration Stage -->
                     <div class="funnel-stage stage-consideration" data-stage="consideration">
                         <div class="stage-header">
-                            <h3>Consideration</h3>
+                            <h3>Consideration <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Leads evaluating your solution (comparing options, talking to sales, etc.)</span></span></h3>
                             <div class="stage-stats">
                                 <span class="lead-count">0</span>
                                 <span class="percentage">0%</span>
@@ -750,7 +941,7 @@
                         <div class="stage-sublevels">
                             <!-- Intent Sublevel -->
                             <div class="sublevel" data-sublevel="intent">
-                                <h4>Intent</h4>
+                                <h4>Intent <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Leads showing purchase intent (requested quote, pricing, etc.)</span></span></h4>
                                 <div class="stage-body" data-drop-target="intent">
                                     <div class="empty">Drop leads here</div>
                                 </div>
@@ -761,7 +952,7 @@
                             
                             <!-- Evaluation Sublevel -->
                             <div class="sublevel" data-sublevel="evaluation">
-                                <h4>Evaluation</h4>
+                                <h4>Evaluation <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Leads in final evaluation (trial users, references checked, etc.)</span></span></h4>
                                 <div class="stage-body" data-drop-target="evaluation">
                                     <div class="empty">Drop leads here</div>
                                 </div>
@@ -772,7 +963,7 @@
                             
                             <!-- Purchase Sublevel -->
                             <div class="sublevel" data-sublevel="purchase">
-                                <h4>Purchase</h4>
+                                <h4>Purchase <span class="tooltip"><i class="fas fa-info-circle" style="color: #666; font-size: 0.8rem;"></i><span class="tooltiptext">Leads who have become customers</span></span></h4>
                                 <div class="stage-body" data-drop-target="purchase">
                                     <div class="empty">Drop leads here</div>
                                 </div>
@@ -790,17 +981,19 @@
                 <div class="section-header">
                     <h2><i class="fas fa-users"></i> Lead Management</h2>
                     <div class="lead-actions">
-                        <div class="lead-search">
+                        <div class="lead-search tooltip">
                             <input type="text" id="lead-search" placeholder="Search leads...">
                             <i class="fas fa-search"></i>
+                            <span class="tooltiptext">Search by company or contact name</span>
                         </div>
-                        <select id="lead-stage-filter" class="lead-stage-filter">
+                        <select id="lead-stage-filter" class="lead-stage-filter tooltip">
                             <option value="all">All Stages</option>
                             <option value="awareness">Awareness</option>
                             <option value="interest">Interest</option>
                             <option value="intent">Intent</option>
                             <option value="evaluation">Evaluation</option>
                             <option value="purchase">Purchase</option>
+                            <span class="tooltiptext">Filter leads by funnel stage</span>
                         </select>
                     </div>
                 </div>
@@ -823,6 +1016,14 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- Content Management Section -->
+                <div class="section-header" style="margin-top: 2rem;">
+                    <h2><i class="fas fa-file-alt"></i> Content Strategies</h2>
+                </div>
+                <div id="content-items-container" class="content-items-container">
+                    <!-- Content items will be added here by JavaScript -->
                 </div>
             </div>
         </main>
@@ -1061,6 +1262,11 @@
 
         <!-- Toast Notification -->
         <div id="toast" class="toast"></div>
+        
+        <!-- Install Button -->
+        <button id="install-btn" class="install-btn hidden" title="Install FunnelFlow">
+            <i class="fas fa-download"></i>
+        </button>
     </div>
 
     <!-- JavaScript Libraries -->
@@ -1069,6 +1275,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // First hide the app container
@@ -1223,6 +1430,75 @@
             setupEventListeners();
             updateAnalytics();
             setupDragAndDrop();
+            setupInstallButton();
+            
+            // Show onboarding tooltips for first-time users
+            if (!localStorage.getItem('onboarding_shown')) {
+                setTimeout(showOnboardingTips, 1000);
+                localStorage.setItem('onboarding_shown', 'true');
+            }
+        }
+
+        // Show onboarding tooltips
+        function showOnboardingTips() {
+            const funnelTip = document.createElement('div');
+            funnelTip.className = 'onboarding-tooltip';
+            funnelTip.innerHTML = 'Drag leads between stages to track their progress through your marketing funnel';
+            funnelTip.style.top = '200px';
+            funnelTip.style.left = '50%';
+            funnelTip.style.transform = 'translateX(-50%)';
+            document.querySelector('.funnel-container').appendChild(funnelTip);
+            
+            const contentTip = document.createElement('div');
+            contentTip.className = 'onboarding-tooltip';
+            contentTip.innerHTML = 'Add content strategies to each stage to help move leads forward in the funnel';
+            contentTip.style.top = '400px';
+            contentTip.style.left = '50%';
+            contentTip.style.transform = 'translateX(-50%)';
+            document.querySelector('.funnel-container').appendChild(contentTip);
+            
+            setTimeout(() => {
+                funnelTip.remove();
+                contentTip.remove();
+            }, 8000);
+        }
+
+        // Setup PWA install button
+        function setupInstallButton() {
+            let deferredPrompt;
+            const installBtn = document.getElementById('install-btn');
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later
+                deferredPrompt = e;
+                // Show the install button
+                installBtn.classList.remove('hidden');
+            });
+            
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                // Show the install prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                const { outcome } = await deferredPrompt.userChoice;
+                // Optionally, send analytics event with outcome of user choice
+                console.log(`User response to the install prompt: ${outcome}`);
+                // Hide the install button
+                installBtn.classList.add('hidden');
+                // We've used the prompt, and can't use it again, throw it away
+                deferredPrompt = null;
+            });
+            
+            window.addEventListener('appinstalled', () => {
+                // Hide the install button
+                installBtn.classList.add('hidden');
+                // Clear the deferredPrompt so it can be garbage collected
+                deferredPrompt = null;
+                // Optionally, send analytics event to indicate successful install
+                console.log('PWA was installed');
+            });
         }
 
         // Load leads with content badges
@@ -1295,7 +1571,22 @@
             container.innerHTML = '';
 
             if (contentItems.length === 0) {
-                container.innerHTML = '<div class="empty-content">No content strategies added yet</div>';
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-file-alt"></i>
+                    <h3>No Content Strategies</h3>
+                    <p>Add content to help move leads through your funnel</p>
+                    <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i> Add Content
+                    </button>
+                `;
+                container.appendChild(emptyState);
+                
+                document.getElementById('add-content-empty-btn').addEventListener('click', () => {
+                    document.getElementById('content-form').reset();
+                    document.getElementById('add-content-modal').classList.remove('hidden');
+                });
                 return;
             }
 
@@ -1336,7 +1627,18 @@
                     openEditContentModal(content);
                 });
 
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-content';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('Are you sure you want to delete this content strategy?')) {
+                        deleteContent(content.id);
+                    }
+                });
+
                 actions.appendChild(editBtn);
+                actions.appendChild(deleteBtn);
 
                 item.appendChild(icon);
                 item.appendChild(name);
@@ -1347,6 +1649,29 @@
 
                 container.appendChild(item);
             });
+        }
+
+        // Delete content by ID
+        function deleteContent(contentId) {
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            const updatedContent = contentItems.filter(c => c.id !== contentId);
+            localStorage.setItem('content', JSON.stringify(updatedContent));
+            
+            // Also remove from any leads that might reference this content
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            for (const stage in leads) {
+                leads[stage].forEach(lead => {
+                    if (lead.contentStrategies && lead.contentStrategies.includes(contentId)) {
+                        lead.contentStrategies = lead.contentStrategies.filter(id => id !== contentId);
+                    }
+                });
+            }
+            localStorage.setItem('leads', JSON.stringify(leads));
+            
+            loadLeads();
+            loadContent();
+            populateContentOptions();
+            showNotification('Content deleted successfully');
         }
 
         // Create a lead card element for the funnel
@@ -1591,6 +1916,9 @@
 
             // Export PDF
             document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+            
+            // Export Excel
+            document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
 
             // Lead filter
             document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
@@ -1607,6 +1935,55 @@
                     }, 300);
                 });
             }
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            
+            // Combine all leads from all stages
+            const allLeads = [];
+            for (const [stage, stageLeads] of Object.entries(leadsData)) {
+                stageLeads.forEach(lead => {
+                    // Get content names for this lead
+                    const contentUsed = lead.contentStrategies?.map(contentId => {
+                        const content = contentItems.find(c => c.id === contentId);
+                        return content ? content.name : '';
+                    }).filter(name => name) || [];
+                    
+                    allLeads.push({
+                        'Company': lead.company,
+                        'Contact': lead.contact || '',
+                        'Email': lead.email || '',
+                        'Phone': lead.phone || '',
+                        'Stage': capitalizeFirstLetter(stage),
+                        'Source': capitalizeFirstLetter(lead.source || ''),
+                        'Content Used': contentUsed.join(', '),
+                        'Notes': lead.notes || '',
+                        'Date Added': new Date(lead.dateAdded).toLocaleDateString(),
+                        'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : ''
+                    });
+                });
+            }
+            
+            if (allLeads.length === 0) {
+                showNotification('No leads to export', 'error');
+                return;
+            }
+            
+            // Create worksheet
+            const ws = XLSX.utils.json_to_sheet(allLeads);
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+            
+            // Export to Excel file
+            XLSX.writeFile(wb, 'Marketing_Funnel_Leads.xlsx');
+            showNotification('Excel file exported successfully');
         }
 
         // Setup drag and drop functionality
