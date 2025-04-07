@@ -1835,6 +1835,10 @@
                 item.className = 'content-item';
                 item.dataset.contentId = content.id;
                 item.dataset.stage = content.stage;
+                item.addEventListener('click', () => {
+    openEditContentModal(content);
+});
+
 
                 const icon = document.createElement('i');
                 icon.className = getContentIcon(content.type);
