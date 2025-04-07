@@ -817,6 +817,56 @@
         .empty-state p {
             margin-top: 0.5rem;
         }
+        
+        /* Lead management guide */
+        .lead-management-guide {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #4361ee;
+        }
+        
+        .lead-management-guide h3 {
+            color: #4361ee;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .lead-management-guide ul {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .lead-management-guide li {
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Content management guide */
+        .content-management-guide {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid #4361ee;
+        }
+        
+        .content-management-guide h3 {
+            color: #4361ee;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .content-management-guide ul {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .content-management-guide li {
+            margin-bottom: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -997,6 +1047,18 @@
                         </select>
                     </div>
                 </div>
+                
+                <!-- Lead Management Guide -->
+                <div class="lead-management-guide">
+                    <h3>Lead Management Guide</h3>
+                    <ul>
+                        <li><strong>Add New Leads:</strong> Click "Add Lead" to create new lead records</li>
+                        <li><strong>Edit Leads:</strong> Click on any lead or use the edit button in the table</li>
+                        <li><strong>Delete Leads:</strong> Remove unwanted leads using the delete button</li>
+                        <li><strong>View All Leads:</strong> Browse all leads in the table below</li>
+                        <li><strong>Drag & Drop:</strong> Move leads between stages in the funnel visualization</li>
+                    </ul>
+                </div>
 
                 <div class="leads-table-container">
                     <table class="leads-table">
@@ -1022,6 +1084,19 @@
                 <div class="section-header" style="margin-top: 2rem;">
                     <h2><i class="fas fa-file-alt"></i> Content Strategies</h2>
                 </div>
+                
+                <!-- Content Management Guide -->
+                <div class="content-management-guide">
+                    <h3>Content Management Guide</h3>
+                    <ul>
+                        <li><strong>Add New Content:</strong> Click "Add Content" to create new marketing assets</li>
+                        <li><strong>Edit Content:</strong> Click on any content item to modify it</li>
+                        <li><strong>Delete Content:</strong> Remove outdated content using the delete button</li>
+                        <li><strong>View All Content:</strong> Browse all content strategies below</li>
+                        <li><strong>Assign Content:</strong> Link content to leads to track effectiveness</li>
+                    </ul>
+                </div>
+                
                 <div id="content-items-container" class="content-items-container">
                     <!-- Content items will be added here by JavaScript -->
                 </div>
