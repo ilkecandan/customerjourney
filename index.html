@@ -1803,98 +1803,102 @@
         }
 
         // Load content in the content section
-        function loadContent() {
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const container = document.getElementById('content-items-container');
-            if (!container) return;
+      
+function loadContent() {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const container = document.getElementById('content-items-container');
+    if (!container) return;
 
-            container.innerHTML = '';
+    container.innerHTML = '';
 
-            if (contentItems.length === 0) {
-                const emptyState = document.createElement('div');
-                emptyState.className = 'empty-state';
-                emptyState.innerHTML = `
-                    <i class="fas fa-file-alt"></i>
-                    <h3>No Content Strategies</h3>
-                    <p>Add content to help move leads through your funnel</p>
-                    <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
-                        <i class="fas fa-plus"></i> Add Content
-                    </button>
-                `;
-                container.appendChild(emptyState);
-                
-                document.getElementById('add-content-empty-btn').addEventListener('click', () => {
-                    document.getElementById('content-form').reset();
-                    document.getElementById('add-content-modal').classList.remove('hidden');
-                });
-                return;
+    if (contentItems.length === 0) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <i class="fas fa-file-alt"></i>
+            <h3>No Content Strategies</h3>
+            <p>Add content to help move leads through your funnel</p>
+            <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Add Content
+            </button>
+        `;
+        container.appendChild(emptyState);
+        
+        document.getElementById('add-content-empty-btn').addEventListener('click', () => {
+            document.getElementById('content-form').reset();
+            document.getElementById('add-content-modal').classList.remove('hidden');
+        });
+        return;
+    }
+
+    contentItems.forEach(content => {
+        const item = document.createElement('div');
+        item.className = 'content-item';
+        item.dataset.contentId = content.id;
+        item.dataset.stage = content.stage;
+        
+        // Add click handler to open edit modal
+        item.addEventListener('click', (e) => {
+            // Don't open if clicking on action buttons
+            if (!e.target.closest('.content-actions')) {
+                openEditContentModal(content);
             }
+        });
 
-            contentItems.forEach(content => {
-                const item = document.createElement('div');
-                item.className = 'content-item';
-                item.dataset.contentId = content.id;
-                item.dataset.stage = content.stage;
-                item.addEventListener('click', () => {
-    openEditContentModal(content);
-});
+        const icon = document.createElement('i');
+        icon.className = getContentIcon(content.type);
 
+        const name = document.createElement('h4');
+        name.textContent = content.name;
 
-                const icon = document.createElement('i');
-                icon.className = getContentIcon(content.type);
+        const desc = document.createElement('p');
+        desc.className = 'content-description';
+        desc.textContent = content.description;
 
-                const name = document.createElement('h4');
-                name.textContent = content.name;
+        const stageBadge = document.createElement('span');
+        stageBadge.className = 'stage-badge';
+        stageBadge.textContent = capitalizeFirstLetter(content.stage);
 
-                const desc = document.createElement('p');
-                desc.className = 'content-description';
-                desc.textContent = content.description;
+        const link = document.createElement('a');
+        link.href = content.link || '#';
+        link.target = '_blank';
+        link.className = 'content-link';
+        link.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
 
-                const stageBadge = document.createElement('span');
-                stageBadge.className = 'stage-badge';
-                stageBadge.textContent = capitalizeFirstLetter(content.stage);
+        const actions = document.createElement('div');
+        actions.className = 'content-actions';
 
-                const link = document.createElement('a');
-                link.href = content.link || '#';
-                link.target = '_blank';
-                link.className = 'content-link';
-                link.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-content';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditContentModal(content);
+        });
 
-                const actions = document.createElement('div');
-                actions.className = 'content-actions';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-content';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to delete this content strategy?')) {
+                deleteContent(content.id);
+            }
+        });
 
-                const editBtn = document.createElement('button');
-                editBtn.className = 'edit-content';
-                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditContentModal(content);
-                });
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-content';
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to delete this content strategy?')) {
-                        deleteContent(content.id);
-                    }
-                });
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.appendChild(desc);
+        item.appendChild(stageBadge);
+        item.appendChild(link);
+        item.appendChild(actions);
 
-                actions.appendChild(editBtn);
-                actions.appendChild(deleteBtn);
-
-                item.appendChild(icon);
-                item.appendChild(name);
-                item.appendChild(desc);
-                item.appendChild(stageBadge);
-                item.appendChild(link);
-                item.appendChild(actions);
-
-                container.appendChild(item);
-            });
-        }
-
+        container.appendChild(item);
+    });
+}
         // Delete content by ID
         function deleteContent(contentId) {
             const contentItems = JSON.parse(localStorage.getItem('content')) || [];
@@ -2036,6 +2040,31 @@
                     }
                 });
             });
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const leadId = btn.dataset.leadId;
+        const leads = JSON.parse(localStorage.getItem('leads'));
+        let foundLead = null;
+        
+        // Search through all stages to find the lead
+        for (const stageLeads of Object.values(leads)) {
+            const lead = stageLeads.find(l => l.id === leadId);
+            if (lead) {
+                foundLead = lead;
+                break;
+            }
+        }
+        
+        if (foundLead) {
+            console.log('Opening edit modal for lead:', leadId); // Debug log
+            openEditLeadModal(foundLead);
+        } else {
+            console.error('Lead not found:', leadId);
+            showNotification('Lead not found', 'error');
+        }
+    });
+});
         }
 
         // Helper function to capitalize first letter
@@ -2179,6 +2208,10 @@
                     }, 300);
                 });
             }
+            document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveContentChanges();
+});
         }
 
         // Export to Excel
@@ -2497,63 +2530,83 @@
         }
 
         // Open edit content modal
-        function openEditContentModal(content) {
-            document.getElementById('edit-content-id').value = content.id;
-            document.getElementById('edit-content-name').value = content.name;
-            document.getElementById('edit-content-description').value = content.description;
-            document.getElementById('edit-content-stage').value = content.stage;
-            document.getElementById('edit-content-type').value = content.type;
-            document.getElementById('edit-content-link').value = content.link;
-            document.getElementById('edit-content-target-conversion').value = content.targetConversion;
+function openEditContentModal(content) {
+    if (!content) return;
+    
+    console.log('Opening edit modal for content:', content.id); // Debug log
+    
+    document.getElementById('edit-content-id').value = content.id;
+    document.getElementById('edit-content-name').value = content.name;
+    document.getElementById('edit-content-description').value = content.description || '';
+    document.getElementById('edit-content-stage').value = content.stage;
+    document.getElementById('edit-content-type').value = content.type || 'blog';
+    document.getElementById('edit-content-link').value = content.link || '';
+    document.getElementById('edit-content-target-conversion').value = content.targetConversion || '';
 
-            document.getElementById('edit-content-modal').classList.remove('hidden');
-        }
+    const modal = document.getElementById('edit-content-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+}
 
         // Save content changes
         function saveContentChanges() {
-            const contentId = document.getElementById('edit-content-id').value;
-            const name = document.getElementById('edit-content-name').value;
-            const description = document.getElementById('edit-content-description').value;
-            const stage = document.getElementById('edit-content-stage').value;
-            const type = document.getElementById('edit-content-type').value;
-            const link = document.getElementById('edit-content-link').value;
-            const targetConversion = document.getElementById('edit-content-target-conversion').value;
+    const contentId = document.getElementById('edit-content-id').value;
+    const name = document.getElementById('edit-content-name').value;
+    const description = document.getElementById('edit-content-description').value;
+    const stage = document.getElementById('edit-content-stage').value;
+    const type = document.getElementById('edit-content-type').value;
+    const link = document.getElementById('edit-content-link').value;
+    const targetConversion = document.getElementById('edit-content-target-conversion').value;
 
-            if (!name || !stage) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
+    console.log('Saving content changes for:', contentId); // Debug log
 
-            // Update content in storage
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const contentIndex = contentItems.findIndex(c => c.id === contentId);
-            
-            if (contentIndex !== -1) {
-                contentItems[contentIndex] = {
-                    ...contentItems[contentIndex],
-                    name,
-                    description,
-                    stage,
-                    type,
-                    link,
-                    targetConversion: parseInt(targetConversion)
-                };
-                
-                localStorage.setItem('content', JSON.stringify(contentItems));
-                document.getElementById('edit-content-modal').classList.add('hidden');
-                loadLeads();
-                loadContent();
-                populateContentOptions();
-                showNotification('Content updated successfully');
-            }
-        }
+    if (!name || !stage) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
+    // Update content in storage
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const contentIndex = contentItems.findIndex(c => c.id === contentId);
+    
+    if (contentIndex !== -1) {
+        contentItems[contentIndex] = {
+            ...contentItems[contentIndex],
+            name,
+            description,
+            stage,
+            type,
+            link,
+            targetConversion: parseInt(targetConversion) || 0
+        };
+        
+        localStorage.setItem('content', JSON.stringify(contentItems));
+        document.getElementById('edit-content-modal').classList.add('hidden');
+        loadLeads();
+        loadContent();
+        populateContentOptions();
+        showNotification('Content updated successfully');
+    } else {
+        showNotification('Content not found', 'error');
+    }
+}
+      
         // Delete lead from edit modal
-        function deleteLead() {
-            const leadId = document.getElementById('edit-lead-id').value;
-            deleteLeadById(leadId);
-            document.getElementById('edit-lead-modal').classList.add('hidden');
-        }
+      // Update the deleteLead() function:
+function deleteLead() {
+    const leadId = document.getElementById('edit-lead-id').value;
+    console.log('Deleting lead:', leadId); // Debug log
+    if (confirm('Are you sure you want to delete this lead?')) {
+        deleteLeadById(leadId);
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+    }
+}
+
+// And ensure the event listener is set up:
+document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    deleteLead();
+});
 
         // Populate content options in select elements
         function populateContentOptions() {
