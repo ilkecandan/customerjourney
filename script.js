@@ -151,6 +151,75 @@ function initializeApp() {
     setupEventListeners();
     updateAnalytics();
     setupDragAndDrop();
+    setupInstallButton();
+    
+    // Show onboarding tooltips for first-time users
+    if (!localStorage.getItem('onboarding_shown')) {
+        setTimeout(showOnboardingTips, 1000);
+        localStorage.setItem('onboarding_shown', 'true');
+    }
+}
+
+// Show onboarding tooltips
+function showOnboardingTips() {
+    const funnelTip = document.createElement('div');
+    funnelTip.className = 'onboarding-tooltip';
+    funnelTip.innerHTML = 'Drag leads between stages to track their progress through your marketing funnel';
+    funnelTip.style.top = '200px';
+    funnelTip.style.left = '50%';
+    funnelTip.style.transform = 'translateX(-50%)';
+    document.querySelector('.funnel-container').appendChild(funnelTip);
+    
+    const contentTip = document.createElement('div');
+    contentTip.className = 'onboarding-tooltip';
+    contentTip.innerHTML = 'Add content strategies to each stage to help move leads forward in the funnel';
+    contentTip.style.top = '400px';
+    contentTip.style.left = '50%';
+    contentTip.style.transform = 'translateX(-50%)';
+    document.querySelector('.funnel-container').appendChild(contentTip);
+    
+    setTimeout(() => {
+        funnelTip.remove();
+        contentTip.remove();
+    }, 8000);
+}
+
+// Setup PWA install button
+function setupInstallButton() {
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-btn');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Show the install button
+        installBtn.classList.remove('hidden');
+    });
+    
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        // Optionally, send analytics event with outcome of user choice
+        console.log(`User response to the install prompt: ${outcome}`);
+        // Hide the install button
+        installBtn.classList.add('hidden');
+        // We've used the prompt, and can't use it again, throw it away
+        deferredPrompt = null;
+    });
+    
+    window.addEventListener('appinstalled', () => {
+        // Hide the install button
+        installBtn.classList.add('hidden');
+        // Clear the deferredPrompt so it can be garbage collected
+        deferredPrompt = null;
+        // Optionally, send analytics event to indicate successful install
+        console.log('PWA was installed');
+    });
 }
 
 // Load leads with content badges
@@ -192,12 +261,12 @@ function loadLeads() {
         }
 
         // Add leads
-        if (leads[stage].length === 0) {
+        if (leads[stage] && leads[stage].length === 0) {
             const emptyDiv = document.createElement('div');
             emptyDiv.className = 'empty';
             emptyDiv.textContent = 'Drop leads here';
             container.appendChild(emptyDiv);
-        } else {
+        } else if (leads[stage]) {
             leads[stage].forEach(lead => {
                 container.appendChild(createLeadCard(lead));
             });
@@ -223,7 +292,22 @@ function loadContent() {
     container.innerHTML = '';
 
     if (contentItems.length === 0) {
-        container.innerHTML = '<div class="empty-content">No content strategies added yet</div>';
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <i class="fas fa-file-alt"></i>
+            <h3>No Content Strategies</h3>
+            <p>Add content to help move leads through your funnel</p>
+            <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Add Content
+            </button>
+        `;
+        container.appendChild(emptyState);
+        
+        document.getElementById('add-content-empty-btn').addEventListener('click', () => {
+            document.getElementById('content-form').reset();
+            document.getElementById('add-content-modal').classList.remove('hidden');
+        });
         return;
     }
 
@@ -264,7 +348,18 @@ function loadContent() {
             openEditContentModal(content);
         });
 
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-content';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to delete this content strategy?')) {
+                deleteContent(content.id);
+            }
+        });
+
         actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
 
         item.appendChild(icon);
         item.appendChild(name);
@@ -275,6 +370,29 @@ function loadContent() {
 
         container.appendChild(item);
     });
+}
+
+// Delete content by ID
+function deleteContent(contentId) {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const updatedContent = contentItems.filter(c => c.id !== contentId);
+    localStorage.setItem('content', JSON.stringify(updatedContent));
+    
+    // Also remove from any leads that might reference this content
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    for (const stage in leads) {
+        leads[stage].forEach(lead => {
+            if (lead.contentStrategies && lead.contentStrategies.includes(contentId)) {
+                lead.contentStrategies = lead.contentStrategies.filter(id => id !== contentId);
+            }
+        });
+    }
+    localStorage.setItem('leads', JSON.stringify(leads));
+    
+    loadLeads();
+    loadContent();
+    populateContentOptions();
+    showNotification('Content deleted successfully');
 }
 
 // Create a lead card element for the funnel
@@ -519,6 +637,9 @@ function setupEventListeners() {
 
     // Export PDF
     document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+    
+    // Export Excel
+    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
 
     // Lead filter
     document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
@@ -535,6 +656,55 @@ function setupEventListeners() {
             }, 300);
         });
     }
+}
+
+// Export to Excel
+function exportToExcel() {
+    const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    
+    // Combine all leads from all stages
+    const allLeads = [];
+    for (const [stage, stageLeads] of Object.entries(leadsData)) {
+        stageLeads.forEach(lead => {
+            // Get content names for this lead
+            const contentUsed = lead.contentStrategies?.map(contentId => {
+                const content = contentItems.find(c => c.id === contentId);
+                return content ? content.name : '';
+            }).filter(name => name) || [];
+            
+            allLeads.push({
+                'Company': lead.company,
+                'Contact': lead.contact || '',
+                'Email': lead.email || '',
+                'Phone': lead.phone || '',
+                'Stage': capitalizeFirstLetter(stage),
+                'Source': capitalizeFirstLetter(lead.source || ''),
+                'Content Used': contentUsed.join(', '),
+                'Notes': lead.notes || '',
+                'Date Added': new Date(lead.dateAdded).toLocaleDateString(),
+                'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : ''
+            });
+        });
+    }
+    
+    if (allLeads.length === 0) {
+        showNotification('No leads to export', 'error');
+        return;
+    }
+    
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(allLeads);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+    
+    // Export to Excel file
+    XLSX.writeFile(wb, 'Marketing_Funnel_Leads.xlsx');
+    showNotification('Excel file exported successfully');
 }
 
 // Setup drag and drop functionality
