@@ -1333,7 +1333,7 @@
         <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
     </div>
     <div class="funnel-container">
-        <!-- Awareness Stage -->
+        <!-- Awareness Stage - Now Larger -->
         <div class="funnel-stage-wrapper stage-awareness">
             <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
                 <div class="stage-header clickable">
@@ -1354,15 +1354,15 @@
                 </div>
             </a>
             <div class="stage-body" data-drop-target="awareness">
-                <!-- Leads will appear here -->
                 <div class="empty-state">
                     <i class="fas fa-users"></i>
                     <p>Drop leads here</p>
                 </div>
+                <!-- Leads will appear here dynamically -->
             </div>
         </div>
 
-        <!-- Interest Stage -->
+        <!-- Interest Stage - Now Larger -->
         <div class="funnel-stage-wrapper stage-interest">
             <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
                 <div class="stage-header clickable">
@@ -1383,15 +1383,15 @@
                 </div>
             </a>
             <div class="stage-body" data-drop-target="interest">
-                <!-- Leads will appear here -->
                 <div class="empty-state">
                     <i class="fas fa-hand-pointer"></i>
                     <p>Drop leads here</p>
                 </div>
+                <!-- Leads will appear here dynamically -->
             </div>
         </div>
 
-        <!-- Consideration Stage -->
+        <!-- Consideration Stage with Functional Sub-Levels -->
         <div class="funnel-stage-wrapper stage-consideration">
             <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
                 <div class="stage-header clickable">
@@ -1415,37 +1415,349 @@
                 <div class="sublevel">
                     <div class="sublevel-header">Intent</div>
                     <div class="stage-body" data-drop-target="intent">
-                        <!-- Leads will appear here -->
                         <div class="empty-state">
                             <i class="fas fa-shopping-cart"></i>
                             <p>Drop leads here</p>
                         </div>
+                        <!-- Leads will appear here dynamically -->
                     </div>
                 </div>
                 <div class="sublevel">
                     <div class="sublevel-header">Evaluation</div>
                     <div class="stage-body" data-drop-target="evaluation">
-                        <!-- Leads will appear here -->
                         <div class="empty-state">
                             <i class="fas fa-search"></i>
                             <p>Drop leads here</p>
                         </div>
+                        <!-- Leads will appear here dynamically -->
                     </div>
                 </div>
                 <div class="sublevel">
                     <div class="sublevel-header">Purchase</div>
                     <div class="stage-body" data-drop-target="purchase">
-                        <!-- Leads will appear here -->
                         <div class="empty-state">
                             <i class="fas fa-check-circle"></i>
                             <p>Drop leads here</p>
                         </div>
+                        <!-- Leads will appear here dynamically -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Base Styles */
+.funnel-sidebar {
+    width: 100%;
+    height: 100%;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    background: #1e1e1e;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-y: auto;
+}
+
+.section-header {
+    padding: 0.5rem 0 1.5rem 0;
+    border-bottom: 1px solid #3a3a3a;
+    margin-bottom: 0.5rem;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-header i {
+    color: #64b5f6;
+    font-size: 1.2rem;
+}
+
+/* Funnel Container */
+.funnel-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    height: calc(100% - 50px);
+}
+
+/* Stage Wrapper - Larger Click Areas */
+.funnel-stage-wrapper {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: #2d2d2d;
+    border: 1px solid #3a3a3a;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 150px;
+    transition: transform 0.2s ease;
+}
+
+.funnel-stage-wrapper:hover {
+    transform: translateY(-3px);
+}
+
+/* Stage Header - Bigger and Bolder */
+.stage-header {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 90px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.stage-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.stage-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    min-width: 80px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #64b5f6;
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #aaa;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Clickable Elements */
+.funnel-stage-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.clickable {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.clickable:hover {
+    filter: brightness(115%);
+}
+
+.click-hint {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.3rem;
+    transition: all 0.2s ease;
+}
+
+.funnel-stage-link:hover .click-hint {
+    color: white;
+    transform: translateY(-50%) scale(1.15);
+}
+
+/* Stage Body - Drop Zones */
+.stage-body {
+    padding: 1.5rem;
+    flex: 1;
+    background: #252525;
+    min-height: 120px;
+    overflow-y: auto;
+    transition: background 0.3s ease;
+}
+
+.stage-body[dragover] {
+    background: #2e3a4a;
+    outline: 2px dashed #64b5f6;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    height: 100%;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* Sublevels - Functional Drop Areas */
+.stage-sublevels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #252525;
+    flex: 1;
+}
+
+.sublevel {
+    background: #2d2d2d;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid #3a3a3a;
+}
+
+.sublevel-header {
+    margin: 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+    text-align: center;
+    background: #3a3a3a;
+    color: #fff;
+    font-weight: 500;
+}
+
+.sublevel .stage-body {
+    min-height: 100px;
+    height: calc(100% - 50px);
+}
+
+/* Stage Colors */
+.stage-awareness .stage-header {
+    background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+}
+
+.stage-interest .stage-header {
+    background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%);
+}
+
+.stage-consideration .stage-header {
+    background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
+}
+
+/* Lead Cards - Example Styling */
+.lead-card {
+    background: #333;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+    border-left: 4px solid #64b5f6;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.lead-card:hover {
+    background: #3a3a3a;
+    transform: translateX(3px);
+}
+
+.lead-card:active {
+    cursor: grabbing;
+    box-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .stage-sublevels {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Basic Drag and Drop Functionality (Example)
+document.addEventListener('DOMContentLoaded', function() {
+    const dropTargets = document.querySelectorAll('[data-drop-target]');
+    
+    // Make lead cards draggable (you would generate these dynamically)
+    function makeDraggable(element) {
+        element.setAttribute('draggable', 'true');
+        
+        element.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', element.id);
+            element.classList.add('dragging');
+        });
+        
+        element.addEventListener('dragend', function() {
+            element.classList.remove('dragging');
+        });
+    }
+    
+    // Set up drop targets
+    dropTargets.forEach(target => {
+        target.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.setAttribute('dragover', 'true');
+        });
+        
+        target.addEventListener('dragleave', function() {
+            this.removeAttribute('dragover');
+        });
+        
+        target.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.removeAttribute('dragover');
+            
+            const leadId = e.dataTransfer.getData('text/plain');
+            const lead = document.getElementById(leadId);
+            
+            if (lead) {
+                // Remove from previous location
+                lead.parentNode.removeChild(lead);
+                
+                // Add to new location (before empty state if exists)
+                const emptyState = this.querySelector('.empty-state');
+                if (emptyState) {
+                    this.insertBefore(lead, emptyState);
+                } else {
+                    this.appendChild(lead);
+                }
+                
+                // Update stats (you would implement this)
+                updateFunnelStats();
+            }
+        });
+    });
+    
+    // Function to update funnel stats (example)
+    function updateFunnelStats() {
+        // You would implement actual logic here
+        console.log("Updating funnel stats...");
+    }
+});
+</script>
             <!-- Right Side: Lead Management -->
             <div class="leads-management">
                 <div class="section-header">
