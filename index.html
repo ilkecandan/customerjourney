@@ -1216,6 +1216,44 @@
     transform: translateY(-50%) scale(1.1);
 }
 
+.funnel-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.funnel-stage {
+  color: white;
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  transform-origin: center;
+}
+
+/* Funnel shape! */
+.stage1 {
+  width: 90%;
+  background-color: #7f3f98;
+  transform: perspective(300px) rotateX(-3deg);
+}
+.stage2 {
+  width: 75%;
+  background-color: #c27ccc;
+  transform: perspective(300px) rotateX(-2deg);
+}
+.stage3 {
+  width: 60%;
+  background-color: #f7c97c;
+  transform: perspective(300px) rotateX(-1deg);
+}
+.stage4 {
+  width: 45%;
+  background-color: #f19191;
+}
 /* Stage Colors */
 .stage-awareness .stage-header {
     background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
@@ -1338,7 +1376,7 @@
     </div>
     <div class="funnel-container">
         <!-- Awareness Stage - Now Larger -->
-        <div class="funnel-stage-wrapper stage-awareness">
+        <div class="funnel-stage stage1"">
             <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
                 <div class="stage-header clickable">
                     <h3>Awareness</h3>
@@ -1367,7 +1405,7 @@
         </div>
 
         <!-- Interest Stage - Now Larger -->
-        <div class="funnel-stage-wrapper stage-interest">
+        <div funnel-stage stage2">
             <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
                 <div class="stage-header clickable">
                     <h3>Interest</h3>
@@ -1396,7 +1434,7 @@
         </div>
 
         <!-- Consideration Stage with Functional Sub-Levels -->
-        <div class="funnel-stage-wrapper stage-consideration">
+        <div class="funnel-stage stage3">
             <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
                 <div class="stage-header clickable">
                     <h3>Consideration</h3>
