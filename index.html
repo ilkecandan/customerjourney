@@ -1209,19 +1209,17 @@
                             <i class="fas fa-search"></i>
                             <span class="tooltiptext">Search by company or contact name</span>
                         </div>
-                        <<div class="tooltip">
-    <select id="lead-stage-filter" class="lead-stage-filter">
-        <option value="all">All Stages</option>
-        <option value="awareness">Awareness</option>
-        <option value="interest">Interest</option>
-        <option value="intent">Intent</option>
-        <option value="evaluation">Evaluation</option>
-        <option value="purchase">Purchase</option>
-    </select>
-    <span class="tooltiptext">Filter leads by funnel stage</span>
-</div>
-
-
+                        <div class="tooltip">
+                            <select id="lead-stage-filter" class="lead-stage-filter">
+                                <option value="all">All Stages</option>
+                                <option value="awareness">Awareness</option>
+                                <option value="interest">Interest</option>
+                                <option value="intent">Intent</option>
+                                <option value="evaluation">Evaluation</option>
+                                <option value="purchase">Purchase</option>
+                            </select>
+                            <span class="tooltiptext">Filter leads by funnel stage</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -1363,7 +1361,9 @@
                             <select id="content-stage" required>
                                 <option value="awareness">Awareness</option>
                                 <option value="interest">Interest</option>
-                                <option value="consideration">Consideration</option>
+                                <option value="intent">Intent</option>
+                                <option value="evaluation">Evaluation</option>
+                                <option value="purchase">Purchase</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1480,7 +1480,9 @@
                             <select id="edit-content-stage" required>
                                 <option value="awareness">Awareness</option>
                                 <option value="interest">Interest</option>
-                                <option value="consideration">Consideration</option>
+                                <option value="intent">Intent</option>
+                                <option value="evaluation">Evaluation</option>
+                                <option value="purchase">Purchase</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1658,10 +1660,28 @@
                         id: 'content-3',
                         name: 'Case Study',
                         description: 'Success story from existing customer',
-                        stage: 'consideration',
+                        stage: 'intent',
                         type: 'casestudy',
                         link: 'https://example.com/case-study',
                         targetConversion: 25
+                    },
+                    {
+                        id: 'content-4',
+                        name: 'Pricing Guide',
+                        description: 'Detailed pricing information',
+                        stage: 'evaluation',
+                        type: 'ebook',
+                        link: 'https://example.com/pricing',
+                        targetConversion: 20
+                    },
+                    {
+                        id: 'content-5',
+                        name: 'Customer Testimonials',
+                        description: 'Video testimonials from happy customers',
+                        stage: 'purchase',
+                        type: 'video',
+                        link: 'https://example.com/testimonials',
+                        targetConversion: 30
                     }
                 ];
                 localStorage.setItem('content', JSON.stringify(defaultContent));
@@ -1967,7 +1987,12 @@
             leadCard.addEventListener('dragstart', handleDragStart);
 
             // Add click event to show edit modal
-            leadCard.addEventListener('click', () => openEditLeadModal(lead));
+            leadCard.addEventListener('click', (e) => {
+                // Only open edit modal if not dragging
+                if (!e.target.classList.contains('dragging')) {
+                    openEditLeadModal(lead);
+                }
+            });
 
             return leadCard;
         }
@@ -2048,7 +2073,11 @@
                     }
                     
                     if (foundLead) {
+                        console.log('Opening edit modal for lead:', leadId); // Debug log
                         openEditLeadModal(foundLead);
+                    } else {
+                        console.error('Lead not found:', leadId);
+                        showNotification('Lead not found', 'error');
                     }
                 });
             });
@@ -2062,31 +2091,6 @@
                     }
                 });
             });
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const leadId = btn.dataset.leadId;
-        const leads = JSON.parse(localStorage.getItem('leads'));
-        let foundLead = null;
-        
-        // Search through all stages to find the lead
-        for (const stageLeads of Object.values(leads)) {
-            const lead = stageLeads.find(l => l.id === leadId);
-            if (lead) {
-                foundLead = lead;
-                break;
-            }
-        }
-        
-        if (foundLead) {
-            console.log('Opening edit modal for lead:', leadId); // Debug log
-            openEditLeadModal(foundLead);
-        } else {
-            console.error('Lead not found:', leadId);
-            showNotification('Lead not found', 'error');
-        }
-    });
-});
         }
 
         // Helper function to capitalize first letter
@@ -2194,10 +2198,9 @@
                 saveContentChanges();
             });
 
-            document.getElementById('delete-lead-btn')?.addEventListener('click', function() {
-                if (confirm('Are you sure you want to delete this lead?')) {
-                    deleteLead();
-                }
+            document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                deleteLead();
             });
 
             // Click outside modal to close
@@ -2230,10 +2233,6 @@
                     }, 300);
                 });
             }
-            document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    saveContentChanges();
-});
         }
 
         // Export to Excel
@@ -2322,6 +2321,10 @@
                                 moveContentToStage(contentId, toStage);
                             }
                         }
+                    });
+
+                    drake.on('dragend', function(el) {
+                        el.classList.remove('dragging-content');
                     });
                 }
             }, 100);
