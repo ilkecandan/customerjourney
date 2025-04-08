@@ -1678,7 +1678,6 @@
 
             // Load data and setup UI
             loadLeads();
-            setupDragAndDrop();
             loadContent();
             setupEventListeners();
             updateAnalytics();
@@ -1938,7 +1937,6 @@ item.draggable = true;
             
             loadLeads();
             loadContent();
-            setupDragAndDrop();
             populateContentOptions();
             showNotification('Content deleted successfully');
         }
@@ -2111,7 +2109,6 @@ item.draggable = true;
             if (leadFound) {
                 localStorage.setItem('leads', JSON.stringify(leads));
                 loadLeads();
-                setupDragAndDrop();
                 updateAnalytics();
                 showNotification('Lead deleted successfully');
             }
@@ -2285,44 +2282,38 @@ item.draggable = true;
             showNotification('Excel file exported successfully');
         }
 function setupDragAndDrop() {
-    // Clear previous Dragula instances (optional but good practice)
-    if (window.drakeInstance) {
-        window.drakeInstance.destroy();
-    }
+    setTimeout(() => {
+        const stageBodies = Array.from(document.querySelectorAll('.stage-body'));
+        const contentContainers = Array.from(document.querySelectorAll('.content-badges'));
 
-    const stageBodies = Array.from(document.querySelectorAll('.stage-body'));
-    const contentContainers = Array.from(document.querySelectorAll('.content-badges'));
+        const containers = stageBodies.concat(contentContainers); // Combine both sets
 
-    const containers = stageBodies.concat(contentContainers);
-
-    if (containers.length > 0) {
-        const drake = dragula(containers, {
-            moves: function (el, source, handle, sibling) {
-                return el.classList.contains('lead-card') || el.classList.contains('content-badge');
-            }
-        });
-
-        window.drakeInstance = drake; // Store for cleanup later
-
-        drake.on('drop', function (el, target, source, sibling) {
-            const fromStage = source.closest('.stage-body')?.dataset.dropTarget;
-            const toStage = target.closest('.stage-body')?.dataset.dropTarget;
-
-            if (el.classList.contains('lead-card')) {
-                const leadId = el.dataset.leadId;
-                if (fromStage && toStage && fromStage !== toStage) {
-                    moveLead(leadId, fromStage, toStage);
+        if (containers.length > 0) {
+            const drake = dragula(containers, {
+                moves: function(el, source, handle, sibling) {
+                    return el.classList.contains('lead-card') || el.classList.contains('content-badge');
                 }
-            } else if (el.classList.contains('content-badge')) {
-                const contentId = el.dataset.contentId;
-                if (fromStage && toStage && fromStage !== toStage) {
-                    moveContentToStage(contentId, toStage);
+            });
+
+            drake.on('drop', function(el, target, source, sibling) {
+                const fromStage = source.closest('.stage-body')?.dataset.dropTarget;
+                const toStage = target.closest('.stage-body')?.dataset.dropTarget;
+
+                if (el.classList.contains('lead-card')) {
+                    const leadId = el.dataset.leadId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        moveLead(leadId, fromStage, toStage);
+                    }
+                } else if (el.classList.contains('content-badge')) {
+                    const contentId = el.dataset.contentId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        moveContentToStage(contentId, toStage);
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+    }, 100);
 }
-
 
         
         // Move lead between stages
@@ -2350,7 +2341,6 @@ function setupDragAndDrop() {
             
             // Update UI
             loadLeads();
-            setupDragAndDrop();
             updateAnalytics();
             
             // Show notification
@@ -2367,8 +2357,6 @@ function moveContentToStage(contentId, toStage) {
 
         // Re-render updated funnel + content area
         loadLeads();
-        setupDragAndDrop();
-
         loadContent();
     }
 }
@@ -2425,7 +2413,6 @@ function moveContentToStage(contentId, toStage) {
 
             // Update UI
             loadLeads();
-            setupDragAndDrop();
             updateAnalytics();
             showNotification('Lead added successfully');
         }
@@ -2466,7 +2453,6 @@ function moveContentToStage(contentId, toStage) {
 
             // Update UI
             loadLeads();
-            setupDragAndDrop();
             loadContent();
             populateContentOptions();
             showNotification('Content strategy added successfully');
@@ -2559,7 +2545,6 @@ function moveContentToStage(contentId, toStage) {
                 localStorage.setItem('leads', JSON.stringify(leads));
                 document.getElementById('edit-lead-modal').classList.add('hidden');
                 loadLeads();
-                setupDragAndDrop();
                 updateAnalytics();
                 showNotification('Lead updated successfully');
             }
@@ -2619,7 +2604,6 @@ function openEditContentModal(content) {
         localStorage.setItem('content', JSON.stringify(contentItems));
         document.getElementById('edit-content-modal').classList.add('hidden');
         loadLeads();
-        setupDragAndDrop();
         loadContent();
         populateContentOptions();
         showNotification('Content updated successfully');
