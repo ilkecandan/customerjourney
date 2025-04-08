@@ -2811,41 +2811,45 @@ document.getElementById('delete-lead-btn')?.addEventListener('click', function(e
                 toast.classList.remove('show');
             }, 3000);
         }
-        function setupDragAndDrop() {
-  const containers = Array.from(document.querySelectorAll('.stage-body'));
+
+
+function setupDragAndDrop() {
+  const stages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
+
+  const containers = stages
+    .map(stage => document.querySelector(`[data-drop-target="${stage}"]`))
+    .filter(Boolean);
 
   const drake = dragula(containers, {
     moves: function (el) {
-      return el.classList.contains('lead-card');
+      return el.classList.contains('lead-card') || el.classList.contains('content-card');
     }
   });
 
   drake.on('drop', function (el, target, source) {
-    const leadId = el.dataset.leadId;
-    const fromStage = source.dataset.dropTarget;
-    const toStage = target.dataset.dropTarget;
+    const fromStage = source?.dataset?.dropTarget;
+    const toStage = target?.dataset?.dropTarget;
 
-    if (leadId && fromStage && toStage && fromStage !== toStage) {
-      moveLead(leadId, fromStage, toStage);
+    if (!fromStage || !toStage || fromStage === toStage) return;
+
+    // If it's a lead
+    if (el.classList.contains('lead-card')) {
+      const leadId = el?.dataset?.leadId;
+      if (leadId) moveLead(leadId, fromStage, toStage);
+    }
+
+    // If it's a content item
+    if (el.classList.contains('content-card')) {
+      const contentId = el?.dataset?.contentId;
+      if (contentId) moveContent(contentId, fromStage, toStage);
     }
   });
 }
-const stages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
 
-const containers = stages
-  .map(stage => document.querySelector(`[data-drop-target="${stage}"]`))
-  .filter(Boolean); // Ensures only valid containers are included
+// Initialize on page load
+setupDragAndDrop();
 
-dragula(containers).on('drop', (el, target, source) => {
-  const leadId = el?.dataset?.leadId;
-  const fromStage = source?.dataset?.dropTarget;
-  const toStage = target?.dataset?.dropTarget;
-
-  if (leadId && fromStage && toStage && fromStage !== toStage) {
-    moveLead(leadId, fromStage, toStage);
-  }
-});
-
+        
     </script>
 </body>
 </html>
