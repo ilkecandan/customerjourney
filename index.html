@@ -2327,20 +2327,22 @@ function loadContent() {
             // Show notification
             showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
         }
+function moveContentToStage(contentId, toStage) {
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
 
-        // Move content to different stage
-        function moveContentToStage(contentId, newStage) {
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const contentIndex = contentItems.findIndex(c => c.id === contentId);
-            
-            if (contentIndex !== -1) {
-                contentItems[contentIndex].stage = newStage;
-                localStorage.setItem('content', JSON.stringify(contentItems));
-                loadLeads();
-                loadContent();
-                showNotification(`Content moved to ${capitalizeFirstLetter(newStage)} stage`);
-            }
-        }
+    const index = contentItems.findIndex(item => item.id === contentId);
+    if (index !== -1) {
+        contentItems[index].stage = toStage;
+        localStorage.setItem('content', JSON.stringify(contentItems));
+        showNotification(`Content moved to ${capitalizeFirstLetter(toStage)} stage`);
+
+        // Re-render updated funnel + content area
+        loadLeads();
+        loadContent();
+    }
+}
+
+
 
         // Drag start handler
         function handleDragStart(e) {
