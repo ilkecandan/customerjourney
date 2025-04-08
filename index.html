@@ -1220,7 +1220,17 @@
                         </select>
                     </div>
                 </div>
-                
+                <div class="stage-body">
+  <div class="lead-cards">
+    <!-- your cards go here -->
+  </div>
+  <div class="badge-container">
+    <div class="content-badges">
+      <!-- badges go here -->
+    </div>
+  </div>
+</div>
+
                 <!-- Lead Management Guide -->
                 <div class="lead-management-guide">
                     <h3>Lead Management Guide</h3>
@@ -1761,7 +1771,8 @@
                 const stage = container.dataset.dropTarget;
                 
                 // Add content badges for this stage
-                const stageContent = contentItems.filter(c => c.stage === stage);
+const stage = container.dataset.dropTarget;
+const stageContent = contentItems.filter(c => c.stage === stage);
                 if (stageContent.length > 0) {
                     const contentBadges = document.createElement('div');
                     contentBadges.className = 'content-badges';
