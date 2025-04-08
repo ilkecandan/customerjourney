@@ -1844,11 +1844,10 @@ function loadContent() {
     }
 
     contentItems.forEach(content => {
-        const item = document.createElement('div');
-        item.className = 'content-item';
-        item.dataset.contentId = content.id;
-        item.dataset.stage = content.stage;
-        
+       const item = document.createElement('div');
+    item.className = 'content-item';
+    item.dataset.contentId = content.id;
+    item.dataset.stage = content.stage;
         // Add click handler to open edit modal
         item.addEventListener('click', (e) => {
             // Don't open if clicking on action buttons
@@ -1856,6 +1855,14 @@ function loadContent() {
                 openEditContentModal(content);
             }
         });
+item.draggable = true;
+    item.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/content-id', content.id);
+        item.classList.add('dragging-content');
+    });
+        item.addEventListener('dragend', () => {
+    item.classList.remove('dragging-content');
+});
 
         const icon = document.createElement('i');
         icon.className = getContentIcon(content.type);
