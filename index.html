@@ -1032,6 +1032,14 @@
                 grid-template-columns: 1fr;
             }
         }
+        .select2-container {
+    z-index: 2000 !important;
+}
+        .tooltip .tooltiptext {
+    pointer-events: none;
+}
+
+
     </style>
 </head>
 <body>
@@ -2822,22 +2830,22 @@ document.getElementById('delete-lead-btn')?.addEventListener('click', function(e
     }
   });
 }
+const stages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
 
-         dragula([
-    document.querySelector('[data-drop-target="awareness"]'),
-    document.querySelector('[data-drop-target="interest"]'),
-    document.querySelector('[data-drop-target="intent"]'),
-    document.querySelector('[data-drop-target="evaluation"]'),
-    document.querySelector('[data-drop-target="purchase"]')
-  ]).on('drop', function (el, target, source, sibling) {
-    const leadId = el.dataset.leadId;
-    const fromStage = source.dataset.dropTarget;
-    const toStage = target.dataset.dropTarget;
+const containers = stages
+  .map(stage => document.querySelector(`[data-drop-target="${stage}"]`))
+  .filter(Boolean); // Ensures only valid containers are included
 
-    if (fromStage && toStage && fromStage !== toStage) {
-      moveLead(leadId, fromStage, toStage);
-    }
-  });
+dragula(containers).on('drop', (el, target, source) => {
+  const leadId = el?.dataset?.leadId;
+  const fromStage = source?.dataset?.dropTarget;
+  const toStage = target?.dataset?.dropTarget;
+
+  if (leadId && fromStage && toStage && fromStage !== toStage) {
+    moveLead(leadId, fromStage, toStage);
+  }
+});
+
     </script>
 </body>
 </html>
