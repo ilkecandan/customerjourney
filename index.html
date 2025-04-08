@@ -1038,50 +1038,7 @@
         .tooltip .tooltiptext {
     pointer-events: none;
 }
-/* Clickable elements */
-.funnel-stage-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.2s ease;
-}
 
-.funnel-stage-link:hover {
-    transform: translateY(-3px);
-}
-
-.clickable {
-    position: relative;
-    padding-right: 40px;
-    transition: all 0.2s ease;
-}
-
-.clickable:hover {
-    filter: brightness(110%);
-}
-
-.click-hint {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255,255,255,0.7);
-    transition: all 0.2s ease;
-}
-
-.funnel-stage-link:hover .click-hint {
-    color: white;
-    transform: translateY(-50%) scale(1.1);
-}
-
-/* Ensure drag and drop still works */
-.stage-body, .sublevel .stage-body {
-    pointer-events: none;
-}
-
-.stage-body *, .sublevel .stage-body * {
-    pointer-events: auto;
-}
 
     </style>
 </head>
@@ -1150,119 +1107,97 @@
         <!-- Main Content - 50/50 Split -->
         <main class="main-content">
             <!-- Left Side: Compact Funnel Visualization -->
-           <div class="funnel-sidebar">
-    <div class="section-header">
-        <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
-    </div>
-    <div class="funnel-container">
-        <!-- Awareness Stage -->
-        <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
-            <div class="funnel-stage stage-awareness">
-                <div class="stage-header clickable">
-                    <h3>Awareness</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
-                        </div>
-                    </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
-                    </div>
+            <div class="funnel-sidebar">
+                <div class="section-header">
+                    <h2><i class="fas fa-filter"></i> Funnel Visualization <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Drag leads between stages to track their progress. Click on leads to edit them.</span></span></h2>
                 </div>
-                <div class="stage-body">
-                    <div class="empty-state">
-                        <i class="fas fa-users"></i>
-                        <p>Drop leads here</p>
-                    </div>
-                </div>
-            </div>
-        </a>
-
-        <!-- Interest Stage -->
-        <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
-            <div class="funnel-stage stage-interest">
-                <div class="stage-header clickable">
-                    <h3>Interest</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
+                <div class="funnel-container">
+                    <!-- Awareness Stage -->
+                    <div class="funnel-stage stage-awareness" data-stage="awareness">
+                        <div class="stage-header">
+                            <h3>Awareness <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Leads who have shown initial interest (visited website, downloaded content, etc.)</span></span></h3>
+                            <div class="stage-stats">
+                                <span class="lead-count">0</span>
+                                <span class="percentage">0%</span>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
+                        <div class="stage-body" data-drop-target="awareness">
+                            <div class="empty">Drop leads here or click "Add Lead"</div>
                         </div>
-                    </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
-                    </div>
-                </div>
-                <div class="stage-body">
-                    <div class="empty-state">
-                        <i class="fas fa-hand-pointer"></i>
-                        <p>Drop leads here</p>
-                    </div>
-                </div>
-            </div>
-        </a>
-
-        <!-- Consideration Stage -->
-        <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
-            <div class="funnel-stage stage-consideration">
-                <div class="stage-header clickable">
-                    <h3>Consideration</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
-                        </div>
-                    </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
-                    </div>
-                </div>
-                <div class="stage-sublevels">
-                    <div class="sublevel">
-                        <h4>Intent</h4>
-                        <div class="stage-body">
-                            <div class="empty-state">
-                                <i class="fas fa-shopping-cart"></i>
-                                <p>Drop leads here</p>
+                        <div class="stage-footer">
+                            <div class="conversion-arrow">
+                                <span id="awareness-conversion-rate">0%</span>
+                                <i class="fas fa-arrow-down"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="sublevel">
-                        <h4>Evaluation</h4>
-                        <div class="stage-body">
-                            <div class="empty-state">
-                                <i class="fas fa-search"></i>
-                                <p>Drop leads here</p>
+                    
+                    <!-- Interest Stage -->
+                    <div class="funnel-stage stage-interest" data-stage="interest">
+                        <div class="stage-header">
+                            <h3>Interest <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Leads who have engaged with your brand (requested demo, attended webinar, etc.)</span></span></h3>
+                            <div class="stage-stats">
+                                <span class="lead-count">0</span>
+                                <span class="percentage">0%</span>
+                            </div>
+                        </div>
+                        <div class="stage-body" data-drop-target="interest">
+                            <div class="empty">Drop leads here</div>
+                        </div>
+                        <div class="stage-footer">
+                            <div class="conversion-arrow">
+                                <span id="interest-conversion-rate">0%</span>
+                                <i class="fas fa-arrow-down"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="sublevel">
-                        <h4>Purchase</h4>
-                        <div class="stage-body">
-                            <div class="empty-state">
-                                <i class="fas fa-check-circle"></i>
-                                <p>Drop leads here</p>
+                    
+                    <!-- Consideration Stage -->
+                    <div class="funnel-stage stage-consideration" data-stage="consideration">
+                        <div class="stage-header">
+                            <h3>Consideration <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Leads evaluating your solution (comparing options, talking to sales, etc.)</span></span></h3>
+                            <div class="stage-stats">
+                                <span class="lead-count">0</span>
+                                <span class="percentage">0%</span>
+                            </div>
+                        </div>
+                        <div class="stage-sublevels">
+                            <!-- Intent Sublevel -->
+                            <div class="sublevel" data-sublevel="intent">
+                                <h4>Intent <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Leads showing purchase intent (requested quote, pricing, etc.)</span></span></h4>
+                                <div class="stage-body" data-drop-target="intent">
+                                    <div class="empty">Drop leads here</div>
+                                </div>
+                                <div class="stage-stats">
+                                    <span class="lead-count">0</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Evaluation Sublevel -->
+                            <div class="sublevel" data-sublevel="evaluation">
+                                <h4>Evaluation <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Leads in final evaluation (trial users, references checked, etc.)</span></span></h4>
+                                <div class="stage-body" data-drop-target="evaluation">
+                                    <div class="empty">Drop leads here</div>
+                                </div>
+                                <div class="stage-stats">
+                                    <span class="lead-count">0</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Purchase Sublevel -->
+                            <div class="sublevel" data-sublevel="purchase">
+                                <h4>Purchase <span class="tooltip"><i class="fas fa-info-circle" style="color: #9e9e9e; font-size: 0.8rem;"></i><span class="tooltiptext">Leads who have become customers</span></span></h4>
+                                <div class="stage-body" data-drop-target="purchase">
+                                    <div class="empty">Drop leads here</div>
+                                </div>
+                                <div class="stage-stats">
+                                    <span class="lead-count">0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </a>
-    </div>
-</div>
 
             <!-- Right Side: Lead Management -->
             <div class="leads-management">
