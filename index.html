@@ -2281,41 +2281,41 @@ item.draggable = true;
             XLSX.writeFile(wb, 'Marketing_Funnel_Leads.xlsx');
             showNotification('Excel file exported successfully');
         }
+function setupDragAndDrop() {
+    setTimeout(() => {
+        const stageBodies = Array.from(document.querySelectorAll('.stage-body'));
+        const contentContainers = Array.from(document.querySelectorAll('.content-badges'));
 
-        // Setup drag and drop functionality
-        function setupDragAndDrop() {
-            setTimeout(() => {
-                const containers = Array.from(document.querySelectorAll('.stage-body'));
-                
-                if (containers.length > 0) {
-                    const drake = dragula(containers, {
-                        moves: function(el, source, handle, sibling) {
-                            return el.classList.contains('lead-card') || el.classList.contains('content-badge');
-                        }
-                    });
+        const containers = stageBodies.concat(contentContainers); // Combine both sets
 
-                    drake.on('drop', function(el, target, source, sibling) {
-                        const fromStage = source.dataset.dropTarget;
-                        const toStage = target.dataset.dropTarget;
-                        
-                        if (el.classList.contains('lead-card')) {
-                            // Handle lead movement
-                            const leadId = el.dataset.leadId;
-                            if (fromStage && toStage && fromStage !== toStage) {
-                                moveLead(leadId, fromStage, toStage);
-                            }
-                        } else if (el.classList.contains('content-badge')) {
-                            // Handle content movement between stages
-                            const contentId = el.dataset.contentId;
-                            if (fromStage && toStage && fromStage !== toStage) {
-                                moveContentToStage(contentId, toStage);
-                            }
-                        }
-                    });
+        if (containers.length > 0) {
+            const drake = dragula(containers, {
+                moves: function(el, source, handle, sibling) {
+                    return el.classList.contains('lead-card') || el.classList.contains('content-badge');
                 }
-            }, 100);
-        }
+            });
 
+            drake.on('drop', function(el, target, source, sibling) {
+                const fromStage = source.closest('.stage-body')?.dataset.dropTarget;
+                const toStage = target.closest('.stage-body')?.dataset.dropTarget;
+
+                if (el.classList.contains('lead-card')) {
+                    const leadId = el.dataset.leadId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        moveLead(leadId, fromStage, toStage);
+                    }
+                } else if (el.classList.contains('content-badge')) {
+                    const contentId = el.dataset.contentId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        moveContentToStage(contentId, toStage);
+                    }
+                }
+            });
+        }
+    }, 100);
+}
+
+        
         // Move lead between stages
         function moveLead(leadId, fromStage, toStage) {
             const leads = JSON.parse(localStorage.getItem('leads'));
