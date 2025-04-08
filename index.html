@@ -1082,160 +1082,6 @@
 .stage-body *, .sublevel .stage-body * {
     pointer-events: auto;
 }
-        /* Funnel Container */
-.funnel-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-}
-
-.funnel-stage-wrapper {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    background: #2d2d2d;
-    border: 1px solid #3a3a3a;
-}
-
-/* Stage Header */
-.stage-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-}
-
-.stage-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #fff;
-}
-
-.stage-stats {
-    display: flex;
-    gap: 1rem;
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #64b5f6;
-    display: block;
-}
-
-.stat-label {
-    font-size: 0.7rem;
-    color: #aaa;
-    display: block;
-}
-
-/* Stage Body */
-.stage-body {
-    padding: 1rem;
-    min-height: 100px;
-    background: #252525;
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    height: 100%;
-}
-
-.empty-state i {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-    margin: 0;
-    font-size: 0.9rem;
-}
-
-/* Sublevels */
-.stage-sublevels {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: #252525;
-}
-
-.sublevel {
-    background: #2d2d2d;
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.sublevel h4 {
-    margin: 0;
-    padding: 0.5rem;
-    font-size: 0.9rem;
-    text-align: center;
-    background: #3a3a3a;
-    color: #fff;
-}
-
-/* Clickable elements */
-.funnel-stage-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
-.clickable {
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.clickable:hover {
-    filter: brightness(110%);
-}
-
-.click-hint {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255,255,255,0.7);
-    transition: all 0.2s ease;
-}
-
-.funnel-stage-link:hover .click-hint {
-    color: white;
-    transform: translateY(-50%) scale(1.1);
-}
-
-/* Stage Colors */
-.stage-awareness .stage-header {
-    background: #0d47a1;
-}
-
-.stage-interest .stage-header {
-    background: #1b5e20;
-}
-
-.stage-consideration .stage-header {
-    background: #e65100;
-}
-
-/* Lead cards (example styling - adjust as needed) */
-.lead-card {
-    background: #333;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-    border-left: 3px solid #64b5f6;
-}
 
     </style>
 </head>
@@ -1304,14 +1150,14 @@
         <!-- Main Content - 50/50 Split -->
         <main class="main-content">
             <!-- Left Side: Compact Funnel Visualization -->
-          <div class="funnel-sidebar">
+           <div class="funnel-sidebar">
     <div class="section-header">
         <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
     </div>
     <div class="funnel-container">
         <!-- Awareness Stage -->
-        <div class="funnel-stage-wrapper">
-            <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
+        <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
+            <div class="funnel-stage stage-awareness">
                 <div class="stage-header clickable">
                     <h3>Awareness</h3>
                     <div class="stage-stats">
@@ -1328,19 +1174,18 @@
                         <i class="fas fa-external-link-alt"></i>
                     </div>
                 </div>
-            </a>
-            <div class="stage-body" data-drop-target="awareness">
-                <!-- Leads will appear here -->
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <p>Drop leads here</p>
+                <div class="stage-body">
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Drop leads here</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Interest Stage -->
-        <div class="funnel-stage-wrapper">
-            <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
+        <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
+            <div class="funnel-stage stage-interest">
                 <div class="stage-header clickable">
                     <h3>Interest</h3>
                     <div class="stage-stats">
@@ -1357,19 +1202,18 @@
                         <i class="fas fa-external-link-alt"></i>
                     </div>
                 </div>
-            </a>
-            <div class="stage-body" data-drop-target="interest">
-                <!-- Leads will appear here -->
-                <div class="empty-state">
-                    <i class="fas fa-hand-pointer"></i>
-                    <p>Drop leads here</p>
+                <div class="stage-body">
+                    <div class="empty-state">
+                        <i class="fas fa-hand-pointer"></i>
+                        <p>Drop leads here</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Consideration Stage -->
-        <div class="funnel-stage-wrapper">
-            <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
+        <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
+            <div class="funnel-stage stage-consideration">
                 <div class="stage-header clickable">
                     <h3>Consideration</h3>
                     <div class="stage-stats">
@@ -1386,40 +1230,37 @@
                         <i class="fas fa-external-link-alt"></i>
                     </div>
                 </div>
-            </a>
-            <div class="stage-sublevels">
-                <div class="sublevel" data-drop-target="intent">
-                    <h4>Intent</h4>
-                    <div class="stage-body">
-                        <!-- Leads will appear here -->
-                        <div class="empty-state">
-                            <i class="fas fa-shopping-cart"></i>
-                            <p>Drop leads here</p>
+                <div class="stage-sublevels">
+                    <div class="sublevel">
+                        <h4>Intent</h4>
+                        <div class="stage-body">
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-cart"></i>
+                                <p>Drop leads here</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="sublevel" data-drop-target="evaluation">
-                    <h4>Evaluation</h4>
-                    <div class="stage-body">
-                        <!-- Leads will appear here -->
-                        <div class="empty-state">
-                            <i class="fas fa-search"></i>
-                            <p>Drop leads here</p>
+                    <div class="sublevel">
+                        <h4>Evaluation</h4>
+                        <div class="stage-body">
+                            <div class="empty-state">
+                                <i class="fas fa-search"></i>
+                                <p>Drop leads here</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="sublevel" data-drop-target="purchase">
-                    <h4>Purchase</h4>
-                    <div class="stage-body">
-                        <!-- Leads will appear here -->
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <p>Drop leads here</p>
+                    <div class="sublevel">
+                        <h4>Purchase</h4>
+                        <div class="stage-body">
+                            <div class="empty-state">
+                                <i class="fas fa-check-circle"></i>
+                                <p>Drop leads here</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
