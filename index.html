@@ -272,13 +272,12 @@
         .funnel-stage:nth-child(3) { width: 70%; }
         
         .stage-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            background-color: #2d2d2d;
-            border-bottom: 1px solid #333;
-            cursor: pointer;
+            padding: 1.5rem; /* Increased padding */
+    min-height: 80px; /* Taller header */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
         }
         
         .stage-header h3 {
@@ -290,7 +289,7 @@
         .stage-stats {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1.5rem;
         }
         
         .lead-count {
@@ -1095,7 +1094,7 @@
 
 .stat-item {
     text-align: center;
-    min-width: 50px;
+    min-width: 70px;
 }
 
 .stat-value {
@@ -1335,25 +1334,27 @@
     <div class="funnel-container">
         <!-- Awareness Stage -->
         <div class="funnel-stage-wrapper stage-awareness">
-            <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
-                <div class="stage-header clickable">
-                    <h3>Awareness</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
-                        </div>
-                    </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
-                    </div>
+    <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
+        <div class="stage-header clickable">
+            <h3>Awareness</h3>
+            <div class="stage-stats">
+                <div class="stat-item">
+                    <span class="stat-value">0</span>
+                    <span class="stat-label">Leads</span>
                 </div>
-            </a>
-            <div class="stage-body" data-drop-target="awareness">
+                <div class="stat-item">
+                    <span class="stat-value">0%</span>
+                    <span class="stat-label">Conversion</span>
+                </div>
+            </div>
+            <div class="click-hint">
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+        </div>
+    </a>
+    <!-- ... rest remains the same ... -->
+</div>
+
                 <!-- Leads will appear here -->
                 <div class="empty-state">
                     <i class="fas fa-users"></i>
