@@ -1,259 +1,897 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Awareness Stage | FunnelFlow</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Awareness Stage | FunnelFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ATLANTECH STYLE GUIDE */
+        :root {
+            --color-background: #041e2c;
+            --color-ink: #aeeffb;
+            --color-sigil: #00d8d8;
+            --color-shadow: #021015;
+            --color-gold-hint: #d4a373;
+            --color-accent: #0b3d91;
 
-    body {
-      background-color: #0b1b1c;
-      color: #ffffff;
-      padding: 2rem;
-    }
+            --font-primary: 'Cormorant Garamond', serif;
+            --font-secondary: 'Inter', sans-serif;
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #1f2a30;
-    }
+            --border-style: 1px solid var(--color-sigil);
+            --glow: 0 0 12px var(--color-sigil);
+            --aura-gradient: linear-gradient(145deg, #073642, #0b3d91);
+        }
 
-    h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      color: #64b5f6;
-    }
+        body {
+            background-color: var(--color-background);
+            color: var(--color-ink);
+            font-family: var(--font-secondary);
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+            text-shadow: 0 0 2px var(--color-ink);
+            margin: 0;
+            padding: 0;
+        }
 
-    .back-to-funnel {
-      color: #64b5f6;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s;
-    }
+        h1, h2, h3, h4 {
+            font-family: var(--font-primary);
+            color: var(--color-sigil);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-shadow: var(--glow);
+            margin-bottom: 1rem;
+        }
 
-    .back-to-funnel:hover {
-      color: #90caf9;
-    }
+        a {
+            color: var(--color-sigil);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--color-gold-hint);
+            transition: all 0.3s ease-in-out;
+        }
 
-    .main-content {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+        a:hover {
+            color: var(--color-gold-hint);
+            text-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
 
-    .stage-focus {
-      background: linear-gradient(to right, #0d47a1, #1976d2);
-      padding: 2rem;
-      border-radius: 16px;
-      margin-bottom: 2rem;
-      box-shadow: 0 0 12px rgba(100, 181, 246, 0.4);
-    }
+        .container {
+            border: var(--border-style);
+            border-radius: 12px;
+            background: var(--aura-gradient);
+            box-shadow: 0 0 18px rgba(0, 216, 216, 0.3);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
 
-    .stage-focus h2 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
+        button, .action-btn {
+            background-color: var(--color-sigil);
+            color: var(--color-background);
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--glow);
+            transition: all 0.2s ease-in-out;
+            font-family: var(--font-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .stage-focus p {
-      margin-bottom: 1rem;
-      color: #cfd8dc;
-    }
+        button:hover, .action-btn:hover {
+            background-color: var(--color-gold-hint);
+            box-shadow: 0 0 20px var(--color-gold-hint);
+            transform: translateY(-2px);
+        }
 
-    .stage-body {
-      background-color: rgba(255, 255, 255, 0.05);
-      border: 1px dashed #64b5f6;
-      border-radius: 8px;
-      padding: 1rem;
-      min-height: 300px;
-      transition: background-color 0.3s;
-    }
+        hr {
+            border: none;
+            height: 1px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--color-sigil),
+                var(--color-sigil) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            margin: 2rem 0;
+        }
 
-    .leads-management {
-      background-color: #10252e;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 10px rgba(22, 120, 170, 0.3);
-    }
+        /* Auth Screen */
+        .auth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #041e2c, #0b3d91);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-    .section-header {
-      margin-bottom: 1rem;
-    }
+        .auth-box {
+            background: var(--aura-gradient);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: var(--border-style);
+        }
 
-    .section-header h2 {
-      font-size: 1.5rem;
-      color: #81d4fa;
-    }
+        .auth-box h2 {
+            color: var(--color-sigil);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
 
-    .content-items-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+        .auth-box input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: var(--border-style);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--color-ink);
+        }
 
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: #b0bec5;
-    }
+        .auth-box input:focus {
+            outline: none;
+            border-color: var(--color-gold-hint);
+            box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.3);
+        }
 
-    .empty-state i {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      color: #78909c;
-    }
+        .auth-btn {
+            background-color: var(--color-sigil);
+            color: var(--color-background);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
 
-    .auth-container,
-    #app-container.hidden {
-      display: none;
-    }
+        .auth-btn:hover {
+            background-color: var(--color-gold-hint);
+        }
 
-    .lead-card,
-    .content-card {
-      background-color: #1e2d38;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
+        .error-message {
+            color: #ff6e6e;
+            margin-bottom: 1rem;
+            min-height: 1.5rem;
+        }
 
-    .lead-card:hover,
-    .content-card:hover {
-      background-color: #263846;
-    }
-  </style>
+        /* App container */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: var(--border-style);
+        }
+
+        .header-left h1 {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        /* Lead cards */
+        .lead-card {
+            background: rgba(11, 61, 145, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--color-sigil);
+            border: var(--border-style);
+        }
+
+        .lead-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background: rgba(11, 61, 145, 0.4);
+        }
+
+        .lead-card .company {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-sigil);
+            font-size: 1.2rem;
+        }
+
+        .lead-card .contact {
+            font-size: 0.9rem;
+            color: var(--color-ink);
+            margin-bottom: 1rem;
+        }
+
+        /* Content badges */
+        .content-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .content-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--color-sigil);
+            color: var(--color-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--color-background);
+        }
+
+        .content-badge:hover {
+            transform: scale(1.1);
+            background-color: var(--color-gold-hint);
+        }
+
+        /* Empty states */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-gold-hint);
+            border: 2px dashed var(--color-sigil);
+            border-radius: 8px;
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--color-sigil);
+        }
+
+        .empty-state p {
+            margin: 0.5rem 0;
+        }
+
+        /* Content items */
+        .content-items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .content-item {
+            background: rgba(11, 61, 145, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: var(--border-style);
+        }
+
+        .content-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background: rgba(11, 61, 145, 0.4);
+        }
+
+        .content-item h4 {
+            color: var(--color-sigil);
+            margin-bottom: 0.5rem;
+        }
+
+        .content-description {
+            font-size: 0.9rem;
+            color: var(--color-ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background-color: var(--color-accent);
+            color: var(--color-ink);
+            margin-right: 0.5rem;
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--aura-gradient);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            position: relative;
+            padding: 2rem;
+            border: var(--border-style);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-ink);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--color-sigil);
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-ink);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: var(--border-style);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--color-ink);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-sigil);
+            color: var(--color-background);
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1100;
+        }
+
+        .toast.error {
+            background-color: #ff6e6e;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #app-container {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .content-items-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="auth-screen" class="auth-container">
-    <!-- Auth Screen (Add your auth HTML here if needed) -->
-  </div>
-
-  <div id="app-container">
-    <header>
-      <h1>Awareness Stage</h1>
-      <a href="index.html" class="back-to-funnel">
-        <i class="fas fa-arrow-left"></i> Back to Full Funnel
-      </a>
-    </header>
-
-    <main class="main-content">
-      <div class="stage-focus">
-        <h2><i class="fas fa-users"></i> Awareness Stage Leads</h2>
-        <p>These are leads who are just becoming aware of your product or service.</p>
-        <div class="stage-body" data-drop-target="awareness"></div>
-      </div>
-
-      <div class="leads-management">
-        <div class="section-header">
-          <h2><i class="fas fa-file-alt"></i> Awareness Content Strategies</h2>
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-container">
+        <div class="auth-box">
+            <h2>FunnelFlow Login</h2>
+            <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="4">
+            <p id="pin-error" class="error-message"></p>
+            <button id="login-btn" class="auth-btn">Login</button>
         </div>
-        <div id="awareness-content-container" class="content-items-container"></div>
-      </div>
-    </main>
-  </div>
+    </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Replace this with your actual auth logic
-      document.getElementById('app-container').classList.remove('hidden');
+    <!-- Main App Container -->
+    <div id="app-container" class="hidden">
+        <header>
+            <div class="header-left">
+                <h1><i class="fas fa-bullhorn"></i> Awareness Stage</h1>
+            </div>
+            <div class="header-right">
+                <a href="index.html" class="action-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Full Funnel
+                </a>
+            </div>
+        </header>
 
-      function initializeAwarenessPage() {
-        const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
-        const container = document.querySelector('.stage-body[data-drop-target="awareness"]');
-        container.innerHTML = '';
+        <main>
+            <div class="container">
+                <h2><i class="fas fa-users"></i> Awareness Stage Leads</h2>
+                <p>These leads are just discovering your brand. Use content to move them to Interest.</p>
+                
+                <div class="stage-body" id="awareness-leads-container" style="min-height: 200px;">
+                    <!-- Leads will load here -->
+                </div>
+            </div>
+            
+            <div class="container">
+                <h2><i class="fas fa-file-alt"></i> Awareness Content Strategies</h2>
+                <div id="awareness-content-container" class="content-items-container">
+                    <!-- Content will load here -->
+                </div>
+            </div>
+        </main>
+    </div>
 
-        if (leads.awareness.length === 0) {
-          const emptyDiv = document.createElement('div');
-          emptyDiv.className = 'empty-state';
-          emptyDiv.innerHTML = `
-            <i class="fas fa-users"></i>
-            <p>No leads in awareness stage</p>
-          `;
-          container.appendChild(emptyDiv);
-        } else {
-          leads.awareness.forEach(lead => {
-            container.appendChild(createLeadCard(lead));
-          });
-        }
+    <!-- Add Lead Modal -->
+    <div id="add-lead-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2>Add New Lead</h2>
+            <form id="lead-form">
+                <div class="form-group">
+                    <label for="lead-company">Company Name *</label>
+                    <input type="text" id="lead-company" required>
+                </div>
+                <div class="form-group">
+                    <label for="lead-contact">Contact Person *</label>
+                    <input type="text" id="lead-contact" required>
+                </div>
+                <div class="form-group">
+                    <label for="lead-email">Email *</label>
+                    <input type="email" id="lead-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="lead-phone">Phone</label>
+                    <input type="tel" id="lead-phone">
+                </div>
+                <div class="form-group">
+                    <label for="lead-notes">Notes</label>
+                    <textarea id="lead-notes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="submit-btn">Add Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-        const awarenessContent = contentItems.filter(c => c.stage === 'awareness');
-        const contentContainer = document.getElementById('awareness-content-container');
-        contentContainer.innerHTML = '';
+    <!-- Add Content Modal -->
+    <div id="add-content-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2>Add Content Strategy</h2>
+            <form id="content-form">
+                <div class="form-group">
+                    <label for="content-name">Content Name *</label>
+                    <input type="text" id="content-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="content-description">Description</label>
+                    <textarea id="content-description" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="content-link">Link (URL)</label>
+                    <input type="url" id="content-link">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="submit-btn">Save Content</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        if (awarenessContent.length === 0) {
-          const emptyState = document.createElement('div');
-          emptyState.className = 'empty-state';
-          emptyState.innerHTML = `
-            <i class="fas fa-file-alt"></i>
-            <h3>No Awareness Content</h3>
-            <p>Add content to attract new leads</p>
-          `;
-          contentContainer.appendChild(emptyState);
-        } else {
-          awarenessContent.forEach(content => {
-            contentContainer.appendChild(createContentItem(content));
-          });
-        }
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
-        setupDragAndDropForStage('awareness');
-      }
-
-      function setupDragAndDropForStage(stage) {
-        const container = document.querySelector(`.stage-body[data-drop-target="${stage}"]`);
-
-        if (container) {
-          container.addEventListener('dragover', function (e) {
-            e.preventDefault();
-            this.style.backgroundColor = '#152837';
-          });
-
-          container.addEventListener('dragleave', function () {
-            this.style.backgroundColor = '';
-          });
-
-          container.addEventListener('drop', function (e) {
-            e.preventDefault();
-            this.style.backgroundColor = '';
-            const leadId = e.dataTransfer.getData('text/plain');
-            if (leadId) {
-              moveLeadToStage(leadId, stage);
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Authentication check
+            const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+            
+            if (isAuthenticated) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                initAwarenessStage();
+            } else {
+                setupAuth();
             }
-          });
-        }
-      }
-
-      // Placeholder functions — add real ones from your main file
-      function createLeadCard(lead) {
-        const card = document.createElement('div');
-        card.className = 'lead-card';
-        card.innerText = lead.name || 'Unnamed Lead';
-        return card;
-      }
-
-      function createContentItem(content) {
-        const card = document.createElement('div');
-        card.className = 'content-card';
-        card.innerText = content.title || 'Untitled Content';
-        return card;
-      }
-
-      function moveLeadToStage(leadId, stage) {
-        // Add your actual move logic here
-        console.log(`Moving lead ${leadId} to stage ${stage}`);
-      }
-
-      // Fire it up!
-      initializeAwarenessPage();
-    });
-  </script>
+            
+            function setupAuth() {
+                const pinInput = document.getElementById('pin-input');
+                const loginBtn = document.getElementById('login-btn');
+                const pinError = document.getElementById('pin-error');
+                
+                const validPins = ['1234', '4321', '0000'];
+                
+                loginBtn.addEventListener('click', function() {
+                    if (validPins.includes(pinInput.value)) {
+                        localStorage.setItem('authenticated', 'true');
+                        document.getElementById('auth-screen').classList.add('hidden');
+                        document.getElementById('app-container').classList.remove('hidden');
+                        initAwarenessStage();
+                    } else {
+                        pinError.textContent = 'Incorrect PIN. Please try again.';
+                        pinInput.value = '';
+                        pinInput.focus();
+                    }
+                });
+                
+                pinInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        loginBtn.click();
+                    }
+                });
+            }
+            
+            // Initialize only awareness stage
+            function initAwarenessStage() {
+                loadAwarenessLeads();
+                loadAwarenessContent();
+                setupAwarenessDragDrop();
+                setupEventListeners();
+            }
+            
+            // 1. Load only awareness leads
+            function loadAwarenessLeads() {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                const container = document.getElementById('awareness-leads-container');
+                
+                container.innerHTML = '';
+                
+                if (leads.awareness.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No leads in awareness stage</p>
+                            <button id="add-lead-btn" class="action-btn" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> Add Lead
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    leads.awareness.forEach(lead => {
+                        container.appendChild(createLeadCard(lead));
+                    });
+                }
+            }
+            
+            // 2. Load only awareness content
+            function loadAwarenessContent() {
+                const allContent = JSON.parse(localStorage.getItem('content')) || [];
+                const awarenessContent = allContent.filter(c => c.stage === 'awareness');
+                const container = document.getElementById('awareness-content-container');
+                
+                container.innerHTML = '';
+                
+                if (awarenessContent.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <p>No content for awareness stage</p>
+                            <button id="add-content-btn" class="action-btn" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> Add Content
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    awarenessContent.forEach(content => {
+                        container.appendChild(createContentItem(content));
+                    });
+                }
+            }
+            
+            // 3. Drag and drop setup for awareness only
+            function setupAwarenessDragDrop() {
+                const container = document.getElementById('awareness-leads-container');
+                
+                container.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    container.style.backgroundColor = 'rgba(0, 216, 216, 0.1)';
+                });
+                
+                container.addEventListener('dragleave', () => {
+                    container.style.backgroundColor = '';
+                });
+                
+                container.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    container.style.backgroundColor = '';
+                    
+                    const leadId = e.dataTransfer.getData('text/plain');
+                    if (leadId) {
+                        moveLeadToAwareness(leadId);
+                    }
+                });
+            }
+            
+            // 4. Special function to move leads to awareness
+            function moveLeadToAwareness(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || {
+                    awareness: [], interest: [], consideration: []
+                };
+                
+                // Find lead in any stage
+                let foundLead = null;
+                let sourceStage = null;
+                
+                for (const [stage, stageLeads] of Object.entries(leads)) {
+                    const index = stageLeads.findIndex(lead => lead.id === leadId);
+                    if (index !== -1) {
+                        foundLead = stageLeads[index];
+                        sourceStage = stage;
+                        break;
+                    }
+                }
+                
+                if (foundLead && sourceStage !== 'awareness') {
+                    // Remove from original stage
+                    leads[sourceStage] = leads[sourceStage].filter(lead => lead.id !== leadId);
+                    
+                    // Update stage
+                    foundLead.currentStage = 'awareness';
+                    foundLead.lastContact = new Date().toISOString();
+                    
+                    // Add to awareness
+                    leads.awareness.push(foundLead);
+                    
+                    // Save and refresh
+                    localStorage.setItem('leads', JSON.stringify(leads));
+                    loadAwarenessLeads();
+                    showNotification('Moved lead to Awareness stage');
+                }
+            }
+            
+            // Helper functions
+            function createLeadCard(lead) {
+                const card = document.createElement('div');
+                card.className = 'lead-card';
+                card.draggable = true;
+                card.dataset.leadId = lead.id;
+                card.innerHTML = `
+                    <div class="company">${lead.company}</div>
+                    <div class="contact">${lead.contact || 'No contact'}</div>
+                    <div class="content-badges">
+                        ${lead.contentStrategies?.map(id => `
+                            <div class="content-badge" data-content-id="${id}">
+                                <i class="${getContentIconForId(id)}"></i>
+                            </div>
+                        `).join('') || ''}
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    // Open edit modal or show details
+                    console.log('Lead clicked:', lead.id);
+                });
+                
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', lead.id);
+                    card.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+                
+                return card;
+            }
+            
+            function createContentItem(content) {
+                const item = document.createElement('div');
+                item.className = 'content-item';
+                item.dataset.contentId = content.id;
+                item.innerHTML = `
+                    <h4>${content.name}</h4>
+                    <p class="content-description">${content.description || 'No description'}</p>
+                    <span class="stage-badge">Awareness</span>
+                    ${content.link ? `<a href="${content.link}" target="_blank" class="content-link">
+                        <i class="fas fa-external-link-alt"></i> View
+                    </a>` : ''}
+                `;
+                
+                item.addEventListener('click', () => {
+                    // Open edit modal or show details
+                    console.log('Content clicked:', content.id);
+                });
+                
+                return item;
+            }
+            
+            function getContentIconForId(contentId) {
+                const content = JSON.parse(localStorage.getItem('content')).find(c => c.id === contentId);
+                return getContentIcon(content?.type);
+            }
+            
+            function getContentIcon(type) {
+                const icons = {
+                    blog: 'fas fa-file-alt',
+                    ebook: 'fas fa-book',
+                    video: 'fas fa-video',
+                    webinar: 'fas fa-chalkboard-teacher',
+                    casestudy: 'fas fa-chart-line',
+                    demo: 'fas fa-desktop',
+                    other: 'fas fa-file'
+                };
+                return icons[type] || icons.other;
+            }
+            
+            function showNotification(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = 'toast show';
+                if (type === 'error') {
+                    toast.classList.add('error');
+                } else {
+                    toast.classList.remove('error');
+                }
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            function setupEventListeners() {
+                // Add Lead button
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('#add-lead-btn')) {
+                        document.getElementById('add-lead-modal').classList.remove('hidden');
+                    }
+                    
+                    if (e.target.closest('#add-content-btn')) {
+                        document.getElementById('add-content-modal').classList.remove('hidden');
+                    }
+                    
+                    if (e.target.closest('.close-modal, .cancel-btn')) {
+                        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+                    }
+                });
+                
+                // Form submissions
+                document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    addLead();
+                });
+                
+                document.getElementById('content-form')?.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    addContent();
+                });
+            }
+            
+            function addLead() {
+                const company = document.getElementById('lead-company').value;
+                const contact = document.getElementById('lead-contact').value;
+                const email = document.getElementById('lead-email').value;
+                const phone = document.getElementById('lead-phone').value;
+                const notes = document.getElementById('lead-notes').value;
+                
+                if (!company || !contact || !email) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const newLead = {
+                    id: 'lead-' + Date.now(),
+                    company,
+                    contact,
+                    email,
+                    phone,
+                    notes,
+                    currentStage: 'awareness',
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString()
+                };
+                
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                leads.awareness.push(newLead);
+                localStorage.setItem('leads', JSON.stringify(leads));
+                
+                document.getElementById('add-lead-modal').classList.add('hidden');
+                document.getElementById('lead-form').reset();
+                loadAwarenessLeads();
+                showNotification('Lead added successfully');
+            }
+            
+            function addContent() {
+                const name = document.getElementById('content-name').value;
+                const description = document.getElementById('content-description').value;
+                const link = document.getElementById('content-link').value;
+                
+                if (!name) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const newContent = {
+                    id: 'content-' + Date.now(),
+                    name,
+                    description,
+                    link,
+                    stage: 'awareness',
+                    dateCreated: new Date().toISOString()
+                };
+                
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                contentItems.push(newContent);
+                localStorage.setItem('content', JSON.stringify(contentItems));
+                
+                document.getElementById('add-content-modal').classList.add('hidden');
+                document.getElementById('content-form').reset();
+                loadAwarenessContent();
+                showNotification('Content added successfully');
+            }
+        });
+    </script>
 </body>
 </html>
