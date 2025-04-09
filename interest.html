@@ -1,1 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Stage | FunnelFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ATLANTECH STYLE GUIDE - TONED DOWN */
+        :root {
+            --color-background: #041e2c;
+            --color-ink: #aeeffb;
+            --color-sigil: #00b8b8;
+            --color-shadow: #021015;
+            --color-gold-hint: #d4a373;
+            --color-accent: #0b3d91;
+            --color-danger: #ff6e6e;
 
+            --font-primary: 'Cormorant Garamond', serif;
+            --font-secondary: 'Inter', sans-serif;
+
+            --border-style: 1px solid var(--color-sigil);
+            --glow: 0 0 8px rgba(0, 184, 184, 0.3);
+            --aura-gradient: linear-gradient(145deg, #073642, #0b3d91);
+        }
+
+        body {
+            background-color: var(--color-background);
+            color: var(--color-ink);
+            font-family: var(--font-secondary);
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-primary);
+            color: var(--color-sigil);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        a {
+            color: var(--color-sigil);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--color-gold-hint);
+            transition: all 0.3s ease-in-out;
+        }
+
+        a:hover {
+            color: var(--color-gold-hint);
+            transform: translateY(-1px);
+        }
+
+        .container {
+            border: var(--border-style);
+            border-radius: 12px;
+            background: var(--aura-gradient);
+            box-shadow: var(--glow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        button, .action-btn {
+            background-color: var(--color-sigil);
+            color: var(--color-background);
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-family: var(--font-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover, .action-btn:hover {
+            background-color: var(--color-gold-hint);
+            transform: translateY(-1px);
+        }
+
+        .delete-btn {
+            background-color: var(--color-danger);
+        }
+
+        /* Lead cards - enhanced */
+        .lead-card {
+            background: rgba(11, 61, 145, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--color-sigil);
+            border: var(--border-style);
+            position: relative;
+        }
+
+        .lead-card:hover {
+            transform: translateY(-2px);
+            background: rgba(11, 61, 145, 0.3);
+        }
+
+        .lead-card .company {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-sigil);
+            font-size: 1.2rem;
+        }
+
+        .lead-card .contact {
+            font-size: 0.9rem;
+            color: var(--color-ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .lead-card .email {
+            font-size: 0.85rem;
+            color: var(--color-ink);
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+
+        .lead-card .phone {
+            font-size: 0.85rem;
+            color: var(--color-ink);
+            margin-bottom: 1rem;
+        }
+
+        .lead-card .notes {
+            font-size: 0.8rem;
+            color: var(--color-ink);
+            font-style: italic;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .lead-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .lead-actions button {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Content items - enhanced */
+        .content-item {
+            background: rgba(11, 61, 145, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: var(--border-style);
+            position: relative;
+        }
+
+        .content-item:hover {
+            transform: translateY(-2px);
+            background: rgba(11, 61, 145, 0.3);
+        }
+
+        .content-item h4 {
+            color: var(--color-sigil);
+            margin-bottom: 0.5rem;
+        }
+
+        .content-description {
+            font-size: 0.9rem;
+            color: var(--color-ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .content-link {
+            display: block;
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .content-actions button {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Stats and info panels */
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(0, 184, 184, 0.1);
+            border: var(--border-style);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-sigil);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--color-ink);
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--aura-gradient);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--glow);
+            position: relative;
+            padding: 2rem;
+            border: var(--border-style);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-ink);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--color-sigil);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-ink);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: var(--border-style);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--color-ink);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .detail-value {
+            padding: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            margin-top: 0.25rem;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            a {
+                text-decoration: underline;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #app-container {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .content-items-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-panel {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main App Container -->
+    <div id="app-container">
+        <header>
+            <div class="header-left">
+                <h1><i class="fas fa-lightbulb"></i> Interest Stage</h1>
+            </div>
+            <div class="header-right">
+                <div class="header-actions">
+                    <button id="print-btn" class="action-btn no-print">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <a href="index.html" class="action-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Full Funnel
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Stats Panel -->
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-leads">0</div>
+                    <div class="stat-label">Total Leads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-content">0</div>
+                    <div class="stat-label">Content Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-content">0</div>
+                    <div class="stat-label">Avg Content per Lead</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="recent-leads">0</div>
+                    <div class="stat-label">New This Week</div>
+                </div>
+            </div>
+
+            <div class="container">
+                <h2><i class="fas fa-users"></i> Interest Stage Leads</h2>
+                <p>These leads have shown interest in your offerings. Nurture them with targeted content to move them to Decision.</p>
+                
+                <div class="stage-body" id="interest-leads-container" style="min-height: 200px;">
+                    <!-- Leads will load here -->
+                </div>
+            </div>
+            
+            <div class="container">
+                <h2><i class="fas fa-file-alt"></i> Interest Content Strategies</h2>
+                <p>Content designed to educate leads about your specific solutions and benefits.</p>
+                <div id="interest-content-container" class="content-items-container">
+                    <!-- Content will load here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Lead Detail Modal -->
+    <div id="lead-detail-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2>Lead Details</h2>
+            <div id="lead-detail-content">
+                <!-- Lead details will be loaded here -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn">Close</button>
+                <button type="button" id="edit-lead-btn" class="submit-btn">Edit Lead</button>
+                <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Lead Modal -->
+    <div id="edit-lead-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2 id="edit-lead-title">Edit Lead</h2>
+            <form id="lead-form">
+                <input type="hidden" id="edit-lead-id">
+                <div class="form-group">
+                    <label for="lead-company">Company Name *</label>
+                    <input type="text" id="lead-company" required>
+                </div>
+                <div class="form-group">
+                    <label for="lead-contact">Contact Person *</label>
+                    <input type="text" id="lead-contact" required>
+                </div>
+                <div class="form-group">
+                    <label for="lead-email">Email *</label>
+                    <input type="email" id="lead-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="lead-phone">Phone</label>
+                    <input type="tel" id="lead-phone">
+                </div>
+                <div class="form-group">
+                    <label for="lead-notes">Notes</label>
+                    <textarea id="lead-notes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Content Detail Modal -->
+    <div id="content-detail-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2>Content Details</h2>
+            <div id="content-detail-content">
+                <!-- Content details will be loaded here -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn">Close</button>
+                <button type="button" id="edit-content-btn" class="submit-btn">Edit Content</button>
+                <button type="button" id="delete-content-btn" class="delete-btn">Delete Content</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Content Modal -->
+    <div id="edit-content-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2 id="edit-content-title">Edit Content Strategy</h2>
+            <form id="content-form">
+                <input type="hidden" id="edit-content-id">
+                <div class="form-group">
+                    <label for="content-name">Content Name *</label>
+                    <input type="text" id="content-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="content-description">Description</label>
+                    <textarea id="content-description" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="content-link">Link (URL)</label>
+                    <input type="url" id="content-link">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit" class="submit-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize interest stage directly
+            initInterestStage();
+            
+            // Initialize only interest stage
+            function initInterestStage() {
+                // Initialize empty data if none exists
+                if (!localStorage.getItem('leads')) {
+                    localStorage.setItem('leads', JSON.stringify({ interest: [] }));
+                }
+                if (!localStorage.getItem('content')) {
+                    localStorage.setItem('content', JSON.stringify([]));
+                }
+                
+                loadInterestLeads();
+                loadInterestContent();
+                setupEventListeners();
+                updateStats();
+            }
+            
+            // 1. Load only interest leads with enhanced display
+            function loadInterestLeads() {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { interest: [] };
+                const container = document.getElementById('interest-leads-container');
+                
+                container.innerHTML = '';
+                
+                if (leads.interest.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No leads in interest stage</p>
+                            <button id="add-lead-btn" class="action-btn" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> Add Lead
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    leads.interest.forEach(lead => {
+                        container.appendChild(createLeadCard(lead));
+                    });
+                }
+                
+                updateStats();
+            }
+            
+            // Enhanced lead card creation
+            function createLeadCard(lead) {
+                const card = document.createElement('div');
+                card.className = 'lead-card';
+                card.dataset.leadId = lead.id;
+                
+                // Format date
+                const dateAdded = new Date(lead.dateAdded);
+                const formattedDate = dateAdded.toLocaleDateString();
+                
+                card.innerHTML = `
+                    <div class="company">${lead.company}</div>
+                    <div class="contact">${lead.contact || 'No contact'}</div>
+                    <div class="email">${lead.email || 'No email'}</div>
+                    ${lead.phone ? `<div class="phone">${lead.phone}</div>` : ''}
+                    ${lead.notes ? `<div class="notes">${lead.notes}</div>` : ''}
+                    <div class="added-date"><small>Added: ${formattedDate}</small></div>
+                    <div class="content-badges">
+                        ${lead.contentStrategies?.map(id => `
+                            <div class="content-badge" data-content-id="${id}">
+                                <i class="${getContentIconForId(id)}"></i>
+                            </div>
+                        `).join('') || ''}
+                    </div>
+                    <div class="lead-actions">
+                        <button class="view-btn" data-lead-id="${lead.id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="edit-btn" data-lead-id="${lead.id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners
+                card.querySelector('.view-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showLeadDetails(lead.id);
+                });
+                
+                card.querySelector('.edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditLeadModal(lead.id);
+                });
+                
+                return card;
+            }
+            
+            // 2. Load only interest content with enhanced display
+            function loadInterestContent() {
+                const allContent = JSON.parse(localStorage.getItem('content')) || [];
+                const interestContent = allContent.filter(c => c.stage === 'interest');
+                const container = document.getElementById('interest-content-container');
+                
+                container.innerHTML = '';
+                
+                if (interestContent.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <p>No content for interest stage</p>
+                            <button id="add-content-btn" class="action-btn" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> Add Content
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    interestContent.forEach(content => {
+                        container.appendChild(createContentItem(content));
+                    });
+                }
+                
+                updateStats();
+            }
+            
+            // Enhanced content item creation
+            function createContentItem(content) {
+                const item = document.createElement('div');
+                item.className = 'content-item';
+                item.dataset.contentId = content.id;
+                
+                // Format date
+                const dateCreated = new Date(content.dateCreated);
+                const formattedDate = dateCreated.toLocaleDateString();
+                
+                item.innerHTML = `
+                    <h4>${content.name}</h4>
+                    ${content.description ? `<p class="content-description">${content.description}</p>` : ''}
+                    ${content.link ? `<a href="${content.link}" target="_blank" class="content-link">
+                        <i class="fas fa-external-link-alt"></i> ${content.link}
+                    </a>` : ''}
+                    <div class="added-date"><small>Created: ${formattedDate}</small></div>
+                    <div class="content-actions">
+                        <button class="view-btn" data-content-id="${content.id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="edit-btn" data-content-id="${content.id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners
+                item.querySelector('.view-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showContentDetails(content.id);
+                });
+                
+                item.querySelector('.edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditContentModal(content.id);
+                });
+                
+                return item;
+            }
+            
+            // 3. Show lead details
+            function showLeadDetails(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { interest: [] };
+                const lead = leads.interest.find(l => l.id === leadId);
+                
+                if (!lead) {
+                    showNotification('Lead not found', 'error');
+                    return;
+                }
+                
+                // Format dates
+                const dateAdded = new Date(lead.dateAdded);
+                const lastContact = lead.lastContact ? new Date(lead.lastContact) : null;
+                
+                // Get content names
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const contentUsed = lead.contentStrategies?.map(contentId => {
+                    const content = contentItems.find(c => c.id === contentId);
+                    return content ? content.name : '';
+                }).filter(name => name) || [];
+                
+                document.getElementById('lead-detail-content').innerHTML = `
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <div class="detail-value">${lead.company}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Person</label>
+                        <div class="detail-value">${lead.contact || 'N/A'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div class="detail-value">${lead.email || 'N/A'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <div class="detail-value">${lead.phone || 'N/A'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date Added</label>
+                        <div class="detail-value">${dateAdded.toLocaleDateString()}</div>
+                    </div>
+                    ${lastContact ? `
+                    <div class="form-group">
+                        <label>Last Contact</label>
+                        <div class="detail-value">${lastContact.toLocaleDateString()}</div>
+                    </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label>Content Used</label>
+                        <div class="detail-value">${contentUsed.join(', ') || 'None'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <div class="detail-value">${lead.notes || 'No notes'}</div>
+                    </div>
+                `;
+                
+                // Set up delete button
+                document.getElementById('delete-lead-btn').onclick = function() {
+                    if (confirm('Are you sure you want to delete this lead?')) {
+                        deleteLead(leadId);
+                    }
+                };
+                
+                // Set up edit button
+                document.getElementById('edit-lead-btn').onclick = function() {
+                    document.getElementById('lead-detail-modal').classList.remove('show');
+                    openEditLeadModal(leadId);
+                };
+                
+                document.getElementById('lead-detail-modal').classList.add('show');
+            }
+            
+            // 4. Show content details
+            function showContentDetails(contentId) {
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const content = contentItems.find(c => c.id === contentId);
+                
+                if (!content) {
+                    showNotification('Content not found', 'error');
+                    return;
+                }
+                
+                // Format date
+                const dateCreated = new Date(content.dateCreated);
+                
+                document.getElementById('content-detail-content').innerHTML = `
+                    <div class="form-group">
+                        <label>Content Name</label>
+                        <div class="detail-value">${content.name}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <div class="detail-value">${content.description || 'No description'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Stage</label>
+                        <div class="detail-value">${capitalizeFirstLetter(content.stage)}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date Created</label>
+                        <div class="detail-value">${dateCreated.toLocaleDateString()}</div>
+                    </div>
+                    ${content.link ? `
+                    <div class="form-group">
+                        <label>Link</label>
+                        <div class="detail-value">
+                            <a href="${content.link}" target="_blank">${content.link}</a>
+                        </div>
+                    </div>
+                    ` : ''}
+                `;
+                
+                // Set up delete button
+                document.getElementById('delete-content-btn').onclick = function() {
+                    if (confirm('Are you sure you want to delete this content?')) {
+                        deleteContent(contentId);
+                    }
+                };
+                
+                // Set up edit button
+                document.getElementById('edit-content-btn').onclick = function() {
+                    document.getElementById('content-detail-modal').classList.remove('show');
+                    openEditContentModal(contentId);
+                };
+                
+                document.getElementById('content-detail-modal').classList.add('show');
+            }
+            
+            // 5. Open edit lead modal
+            function openEditLeadModal(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { interest: [] };
+                let lead = leads.interest.find(l => l.id === leadId);
+                
+                // If no leadId, we're creating a new lead
+                if (!leadId) {
+                    document.getElementById('edit-lead-title').textContent = 'Add New Lead';
+                    document.getElementById('edit-lead-id').value = '';
+                    document.getElementById('lead-form').reset();
+                    document.getElementById('edit-lead-modal').classList.add('show');
+                    return;
+                }
+                
+                if (!lead) {
+                    showNotification('Lead not found', 'error');
+                    return;
+                }
+                
+                document.getElementById('edit-lead-title').textContent = 'Edit Lead';
+                document.getElementById('edit-lead-id').value = lead.id;
+                document.getElementById('lead-company').value = lead.company;
+                document.getElementById('lead-contact').value = lead.contact || '';
+                document.getElementById('lead-email').value = lead.email || '';
+                document.getElementById('lead-phone').value = lead.phone || '';
+                document.getElementById('lead-notes').value = lead.notes || '';
+                
+                document.getElementById('edit-lead-modal').classList.add('show');
+            }
+            
+            // 6. Open edit content modal
+            function openEditContentModal(contentId) {
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                let content = contentItems.find(c => c.id === contentId);
+                
+                // If no contentId, we're creating new content
+                if (!contentId) {
+                    document.getElementById('edit-content-title').textContent = 'Add New Content';
+                    document.getElementById('edit-content-id').value = '';
+                    document.getElementById('content-form').reset();
+                    document.getElementById('edit-content-modal').classList.add('show');
+                    return;
+                }
+                
+                if (!content) {
+                    showNotification('Content not found', 'error');
+                    return;
+                }
+                
+                document.getElementById('edit-content-title').textContent = 'Edit Content';
+                document.getElementById('edit-content-id').value = content.id;
+                document.getElementById('content-name').value = content.name;
+                document.getElementById('content-description').value = content.description || '';
+                document.getElementById('content-link').value = content.link || '';
+                
+                document.getElementById('edit-content-modal').classList.add('show');
+            }
+            
+            // 7. Save lead changes
+            function saveLeadChanges() {
+                const leadId = document.getElementById('edit-lead-id').value;
+                const company = document.getElementById('lead-company').value;
+                const contact = document.getElementById('lead-contact').value;
+                const email = document.getElementById('lead-email').value;
+                const phone = document.getElementById('lead-phone').value;
+                const notes = document.getElementById('lead-notes').value;
+                
+                if (!company || !contact || !email) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const leads = JSON.parse(localStorage.getItem('leads')) || { interest: [] };
+                
+                if (leadId) {
+                    // Editing existing lead
+                    const leadIndex = leads.interest.findIndex(l => l.id === leadId);
+                    
+                    if (leadIndex !== -1) {
+                        leads.interest[leadIndex] = {
+                            ...leads.interest[leadIndex],
+                            company,
+                            contact,
+                            email,
+                            phone,
+                            notes,
+                            lastContact: new Date().toISOString()
+                        };
+                    } else {
+                        showNotification('Lead not found', 'error');
+                        return;
+                    }
+                } else {
+                    // Adding new lead
+                    const newLead = {
+                        id: 'lead-' + Date.now(),
+                        company,
+                        contact,
+                        email,
+                        phone,
+                        notes,
+                        currentStage: 'interest',
+                        dateAdded: new Date().toISOString(),
+                        lastContact: new Date().toISOString()
+                    };
+                    leads.interest.push(newLead);
+                }
+                
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('edit-lead-modal').classList.remove('show');
+                loadInterestLeads();
+                showNotification(leadId ? 'Lead updated successfully' : 'Lead added successfully');
+            }
+            
+            // 8. Save content changes
+            function saveContentChanges() {
+                const contentId = document.getElementById('edit-content-id').value;
+                const name = document.getElementById('content-name').value;
+                const description = document.getElementById('content-description').value;
+                const link = document.getElementById('content-link').value;
+                
+                if (!name) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                
+                if (contentId) {
+                    // Editing existing content
+                    const contentIndex = contentItems.findIndex(c => c.id === contentId);
+                    
+                    if (contentIndex !== -1) {
+                        contentItems[contentIndex] = {
+                            ...contentItems[contentIndex],
+                            name,
+                            description,
+                            link
+                        };
+                    } else {
+                        showNotification('Content not found', 'error');
+                        return;
+                    }
+                } else {
+                    // Adding new content
+                    const newContent = {
+                        id: 'content-' + Date.now(),
+                        name,
+                        description,
+                        link,
+                        stage: 'interest',
+                        dateCreated: new Date().toISOString()
+                    };
+                    contentItems.push(newContent);
+                }
+                
+                localStorage.setItem('content', JSON.stringify(contentItems));
+                document.getElementById('edit-content-modal').classList.remove('show');
+                loadInterestContent();
+                showNotification(contentId ? 'Content updated successfully' : 'Content added successfully');
+            }
+            
+            // 9. Delete lead
+            function deleteLead(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { interest: [] };
+                leads.interest = leads.interest.filter(l => l.id !== leadId);
+                
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('lead-detail-modal').classList.remove('show');
+                loadInterestLeads();
+                showNotification('Lead deleted successfully');
+            }
+            
+            // 10. Delete content
+            function deleteContent(contentId) {
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const updatedContent = contentItems.filter(c => c.id !== contentId);
+                
+                // Also remove from any leads that might reference this content
+                const leads = JSON.parse(localStorage.getItem('leads'));
+                for (const stage in leads) {
+                    leads[stage].forEach(lead => {
+                        if (lead.contentStrategies && lead.contentStrategies.includes(contentId)) {
+                            lead.contentStrategies = lead.contentStrategies.filter(id => id !== contentId);
+                        }
+                    });
+                }
+                
+                localStorage.setItem('content', JSON.stringify(updatedContent));
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('content-detail-modal').classList.remove('show');
+                loadInterestContent();
+                loadInterestLeads();
+                showNotification('Content deleted successfully');
+            }
+            
+            // 11. Update stats
+            function updateStats() {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { interest: [] };
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const interestContent = contentItems.filter(c => c.stage === 'interest');
+                
+                // Total leads
+                document.getElementById('total-leads').textContent = leads.interest.length;
+                
+                // Total content
+                document.getElementById('total-content').textContent = interestContent.length;
+                
+                // Avg content per lead
+                const totalContentUsed = leads.interest.reduce((sum, lead) => {
+                    return sum + (lead.contentStrategies?.length || 0);
+                }, 0);
+                
+                const avgContent = leads.interest.length > 0 
+                    ? (totalContentUsed / leads.interest.length).toFixed(1) 
+                    : 0;
+                document.getElementById('avg-content').textContent = avgContent;
+                
+                // Recent leads (this week)
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                
+                const recentLeads = leads.interest.filter(lead => {
+                    const leadDate = new Date(lead.dateAdded);
+                    return leadDate > oneWeekAgo;
+                }).length;
+                
+                document.getElementById('recent-leads').textContent = recentLeads;
+            }
+            
+            // Helper functions
+            function getContentIconForId(contentId) {
+                const content = JSON.parse(localStorage.getItem('content')).find(c => c.id === contentId);
+                return getContentIcon(content?.type);
+            }
+            
+            function getContentIcon(type) {
+                const icons = {
+                    blog: 'fas fa-file-alt',
+                    ebook: 'fas fa-book',
+                    video: 'fas fa-video',
+                    webinar: 'fas fa-chalkboard-teacher',
+                    casestudy: 'fas fa-chart-line',
+                    demo: 'fas fa-desktop',
+                    other: 'fas fa-file'
+                };
+                return icons[type] || icons.other;
+            }
+            
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            function showNotification(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = 'toast show';
+                if (type === 'error') {
+                    toast.classList.add('error');
+                } else {
+                    toast.classList.remove('error');
+                }
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Setup event listeners
+            function setupEventListeners() {
+                // Close modals when clicking close or cancel buttons
+                document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.querySelectorAll('.modal').forEach(modal => {
+                            modal.classList.remove('show');
+                        });
+                    });
+                });
+                
+                // Close modals when clicking outside content
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.classList.remove('show');
+                        }
+                    });
+                });
+                
+                // Add Lead button
+                document.addEventListener('click', function(e) {
+                    if (e.target.closest('#add-lead-btn')) {
+                        openEditLeadModal();
+                    }
+                    
+                    if (e.target.closest('#add-content-btn')) {
+                        openEditContentModal();
+                    }
+                });
+                
+                // Form submissions
+                document.getElementById('lead-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveLeadChanges();
+                });
+                
+                document.getElementById('content-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveContentChanges();
+                });
+                
+                // Print button
+                document.getElementById('print-btn').addEventListener('click', function() {
+                    window.print();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
