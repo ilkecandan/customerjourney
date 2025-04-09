@@ -1801,28 +1801,51 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
             <!-- Right Side: Lead Management -->
+
             <div class="leads-management">
-                <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Lead Management</h2>
-                    <div class="lead-actions">
-                        <div class="lead-search tooltip">
-                            <input type="text" id="lead-search" placeholder="Search leads...">
-                            <i class="fas fa-search"></i>
-                            <span class="tooltiptext">Search by company or contact name</span>
-                        </div>
-                        <div class="tooltip">
-                            <select id="lead-stage-filter" class="lead-stage-filter">
-                                <option value="all">All Stages</option>
-                                <option value="awareness">Awareness</option>
-                                <option value="interest">Interest</option>
-                                <option value="intent">Intent</option>
-                                <option value="evaluation">Evaluation</option>
-                                <option value="purchase">Purchase</option>
-                            </select>
-                            <span class="tooltiptext">Filter leads by funnel stage</span>
-                        </div>
-                    </div>
+    <div class="section-header">
+        <h2><i class="fas fa-users"></i> 
+            <a href="https://ilkecandan.github.io/customerjourney/lead-management.html" class="funnel-stage-link">
+                Lead Management
+                <div class="click-hint">
+                    <i class="fas fa-external-link-alt"></i>
                 </div>
+            </a>
+        </h2>
+        <div class="lead-actions">
+            <div class="lead-search tooltip">
+                <input type="text" id="lead-search" placeholder="Search leads...">
+                <i class="fas fa-search"></i>
+                <span class="tooltiptext">Search by company or contact name</span>
+            </div>
+            <div class="tooltip">
+                <select id="lead-stage-filter" class="lead-stage-filter">
+                    <option value="all">All Stages</option>
+                    <option value="awareness">Awareness</option>
+                    <option value="interest">Interest</option>
+                    <option value="intent">Intent</option>
+                    <option value="evaluation">Evaluation</option>
+                    <option value="purchase">Purchase</option>
+                </select>
+                <span class="tooltiptext">Filter leads by funnel stage</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rest of the leads-management content remains the same -->
+    <div class="lead-management-guide">
+        <h3>Lead Management Guide</h3>
+        <ul>
+            <li><strong>Add New Leads:</strong> Click "Add Lead" to create new lead records</li>
+            <li><strong>Edit Leads:</strong> Click on any lead or use the edit button in the table</li>
+            <li><strong>Delete Leads:</strong> Remove unwanted leads using the delete button</li>
+            <li><strong>View All Leads:</strong> Browse all leads in the table below</li>
+            <li><strong>Drag & Drop:</strong> Move leads between stages in the funnel visualization</li>
+        </ul>
+    </div>
+
+    <!-- Rest of the existing content... -->
+</div>
                 
                 <!-- Lead Management Guide -->
                 <div class="lead-management-guide">
