@@ -1,1 +1,1040 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Management Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        h1 {
+            color: #64b5f6;
+            font-size: 1.8rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: #64b5f6;
+            color: #121212;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: #42a5f5;
+        }
+        
+        .btn-secondary {
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #444;
+        }
+        
+        .btn-danger {
+            background-color: #ff6e6e;
+            color: #121212;
+            border: none;
+        }
+        
+        .btn-danger:hover {
+            background-color: #ff5252;
+        }
+        
+        .search-filter-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box {
+            position: relative;
+            flex: 1;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9e9e9e;
+        }
+        
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+        
+        .leads-table-container {
+            overflow-x: auto;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #333;
+        }
+        
+        .leads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .leads-table th, .leads-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        
+        .leads-table th {
+            font-weight: 600;
+            color: #64b5f6;
+            background-color: #2d2d2d;
+            position: sticky;
+            top: 0;
+        }
+        
+        .leads-table tr {
+            background-color: #252525;
+        }
+        
+        .leads-table tr:hover {
+            background-color: #333;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9e9e9e;
+            padding: 0.25rem;
+            transition: color 0.3s ease;
+            margin-right: 0.5rem;
+        }
+        
+        .edit-btn:hover {
+            color: #64b5f6;
+        }
+        
+        .delete-btn:hover {
+            color: #ff6e6e;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-awareness {
+            background-color: #0d47a1;
+            color: white;
+        }
+        
+        .status-interest {
+            background-color: #1b5e20;
+            color: white;
+        }
+        
+        .status-intent {
+            background-color: #e65100;
+            color: white;
+        }
+        
+        .status-evaluation {
+            background-color: #6a1b9a;
+            color: white;
+        }
+        
+        .status-purchase {
+            background-color: #2e7d32;
+            color: white;
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            position: relative;
+            padding: 2rem;
+            border: 1px solid #333;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #9e9e9e;
+            transition: color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: #e0e0e0;
+        }
+        
+        .modal h2 {
+            margin-bottom: 1.5rem;
+            color: #64b5f6;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1100;
+        }
+        
+        .toast.error {
+            background-color: #ff6e6e;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Select2 customization */
+        .select2-container {
+            width: 100% !important;
+            z-index: 2000 !important;
+        }
+        
+        .select2-selection {
+            min-height: 45px !important;
+            display: flex !important;
+            align-items: center !important;
+            background-color: #2d2d2d !important;
+            border: 1px solid #333 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .select2-selection__placeholder {
+            color: #9e9e9e !important;
+        }
+        
+        .select2-selection__choice {
+            background-color: #333 !important;
+            border: 1px solid #444 !important;
+            color: #e0e0e0 !important;
+        }
+        
+        .select2-selection__choice__remove {
+            color: #9e9e9e !important;
+        }
+        
+        .select2-dropdown {
+            background-color: #2d2d2d !important;
+            border: 1px solid #333 !important;
+        }
+        
+        .select2-results__option {
+            color: #e0e0e0 !important;
+            padding: 8px 12px !important;
+        }
+        
+        .select2-results__option--highlighted {
+            background-color: #64b5f6 !important;
+            color: #121212 !important;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #9e9e9e;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-columns {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-filter-container {
+                flex-direction: column;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+        }
+        
+        /* Content items in lead view */
+        .content-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .content-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background-color: #333;
+            color: #e0e0e0;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-users"></i> Lead Management Database</h1>
+            <div class="action-buttons">
+                <button id="add-lead-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Lead
+                </button>
+                <button id="export-excel-btn" class="btn btn-secondary">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+            </div>
+        </header>
+        
+        <div class="search-filter-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="lead-search" placeholder="Search leads...">
+            </div>
+            <select id="lead-stage-filter" class="filter-select">
+                <option value="all">All Stages</option>
+                <option value="awareness">Awareness</option>
+                <option value="interest">Interest</option>
+                <option value="intent">Intent</option>
+                <option value="evaluation">Evaluation</option>
+                <option value="purchase">Purchase</option>
+            </select>
+        </div>
+        
+        <div class="leads-table-container">
+            <table class="leads-table">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                        <th>Stage</th>
+                        <th>Content</th>
+                        <th>Last Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="leads-table-body">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No leads found</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Lead Modal -->
+    <div id="lead-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2 id="modal-title">Add New Lead</h2>
+            <form id="lead-form">
+                <input type="hidden" id="lead-id">
+                <div class="form-columns">
+                    <div class="form-group">
+                        <label for="company">Company Name *</label>
+                        <input type="text" id="company" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">Contact Person *</label>
+                        <input type="text" id="contact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="stage">Stage *</label>
+                        <select id="stage" required>
+                            <option value="awareness">Awareness</option>
+                            <option value="interest">Interest</option>
+                            <option value="intent">Intent</option>
+                            <option value="evaluation">Evaluation</option>
+                            <option value="purchase">Purchase</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="source">Source</label>
+                        <select id="source">
+                            <option value="website">Website</option>
+                            <option value="social">Social Media</option>
+                            <option value="referral">Referral</option>
+                            <option value="event">Event</option>
+                            <option value="ad">Advertisement</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="content">Content Strategy</label>
+                    <select id="content" class="content-select" multiple>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="delete-lead-btn" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Lead
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Select2 for content selection
+            $('.content-select').select2({
+                placeholder: 'Select content strategies',
+                width: '100%'
+            });
+            
+            // Load data and setup UI
+            loadLeads();
+            loadContentOptions();
+            setupEventListeners();
+        });
+        
+        // Load leads from localStorage
+        function loadLeads() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            
+            const tableBody = document.getElementById('leads-table-body');
+            tableBody.innerHTML = '';
+            
+            // Combine all leads from all stages
+            const allLeads = [];
+            for (const [stage, stageLeads] of Object.entries(leads)) {
+                stageLeads.forEach(lead => {
+                    allLeads.push({...lead, stage: stage});
+                });
+            }
+            
+            if (allLeads.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>No leads found</p>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            // Sort by date added (newest first)
+            allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+            
+            // Add each lead to the table
+            allLeads.forEach(lead => {
+                const row = document.createElement('tr');
+                row.dataset.leadId = lead.id;
+                
+                // Get content names
+                const contentUsed = lead.contentStrategies?.map(contentId => {
+                    const content = contentItems.find(c => c.id === contentId);
+                    return content ? content.name : '';
+                }).filter(name => name) || [];
+                
+                // Format last contact date
+                const lastContactDate = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
+                
+                // Get status badge class
+                const statusClass = `status-${lead.stage}`;
+                
+                row.innerHTML = `
+                    <td>${lead.company}</td>
+                    <td>${lead.contact || 'N/A'}</td>
+                    <td>${lead.email || 'N/A'}</td>
+                    <td><span class="status-badge ${statusClass}">${capitalizeFirstLetter(lead.stage)}</span></td>
+                    <td>
+                        ${contentUsed.length > 0 ? 
+                          `<div class="content-items">${contentUsed.map(name => 
+                            `<span class="content-badge">${name}</span>`
+                          ).join('')}</div>` : 
+                          'None'}
+                    </td>
+                    <td>${lastContactDate}</td>
+                    <td>
+                        <button class="action-btn edit-btn" data-lead-id="${lead.id}" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" data-lead-id="${lead.id}" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const leadId = btn.dataset.leadId;
+                    openEditLeadModal(leadId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const leadId = btn.dataset.leadId;
+                    deleteLead(leadId);
+                });
+            });
+        }
+        
+        // Load content options for select dropdown
+        function loadContentOptions() {
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            const select = document.getElementById('content');
+            
+            // Clear existing options
+            $(select).empty();
+            
+            // Add new options
+            contentItems.forEach(content => {
+                const option = new Option(content.name, content.id);
+                $(select).append(option);
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Add lead button
+            document.getElementById('add-lead-btn').addEventListener('click', () => {
+                openAddLeadModal();
+            });
+            
+            // Export Excel button
+            document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
+            
+            // Lead search
+            document.getElementById('lead-search').addEventListener('input', function() {
+                filterLeads(this.value, document.getElementById('lead-stage-filter').value);
+            });
+            
+            // Lead stage filter
+            document.getElementById('lead-stage-filter').addEventListener('change', function() {
+                filterLeads(document.getElementById('lead-search').value, this.value);
+            });
+            
+            // Lead form submission
+            document.getElementById('lead-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveLead();
+            });
+            
+            // Close modal button
+            document.querySelector('.close-modal').addEventListener('click', () => {
+                closeModal();
+            });
+            
+            // Delete lead button
+            document.getElementById('delete-lead-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                const leadId = document.getElementById('lead-id').value;
+                if (leadId) {
+                    deleteLead(leadId);
+                }
+            });
+            
+            // Click outside modal to close
+            document.getElementById('lead-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        }
+        
+        // Open add lead modal
+        function openAddLeadModal() {
+            document.getElementById('modal-title').textContent = 'Add New Lead';
+            document.getElementById('lead-form').reset();
+            document.getElementById('lead-id').value = '';
+            document.getElementById('delete-lead-btn').style.display = 'none';
+            $('#content').val(null).trigger('change');
+            
+            document.getElementById('lead-modal').classList.add('show');
+        }
+        
+        // Open edit lead modal
+        function openEditLeadModal(leadId) {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            
+            // Find the lead
+            let foundLead = null;
+            for (const [stage, stageLeads] of Object.entries(leads)) {
+                const lead = stageLeads.find(l => l.id === leadId);
+                if (lead) {
+                    foundLead = {...lead, stage: stage};
+                    break;
+                }
+            }
+            
+            if (!foundLead) {
+                showNotification('Lead not found', 'error');
+                return;
+            }
+            
+            // Populate form
+            document.getElementById('modal-title').textContent = 'Edit Lead';
+            document.getElementById('lead-id').value = foundLead.id;
+            document.getElementById('company').value = foundLead.company;
+            document.getElementById('contact').value = foundLead.contact || '';
+            document.getElementById('email').value = foundLead.email || '';
+            document.getElementById('phone').value = foundLead.phone || '';
+            document.getElementById('stage').value = foundLead.stage;
+            document.getElementById('source').value = foundLead.source || 'website';
+            document.getElementById('notes').value = foundLead.notes || '';
+            
+            // Set content strategies
+            $('#content').val(foundLead.contentStrategies || []).trigger('change');
+            
+            // Show delete button
+            document.getElementById('delete-lead-btn').style.display = 'block';
+            
+            // Show modal
+            document.getElementById('lead-modal').classList.add('show');
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('lead-modal').classList.remove('show');
+        }
+        
+        // Save lead (add or update)
+        function saveLead() {
+            const leadId = document.getElementById('lead-id').value;
+            const company = document.getElementById('company').value;
+            const contact = document.getElementById('contact').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const stage = document.getElementById('stage').value;
+            const source = document.getElementById('source').value;
+            const notes = document.getElementById('notes').value;
+            
+            // Get selected content strategies
+            const contentStrategies = $('#content').val() || [];
+            
+            if (!company || !contact || !email) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            
+            if (leadId) {
+                // Update existing lead
+                let leadFound = false;
+                
+                // Search through all stages to find the lead
+                for (const [stageKey, stageLeads] of Object.entries(leads)) {
+                    const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+                    
+                    if (leadIndex !== -1) {
+                        // If stage changed, move the lead
+                        if (stageKey !== stage) {
+                            const lead = stageLeads[leadIndex];
+                            stageLeads.splice(leadIndex, 1);
+                            
+                            // Update lead properties
+                            lead.company = company;
+                            lead.contact = contact;
+                            lead.email = email;
+                            lead.phone = phone;
+                            lead.source = source;
+                            lead.currentStage = stage;
+                            lead.notes = notes;
+                            lead.contentStrategies = contentStrategies;
+                            lead.lastContact = new Date().toISOString();
+                            
+                            // Add to new stage
+                            leads[stage].push(lead);
+                        } else {
+                            // Just update the lead
+                            const lead = stageLeads[leadIndex];
+                            lead.company = company;
+                            lead.contact = contact;
+                            lead.email = email;
+                            lead.phone = phone;
+                            lead.source = source;
+                            lead.notes = notes;
+                            lead.contentStrategies = contentStrategies;
+                            lead.lastContact = new Date().toISOString();
+                        }
+                        
+                        leadFound = true;
+                        break;
+                    }
+                }
+                
+                if (!leadFound) {
+                    showNotification('Lead not found', 'error');
+                    return;
+                }
+            } else {
+                // Add new lead
+                const newLead = {
+                    id: 'lead-' + Date.now(),
+                    company,
+                    contact,
+                    email,
+                    phone,
+                    source,
+                    currentStage: stage,
+                    notes,
+                    contentStrategies,
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString()
+                };
+                
+                leads[stage].push(newLead);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('leads', JSON.stringify(leads));
+            
+            // Update UI
+            loadLeads();
+            closeModal();
+            showNotification(leadId ? 'Lead updated successfully' : 'Lead added successfully');
+        }
+        
+        // Delete lead
+        function deleteLead(leadId) {
+            if (!confirm('Are you sure you want to delete this lead?')) {
+                return;
+            }
+            
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            let leadFound = false;
+            
+            // Search through all stages to find the lead
+            for (const stage of Object.keys(leads)) {
+                const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
+                if (leadIndex !== -1) {
+                    leads[stage].splice(leadIndex, 1);
+                    leadFound = true;
+                    break;
+                }
+            }
+            
+            if (leadFound) {
+                localStorage.setItem('leads', JSON.stringify(leads));
+                loadLeads();
+                closeModal();
+                showNotification('Lead deleted successfully');
+            } else {
+                showNotification('Lead not found', 'error');
+            }
+        }
+        
+        // Filter leads by search term and stage
+        function filterLeads(searchTerm, stageFilter) {
+            const rows = document.querySelectorAll('#leads-table-body tr');
+            const normalizedSearch = searchTerm.toLowerCase();
+            
+            rows.forEach(row => {
+                if (!row.dataset.leadId) return; // Skip the "no leads" row
+                
+                const rowStage = row.querySelector('.status-badge').textContent.toLowerCase();
+                const company = row.cells[0].textContent.toLowerCase();
+                const contact = row.cells[1].textContent.toLowerCase();
+                const email = row.cells[2].textContent.toLowerCase();
+                
+                const matchesSearch = normalizedSearch === '' || 
+                    company.includes(normalizedSearch) || 
+                    contact.includes(normalizedSearch) || 
+                    email.includes(normalizedSearch);
+                
+                const matchesStage = stageFilter === 'all' || rowStage === stageFilter;
+                
+                if (matchesSearch && matchesStage) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Check if all rows are hidden
+            const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+            if (visibleRows.length === 0 && rows.length > 0 && rows[0].dataset.leadId) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="7" class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <p>No matching leads found</p>
+                    </td>
+                `;
+                // Remove any existing empty state row
+                document.querySelectorAll('#leads-table-body tr td.empty-state').forEach(el => {
+                    el.closest('tr').remove();
+                });
+                document.getElementById('leads-table-body').appendChild(emptyRow);
+            } else if (visibleRows.length > 0) {
+                // Remove empty state row if there are visible rows
+                document.querySelectorAll('#leads-table-body tr td.empty-state').forEach(el => {
+                    el.closest('tr').remove();
+                });
+            }
+        }
+        
+        // Export to Excel
+        function exportToExcel() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            
+            // Combine all leads from all stages
+            const allLeads = [];
+            for (const [stage, stageLeads] of Object.entries(leads)) {
+                stageLeads.forEach(lead => {
+                    // Get content names for this lead
+                    const contentUsed = lead.contentStrategies?.map(contentId => {
+                        const content = contentItems.find(c => c.id === contentId);
+                        return content ? content.name : '';
+                    }).filter(name => name) || [];
+                    
+                    allLeads.push({
+                        'Company': lead.company,
+                        'Contact': lead.contact || '',
+                        'Email': lead.email || '',
+                        'Phone': lead.phone || '',
+                        'Stage': capitalizeFirstLetter(stage),
+                        'Source': capitalizeFirstLetter(lead.source || ''),
+                        'Content Used': contentUsed.join(', '),
+                        'Notes': lead.notes || '',
+                        'Date Added': new Date(lead.dateAdded).toLocaleDateString(),
+                        'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : ''
+                    });
+                });
+            }
+            
+            if (allLeads.length === 0) {
+                showNotification('No leads to export', 'error');
+                return;
+            }
+            
+            // Create worksheet
+            const ws = XLSX.utils.json_to_sheet(allLeads);
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+            
+            // Export to Excel file
+            XLSX.writeFile(wb, 'Leads_Export.xlsx');
+            showNotification('Excel file exported successfully');
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            if (type === 'error') {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Helper function to capitalize first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+    </script>
+</body>
+</html>
