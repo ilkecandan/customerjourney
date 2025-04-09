@@ -7,11 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ATLANTECH STYLE GUIDE */
+        /* ATLANTECH STYLE GUIDE - TONED DOWN */
         :root {
             --color-background: #041e2c;
             --color-ink: #aeeffb;
-            --color-sigil: #00d8d8;
+            --color-sigil: #00b8b8; /* Toned down from 00d8d8 */
             --color-shadow: #021015;
             --color-gold-hint: #d4a373;
             --color-accent: #0b3d91;
@@ -20,7 +20,7 @@
             --font-secondary: 'Inter', sans-serif;
 
             --border-style: 1px solid var(--color-sigil);
-            --glow: 0 0 12px var(--color-sigil);
+            --glow: 0 0 8px rgba(0, 184, 184, 0.3); /* Reduced glow */
             --aura-gradient: linear-gradient(145deg, #073642, #0b3d91);
         }
 
@@ -30,7 +30,6 @@
             font-family: var(--font-secondary);
             line-height: 1.6;
             letter-spacing: 0.02em;
-            text-shadow: 0 0 2px var(--color-ink);
             margin: 0;
             padding: 0;
         }
@@ -40,7 +39,6 @@
             color: var(--color-sigil);
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            text-shadow: var(--glow);
             margin-bottom: 1rem;
         }
 
@@ -53,15 +51,14 @@
 
         a:hover {
             color: var(--color-gold-hint);
-            text-shadow: var(--glow);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .container {
             border: var(--border-style);
             border-radius: 12px;
             background: var(--aura-gradient);
-            box-shadow: 0 0 18px rgba(0, 216, 216, 0.3);
+            box-shadow: var(--glow);
             padding: 2rem;
             margin-bottom: 2rem;
         }
@@ -74,7 +71,6 @@
             border-radius: 6px;
             padding: 0.75rem 1.5rem;
             cursor: pointer;
-            box-shadow: var(--glow);
             transition: all 0.2s ease-in-out;
             font-family: var(--font-secondary);
             display: inline-flex;
@@ -84,65 +80,25 @@
 
         button:hover, .action-btn:hover {
             background-color: var(--color-gold-hint);
-            box-shadow: 0 0 20px var(--color-gold-hint);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
-        hr {
-            border: none;
-            height: 1px;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--color-sigil),
-                var(--color-sigil) 10px,
-                transparent 10px,
-                transparent 20px
-            );
-            margin: 2rem 0;
-        }
-
-        /* App container */
-        #app-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header styles */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: var(--border-style);
-        }
-
-        .header-left h1 {
-            font-size: 2rem;
-            margin: 0;
-        }
-
-        /* Lead cards */
+        /* Lead cards - enhanced */
         .lead-card {
             background: rgba(11, 61, 145, 0.2);
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             transition: all 0.3s ease;
             border-left: 4px solid var(--color-sigil);
             border: var(--border-style);
+            position: relative;
         }
 
         .lead-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            background: rgba(11, 61, 145, 0.4);
+            background: rgba(11, 61, 145, 0.3);
         }
 
         .lead-card .company {
@@ -155,78 +111,57 @@
         .lead-card .contact {
             font-size: 0.9rem;
             color: var(--color-ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .lead-card .email {
+            font-size: 0.85rem;
+            color: var(--color-ink);
+            margin-bottom: 0.5rem;
+            word-break: break-all;
+        }
+
+        .lead-card .phone {
+            font-size: 0.85rem;
+            color: var(--color-ink);
             margin-bottom: 1rem;
         }
 
-        /* Content badges */
-        .content-badges {
+        .lead-card .notes {
+            font-size: 0.8rem;
+            color: var(--color-ink);
+            font-style: italic;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .lead-actions {
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
-            flex-wrap: wrap;
         }
 
-        .content-badge {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: var(--color-sigil);
-            color: var(--color-background);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid var(--color-background);
+        .lead-actions button {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
         }
 
-        .content-badge:hover {
-            transform: scale(1.1);
-            background-color: var(--color-gold-hint);
-        }
-
-        /* Empty states */
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: var(--color-gold-hint);
-            border: 2px dashed var(--color-sigil);
-            border-radius: 8px;
-        }
-
-        .empty-state i {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--color-sigil);
-        }
-
-        .empty-state p {
-            margin: 0.5rem 0;
-        }
-
-        /* Content items */
-        .content-items-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
+        /* Content items - enhanced */
         .content-item {
             background: rgba(11, 61, 145, 0.2);
             border-radius: 8px;
             padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             transition: all 0.3s ease;
             border: var(--border-style);
+            position: relative;
         }
 
         .content-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            background: rgba(11, 61, 145, 0.4);
+            background: rgba(11, 61, 145, 0.3);
         }
 
         .content-item h4 {
@@ -240,124 +175,74 @@
             margin-bottom: 0.5rem;
         }
 
-        .stage-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            background-color: var(--color-accent);
-            color: var(--color-ink);
-            margin-right: 0.5rem;
-        }
-
-        /* Modals */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: var(--aura-gradient);
-            border-radius: 12px;
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-            position: relative;
-            padding: 2rem;
-            border: var(--border-style);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--color-ink);
-            transition: color 0.3s ease;
-        }
-
-        .close-modal:hover {
-            color: var(--color-sigil);
-        }
-
-        /* Form styles */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
+        .content-link {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--color-ink);
+            word-break: break-all;
         }
 
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: var(--border-style);
-            border-radius: 6px;
-            font-size: 1rem;
-            background-color: rgba(0, 0, 0, 0.2);
-            color: var(--color-ink);
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-actions {
+        .content-actions {
             display: flex;
-            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .content-actions button {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Stats and info panels */
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
             gap: 1rem;
-            margin-top: 1.5rem;
+            flex-wrap: wrap;
         }
 
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--color-sigil);
-            color: var(--color-background);
-            padding: 1rem 1.5rem;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1100;
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(0, 184, 184, 0.1);
+            border: var(--border-style);
+            text-align: center;
         }
 
-        .toast.error {
-            background-color: #ff6e6e;
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-sigil);
+            margin-bottom: 0.25rem;
         }
 
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--color-ink);
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            a {
+                text-decoration: underline;
+            }
         }
 
         /* Responsive adjustments */
@@ -374,6 +259,10 @@
             .content-items-container {
                 grid-template-columns: 1fr;
             }
+            
+            .stats-panel {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -385,13 +274,38 @@
                 <h1><i class="fas fa-bullhorn"></i> Awareness Stage</h1>
             </div>
             <div class="header-right">
-                <a href="index.html" class="action-btn">
-                    <i class="fas fa-arrow-left"></i> Back to Full Funnel
-                </a>
+                <div class="header-actions">
+                    <button id="print-btn" class="action-btn no-print">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <a href="index.html" class="action-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Full Funnel
+                    </a>
+                </div>
             </div>
         </header>
 
         <main>
+            <!-- Stats Panel -->
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-leads">0</div>
+                    <div class="stat-label">Total Leads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-content">0</div>
+                    <div class="stat-label">Content Items</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-content">0</div>
+                    <div class="stat-label">Avg Content per Lead</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="recent-leads">0</div>
+                    <div class="stat-label">New This Week</div>
+                </div>
+            </div>
+
             <div class="container">
                 <h2><i class="fas fa-users"></i> Awareness Stage Leads</h2>
                 <p>These leads are just discovering your brand. Use content to move them to Interest.</p>
@@ -403,6 +317,7 @@
             
             <div class="container">
                 <h2><i class="fas fa-file-alt"></i> Awareness Content Strategies</h2>
+                <p>Content designed to attract and educate new leads about your offerings.</p>
                 <div id="awareness-content-container" class="content-items-container">
                     <!-- Content will load here -->
                 </div>
@@ -410,12 +325,29 @@
         </main>
     </div>
 
-    <!-- Add Lead Modal -->
-    <div id="add-lead-modal" class="modal hidden">
+    <!-- Lead Detail Modal -->
+    <div id="lead-detail-modal" class="modal hidden">
         <div class="modal-content">
             <button class="close-modal" type="button">&times;</button>
-            <h2>Add New Lead</h2>
+            <h2>Lead Details</h2>
+            <div id="lead-detail-content">
+                <!-- Lead details will be loaded here -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn">Close</button>
+                <button type="button" id="edit-lead-btn" class="submit-btn">Edit Lead</button>
+                <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Lead Modal -->
+    <div id="edit-lead-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2>Edit Lead</h2>
             <form id="lead-form">
+                <input type="hidden" id="edit-lead-id">
                 <div class="form-group">
                     <label for="lead-company">Company Name *</label>
                     <input type="text" id="lead-company" required>
@@ -438,18 +370,35 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="cancel-btn">Cancel</button>
-                    <button type="submit" class="submit-btn">Add Lead</button>
+                    <button type="submit" class="submit-btn">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Add Content Modal -->
-    <div id="add-content-modal" class="modal hidden">
+    <!-- Content Detail Modal -->
+    <div id="content-detail-modal" class="modal hidden">
         <div class="modal-content">
             <button class="close-modal" type="button">&times;</button>
-            <h2>Add Content Strategy</h2>
+            <h2>Content Details</h2>
+            <div id="content-detail-content">
+                <!-- Content details will be loaded here -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn">Close</button>
+                <button type="button" id="edit-content-btn" class="submit-btn">Edit Content</button>
+                <button type="button" id="delete-content-btn" class="delete-btn">Delete Content</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Content Modal -->
+    <div id="edit-content-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal" type="button">&times;</button>
+            <h2>Edit Content Strategy</h2>
             <form id="content-form">
+                <input type="hidden" id="edit-content-id">
                 <div class="form-group">
                     <label for="content-name">Content Name *</label>
                     <input type="text" id="content-name" required>
@@ -464,7 +413,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="cancel-btn">Cancel</button>
-                    <button type="submit" class="submit-btn">Save Content</button>
+                    <button type="submit" class="submit-btn">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -475,7 +424,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize awareness stage directly (no auth check)
+            // Initialize awareness stage directly
             initAwarenessStage();
             
             // Initialize only awareness stage
@@ -484,9 +433,10 @@
                 loadAwarenessContent();
                 setupAwarenessDragDrop();
                 setupEventListeners();
+                updateStats();
             }
             
-            // 1. Load only awareness leads
+            // 1. Load only awareness leads with enhanced display
             function loadAwarenessLeads() {
                 const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
                 const container = document.getElementById('awareness-leads-container');
@@ -508,9 +458,69 @@
                         container.appendChild(createLeadCard(lead));
                     });
                 }
+                
+                updateStats();
             }
             
-            // 2. Load only awareness content
+            // Enhanced lead card creation
+            function createLeadCard(lead) {
+                const card = document.createElement('div');
+                card.className = 'lead-card';
+                card.draggable = true;
+                card.dataset.leadId = lead.id;
+                
+                // Format date
+                const dateAdded = new Date(lead.dateAdded);
+                const formattedDate = dateAdded.toLocaleDateString();
+                
+                card.innerHTML = `
+                    <div class="company">${lead.company}</div>
+                    <div class="contact">${lead.contact || 'No contact'}</div>
+                    <div class="email">${lead.email || 'No email'}</div>
+                    ${lead.phone ? `<div class="phone">${lead.phone}</div>` : ''}
+                    ${lead.notes ? `<div class="notes">${lead.notes}</div>` : ''}
+                    <div class="added-date"><small>Added: ${formattedDate}</small></div>
+                    <div class="content-badges">
+                        ${lead.contentStrategies?.map(id => `
+                            <div class="content-badge" data-content-id="${id}">
+                                <i class="${getContentIconForId(id)}"></i>
+                            </div>
+                        `).join('') || ''}
+                    </div>
+                    <div class="lead-actions">
+                        <button class="view-btn" data-lead-id="${lead.id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="edit-btn" data-lead-id="${lead.id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners
+                card.querySelector('.view-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showLeadDetails(lead.id);
+                });
+                
+                card.querySelector('.edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditLeadModal(lead.id);
+                });
+                
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', lead.id);
+                    card.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+                
+                return card;
+            }
+            
+            // 2. Load only awareness content with enhanced display
             function loadAwarenessContent() {
                 const allContent = JSON.parse(localStorage.getItem('content')) || [];
                 const awarenessContent = allContent.filter(c => c.stage === 'awareness');
@@ -533,6 +543,505 @@
                         container.appendChild(createContentItem(content));
                     });
                 }
+                
+                updateStats();
+            }
+            
+            // Enhanced content item creation
+            function createContentItem(content) {
+                const item = document.createElement('div');
+                item.className = 'content-item';
+                item.dataset.contentId = content.id;
+                
+                // Format date
+                const dateCreated = new Date(content.dateCreated);
+                const formattedDate = dateCreated.toLocaleDateString();
+                
+                item.innerHTML = `
+                    <h4>${content.name}</h4>
+                    ${content.description ? `<p class="content-description">${content.description}</p>` : ''}
+                    ${content.link ? `<a href="${content.link}" target="_blank" class="content-link">
+                        <i class="fas fa-external-link-alt"></i> ${content.link}
+                    </a>` : ''}
+                    <div class="added-date"><small>Created: ${formattedDate}</small></div>
+                    <div class="content-actions">
+                        <button class="view-btn" data-content-id="${content.id}">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="edit-btn" data-content-id="${content.id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners
+                item.querySelector('.view-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showContentDetails(content.id);
+                });
+                
+                item.querySelector('.edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditContentModal(content.id);
+                });
+                
+                return item;
+            }
+            
+            // 3. Show lead details
+            function showLeadDetails(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                const lead = leads.awareness.find(l => l.id === leadId);
+                
+                if (!lead) {
+                    showNotification('Lead not found', 'error');
+                    return;
+                }
+                
+                // Format dates
+                const dateAdded = new Date(lead.dateAdded);
+                const lastContact = lead.lastContact ? new Date(lead.lastContact) : null;
+                
+                // Get content names
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const contentUsed = lead.contentStrategies?.map(contentId => {
+                    const content = contentItems.find(c => c.id === contentId);
+                    return content ? content.name : '';
+                }).filter(name => name) || [];
+                
+                document.getElementById('lead-detail-content').innerHTML = `
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <div class="detail-value">${lead.company}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Person</label>
+                        <div class="detail-value">${lead.contact || 'N/A'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div class="detail-value">${lead.email || 'N/A'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <div class="detail-value">${lead.phone || 'N/A'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date Added</label>
+                        <div class="detail-value">${dateAdded.toLocaleDateString()}</div>
+                    </div>
+                    ${lastContact ? `
+                    <div class="form-group">
+                        <label>Last Contact</label>
+                        <div class="detail-value">${lastContact.toLocaleDateString()}</div>
+                    </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label>Content Used</label>
+                        <div class="detail-value">${contentUsed.join(', ') || 'None'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <div class="detail-value">${lead.notes || 'No notes'}</div>
+                    </div>
+                `;
+                
+                // Set up delete button
+                document.getElementById('delete-lead-btn').onclick = function() {
+                    if (confirm('Are you sure you want to delete this lead?')) {
+                        deleteLead(leadId);
+                    }
+                };
+                
+                // Set up edit button
+                document.getElementById('edit-lead-btn').onclick = function() {
+                    document.getElementById('lead-detail-modal').classList.add('hidden');
+                    openEditLeadModal(leadId);
+                };
+                
+                document.getElementById('lead-detail-modal').classList.remove('hidden');
+            }
+            
+            // 4. Show content details
+            function showContentDetails(contentId) {
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const content = contentItems.find(c => c.id === contentId);
+                
+                if (!content) {
+                    showNotification('Content not found', 'error');
+                    return;
+                }
+                
+                // Format date
+                const dateCreated = new Date(content.dateCreated);
+                
+                document.getElementById('content-detail-content').innerHTML = `
+                    <div class="form-group">
+                        <label>Content Name</label>
+                        <div class="detail-value">${content.name}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <div class="detail-value">${content.description || 'No description'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Stage</label>
+                        <div class="detail-value">${capitalizeFirstLetter(content.stage)}</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date Created</label>
+                        <div class="detail-value">${dateCreated.toLocaleDateString()}</div>
+                    </div>
+                    ${content.link ? `
+                    <div class="form-group">
+                        <label>Link</label>
+                        <div class="detail-value">
+                            <a href="${content.link}" target="_blank">${content.link}</a>
+                        </div>
+                    </div>
+                    ` : ''}
+                `;
+                
+                // Set up delete button
+                document.getElementById('delete-content-btn').onclick = function() {
+                    if (confirm('Are you sure you want to delete this content?')) {
+                        deleteContent(contentId);
+                    }
+                };
+                
+                // Set up edit button
+                document.getElementById('edit-content-btn').onclick = function() {
+                    document.getElementById('content-detail-modal').classList.add('hidden');
+                    openEditContentModal(contentId);
+                };
+                
+                document.getElementById('content-detail-modal').classList.remove('hidden');
+            }
+            
+            // 5. Open edit lead modal
+            function openEditLeadModal(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                const lead = leads.awareness.find(l => l.id === leadId);
+                
+                if (!lead) {
+                    showNotification('Lead not found', 'error');
+                    return;
+                }
+                
+                document.getElementById('edit-lead-id').value = lead.id;
+                document.getElementById('lead-company').value = lead.company;
+                document.getElementById('lead-contact').value = lead.contact || '';
+                document.getElementById('lead-email').value = lead.email || '';
+                document.getElementById('lead-phone').value = lead.phone || '';
+                document.getElementById('lead-notes').value = lead.notes || '';
+                
+                document.getElementById('edit-lead-modal').classList.remove('hidden');
+            }
+            
+            // 6. Open edit content modal
+            function openEditContentModal(contentId) {
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const content = contentItems.find(c => c.id === contentId);
+                
+                if (!content) {
+                    showNotification('Content not found', 'error');
+                    return;
+                }
+                
+                document.getElementById('edit-content-id').value = content.id;
+                document.getElementById('content-name').value = content.name;
+                document.getElementById('content-description').value = content.description || '';
+                document.getElementById('content-link').value = content.link || '';
+                
+                document.getElementById('edit-content-modal').classList.remove('hidden');
+            }
+            
+            // 7. Save lead changes
+            function saveLeadChanges() {
+                const leadId = document.getElementById('edit-lead-id').value;
+                const company = document.getElementById('lead-company').value;
+                const contact = document.getElementById('lead-contact').value;
+                const email = document.getElementById('lead-email').value;
+                const phone = document.getElementById('lead-phone').value;
+                const notes = document.getElementById('lead-notes').value;
+                
+                if (!company || !contact || !email) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                const leadIndex = leads.awareness.findIndex(l => l.id === leadId);
+                
+                if (leadIndex !== -1) {
+                    leads.awareness[leadIndex] = {
+                        ...leads.awareness[leadIndex],
+                        company,
+                        contact,
+                        email,
+                        phone,
+                        notes,
+                        lastContact: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('leads', JSON.stringify(leads));
+                    document.getElementById('edit-lead-modal').classList.add('hidden');
+                    loadAwarenessLeads();
+                    showNotification('Lead updated successfully');
+                } else {
+                    showNotification('Lead not found', 'error');
+                }
+            }
+            
+            // 8. Save content changes
+            function saveContentChanges() {
+                const contentId = document.getElementById('edit-content-id').value;
+                const name = document.getElementById('content-name').value;
+                const description = document.getElementById('content-description').value;
+                const link = document.getElementById('content-link').value;
+                
+                if (!name) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const contentIndex = contentItems.findIndex(c => c.id === contentId);
+                
+                if (contentIndex !== -1) {
+                    contentItems[contentIndex] = {
+                        ...contentItems[contentIndex],
+                        name,
+                        description,
+                        link
+                    };
+                    
+                    localStorage.setItem('content', JSON.stringify(contentItems));
+                    document.getElementById('edit-content-modal').classList.add('hidden');
+                    loadAwarenessContent();
+                    showNotification('Content updated successfully');
+                } else {
+                    showNotification('Content not found', 'error');
+                }
+            }
+            
+            // 9. Delete lead
+            function deleteLead(leadId) {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                leads.awareness = leads.awareness.filter(l => l.id !== leadId);
+                
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('lead-detail-modal').classList.add('hidden');
+                loadAwarenessLeads();
+                showNotification('Lead deleted successfully');
+            }
+            
+            // 10. Delete content
+            function deleteContent(contentId) {
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const updatedContent = contentItems.filter(c => c.id !== contentId);
+                
+                // Also remove from any leads that might reference this content
+                const leads = JSON.parse(localStorage.getItem('leads'));
+                for (const stage in leads) {
+                    leads[stage].forEach(lead => {
+                        if (lead.contentStrategies && lead.contentStrategies.includes(contentId)) {
+                            lead.contentStrategies = lead.contentStrategies.filter(id => id !== contentId);
+                        }
+                    });
+                }
+                
+                localStorage.setItem('content', JSON.stringify(updatedContent));
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('content-detail-modal').classList.add('hidden');
+                loadAwarenessContent();
+                loadAwarenessLeads();
+                showNotification('Content deleted successfully');
+            }
+            
+            // 11. Update stats
+            function updateStats() {
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                const awarenessContent = contentItems.filter(c => c.stage === 'awareness');
+                
+                // Total leads
+                document.getElementById('total-leads').textContent = leads.awareness.length;
+                
+                // Total content
+                document.getElementById('total-content').textContent = awarenessContent.length;
+                
+                // Avg content per lead
+                const totalContentUsed = leads.awareness.reduce((sum, lead) => {
+                    return sum + (lead.contentStrategies?.length || 0);
+                }, 0);
+                
+                const avgContent = leads.awareness.length > 0 
+                    ? (totalContentUsed / leads.awareness.length).toFixed(1) 
+                    : 0;
+                document.getElementById('avg-content').textContent = avgContent;
+                
+                // Recent leads (this week)
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                
+                const recentLeads = leads.awareness.filter(lead => {
+                    const leadDate = new Date(lead.dateAdded);
+                    return leadDate > oneWeekAgo;
+                }).length;
+                
+                document.getElementById('recent-leads').textContent = recentLeads;
+            }
+            
+            // Helper functions
+            function getContentIconForId(contentId) {
+                const content = JSON.parse(localStorage.getItem('content')).find(c => c.id === contentId);
+                return getContentIcon(content?.type);
+            }
+            
+            function getContentIcon(type) {
+                const icons = {
+                    blog: 'fas fa-file-alt',
+                    ebook: 'fas fa-book',
+                    video: 'fas fa-video',
+                    webinar: 'fas fa-chalkboard-teacher',
+                    casestudy: 'fas fa-chart-line',
+                    demo: 'fas fa-desktop',
+                    other: 'fas fa-file'
+                };
+                return icons[type] || icons.other;
+            }
+            
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            function showNotification(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = 'toast show';
+                if (type === 'error') {
+                    toast.classList.add('error');
+                } else {
+                    toast.classList.remove('error');
+                }
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Setup event listeners
+            function setupEventListeners() {
+                // Add Lead button
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('#add-lead-btn')) {
+                        document.getElementById('edit-lead-id').value = '';
+                        document.getElementById('lead-form').reset();
+                        document.getElementById('edit-lead-modal').classList.remove('hidden');
+                    }
+                    
+                    if (e.target.closest('#add-content-btn')) {
+                        document.getElementById('edit-content-id').value = '';
+                        document.getElementById('content-form').reset();
+                        document.getElementById('edit-content-modal').classList.remove('hidden');
+                    }
+                    
+                    if (e.target.closest('.close-modal, .cancel-btn')) {
+                        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+                    }
+                });
+                
+                // Form submissions
+                document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const leadId = document.getElementById('edit-lead-id').value;
+                    if (leadId) {
+                        saveLeadChanges();
+                    } else {
+                        addLead();
+                    }
+                });
+                
+                document.getElementById('content-form')?.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const contentId = document.getElementById('edit-content-id').value;
+                    if (contentId) {
+                        saveContentChanges();
+                    } else {
+                        addContent();
+                    }
+                });
+                
+                // Print button
+                document.getElementById('print-btn')?.addEventListener('click', function() {
+                    window.print();
+                });
+            }
+            
+            // Add new lead
+            function addLead() {
+                const company = document.getElementById('lead-company').value;
+                const contact = document.getElementById('lead-contact').value;
+                const email = document.getElementById('lead-email').value;
+                const phone = document.getElementById('lead-phone').value;
+                const notes = document.getElementById('lead-notes').value;
+                
+                if (!company || !contact || !email) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const newLead = {
+                    id: 'lead-' + Date.now(),
+                    company,
+                    contact,
+                    email,
+                    phone,
+                    notes,
+                    currentStage: 'awareness',
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString()
+                };
+                
+                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+                leads.awareness.push(newLead);
+                localStorage.setItem('leads', JSON.stringify(leads));
+                
+                document.getElementById('edit-lead-modal').classList.add('hidden');
+                document.getElementById('lead-form').reset();
+                loadAwarenessLeads();
+                showNotification('Lead added successfully');
+            }
+            
+            // Add new content
+            function addContent() {
+                const name = document.getElementById('content-name').value;
+                const description = document.getElementById('content-description').value;
+                const link = document.getElementById('content-link').value;
+                
+                if (!name) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const newContent = {
+                    id: 'content-' + Date.now(),
+                    name,
+                    description,
+                    link,
+                    stage: 'awareness',
+                    dateCreated: new Date().toISOString()
+                };
+                
+                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+                contentItems.push(newContent);
+                localStorage.setItem('content', JSON.stringify(contentItems));
+                
+                document.getElementById('edit-content-modal').classList.add('hidden');
+                document.getElementById('content-form').reset();
+                loadAwarenessContent();
+                showNotification('Content added successfully');
             }
             
             // 3. Drag and drop setup for awareness only
@@ -541,7 +1050,7 @@
                 
                 container.addEventListener('dragover', (e) => {
                     e.preventDefault();
-                    container.style.backgroundColor = 'rgba(0, 216, 216, 0.1)';
+                    container.style.backgroundColor = 'rgba(0, 184, 184, 0.1)';
                 });
                 
                 container.addEventListener('dragleave', () => {
@@ -594,186 +1103,6 @@
                     loadAwarenessLeads();
                     showNotification('Moved lead to Awareness stage');
                 }
-            }
-            
-            // Helper functions
-            function createLeadCard(lead) {
-                const card = document.createElement('div');
-                card.className = 'lead-card';
-                card.draggable = true;
-                card.dataset.leadId = lead.id;
-                card.innerHTML = `
-                    <div class="company">${lead.company}</div>
-                    <div class="contact">${lead.contact || 'No contact'}</div>
-                    <div class="content-badges">
-                        ${lead.contentStrategies?.map(id => `
-                            <div class="content-badge" data-content-id="${id}">
-                                <i class="${getContentIconForId(id)}"></i>
-                            </div>
-                        `).join('') || ''}
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    // Open edit modal or show details
-                    console.log('Lead clicked:', lead.id);
-                });
-                
-                card.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', lead.id);
-                    card.classList.add('dragging');
-                });
-                
-                card.addEventListener('dragend', () => {
-                    card.classList.remove('dragging');
-                });
-                
-                return card;
-            }
-            
-            function createContentItem(content) {
-                const item = document.createElement('div');
-                item.className = 'content-item';
-                item.dataset.contentId = content.id;
-                item.innerHTML = `
-                    <h4>${content.name}</h4>
-                    <p class="content-description">${content.description || 'No description'}</p>
-                    <span class="stage-badge">Awareness</span>
-                    ${content.link ? `<a href="${content.link}" target="_blank" class="content-link">
-                        <i class="fas fa-external-link-alt"></i> View
-                    </a>` : ''}
-                `;
-                
-                item.addEventListener('click', () => {
-                    // Open edit modal or show details
-                    console.log('Content clicked:', content.id);
-                });
-                
-                return item;
-            }
-            
-            function getContentIconForId(contentId) {
-                const content = JSON.parse(localStorage.getItem('content')).find(c => c.id === contentId);
-                return getContentIcon(content?.type);
-            }
-            
-            function getContentIcon(type) {
-                const icons = {
-                    blog: 'fas fa-file-alt',
-                    ebook: 'fas fa-book',
-                    video: 'fas fa-video',
-                    webinar: 'fas fa-chalkboard-teacher',
-                    casestudy: 'fas fa-chart-line',
-                    demo: 'fas fa-desktop',
-                    other: 'fas fa-file'
-                };
-                return icons[type] || icons.other;
-            }
-            
-            function showNotification(message, type = 'success') {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.className = 'toast show';
-                if (type === 'error') {
-                    toast.classList.add('error');
-                } else {
-                    toast.classList.remove('error');
-                }
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            }
-            
-            function setupEventListeners() {
-                // Add Lead button
-                document.addEventListener('click', (e) => {
-                    if (e.target.closest('#add-lead-btn')) {
-                        document.getElementById('add-lead-modal').classList.remove('hidden');
-                    }
-                    
-                    if (e.target.closest('#add-content-btn')) {
-                        document.getElementById('add-content-modal').classList.remove('hidden');
-                    }
-                    
-                    if (e.target.closest('.close-modal, .cancel-btn')) {
-                        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-                    }
-                });
-                
-                // Form submissions
-                document.getElementById('lead-form')?.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    addLead();
-                });
-                
-                document.getElementById('content-form')?.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    addContent();
-                });
-            }
-            
-            function addLead() {
-                const company = document.getElementById('lead-company').value;
-                const contact = document.getElementById('lead-contact').value;
-                const email = document.getElementById('lead-email').value;
-                const phone = document.getElementById('lead-phone').value;
-                const notes = document.getElementById('lead-notes').value;
-                
-                if (!company || !contact || !email) {
-                    showNotification('Please fill in all required fields', 'error');
-                    return;
-                }
-                
-                const newLead = {
-                    id: 'lead-' + Date.now(),
-                    company,
-                    contact,
-                    email,
-                    phone,
-                    notes,
-                    currentStage: 'awareness',
-                    dateAdded: new Date().toISOString(),
-                    lastContact: new Date().toISOString()
-                };
-                
-                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
-                leads.awareness.push(newLead);
-                localStorage.setItem('leads', JSON.stringify(leads));
-                
-                document.getElementById('add-lead-modal').classList.add('hidden');
-                document.getElementById('lead-form').reset();
-                loadAwarenessLeads();
-                showNotification('Lead added successfully');
-            }
-            
-            function addContent() {
-                const name = document.getElementById('content-name').value;
-                const description = document.getElementById('content-description').value;
-                const link = document.getElementById('content-link').value;
-                
-                if (!name) {
-                    showNotification('Please fill in all required fields', 'error');
-                    return;
-                }
-                
-                const newContent = {
-                    id: 'content-' + Date.now(),
-                    name,
-                    description,
-                    link,
-                    stage: 'awareness',
-                    dateCreated: new Date().toISOString()
-                };
-                
-                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-                contentItems.push(newContent);
-                localStorage.setItem('content', JSON.stringify(contentItems));
-                
-                document.getElementById('add-content-modal').classList.add('hidden');
-                document.getElementById('content-form').reset();
-                loadAwarenessContent();
-                showNotification('Content added successfully');
             }
         });
     </script>
