@@ -1302,6 +1302,21 @@
 .section-header i {
     color: #64b5f6;
 }
+        .lead-card a {
+    text-decoration: none;
+    color: inherit;
+    border-bottom: none;
+}
+
+.lead-card a:hover {
+    transform: none;
+}
+
+.lead-actions {
+    margin-top: 1rem;
+    z-index: 2;
+    position: relative;
+}
 
     </style>
 </head>
@@ -2566,38 +2581,73 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Create a lead card element for the funnel
-        function createLeadCard(lead) {
-            const leadCard = document.createElement('div');
-            leadCard.className = 'lead-card';
-            leadCard.draggable = true;
-            leadCard.dataset.leadId = lead.id;
-            leadCard.dataset.currentStage = lead.currentStage;
 
-            const company = document.createElement('div');
-            company.className = 'company';
-            company.textContent = lead.company;
-
-            const contact = document.createElement('div');
-            contact.className = 'contact';
-            contact.textContent = lead.contact || 'No contact';
-
-            leadCard.appendChild(company);
-            leadCard.appendChild(contact);
-
-            // Add drag events
-            leadCard.addEventListener('dragstart', handleDragStart);
-
-            // Add click event to show edit modal
-            leadCard.addEventListener('click', (e) => {
-                // Only open edit modal if not dragging
-                if (!e.target.classList.contains('dragging')) {
-                    openEditLeadModal(lead);
-                }
-            });
-
-            return leadCard;
-        }
-
+function createLeadCard(lead) {
+    const card = document.createElement('div');
+    card.className = 'lead-card';
+    card.dataset.leadId = lead.id;
+    
+    // Format date
+    const dateAdded = new Date(lead.dateAdded);
+    const formattedDate = dateAdded.toLocaleDateString();
+    
+    // Create the link wrapper
+    const link = document.createElement('a');
+    link.href = `https://ilkecandan.github.io/customerjourney/lead.html?id=${lead.id}`;
+    link.target = '_blank'; // Open in new tab
+    link.style.textDecoration = 'none';
+    link.style.color = 'inherit';
+    link.style.display = 'block';
+    
+    // Add the lead content to the link
+    link.innerHTML = `
+        <div class="company">${lead.company}</div>
+        <div class="contact">${lead.contact || 'No contact'}</div>
+        <div class="email">${lead.email || 'No email'}</div>
+        ${lead.phone ? `<div class="phone">${lead.phone}</div>` : ''}
+        ${lead.notes ? `<div class="notes">${lead.notes}</div>` : ''}
+        <div class="added-date"><small>Added: ${formattedDate}</small></div>
+        <div class="content-badges">
+            ${lead.contentStrategies?.map(id => `
+                <div class="content-badge" data-content-id="${id}">
+                    <i class="${getContentIconForId(id)}"></i>
+                </div>
+            `).join('') || ''}
+        </div>
+    `;
+    
+    // Add the link to the card
+    card.appendChild(link);
+    
+    // Create actions container (outside the link)
+    const actions = document.createElement('div');
+    actions.className = 'lead-actions';
+    actions.innerHTML = `
+        <button class="view-btn" data-lead-id="${lead.id}">
+            <i class="fas fa-eye"></i> View
+        </button>
+        <button class="edit-btn" data-lead-id="${lead.id}">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+    `;
+    card.appendChild(actions);
+    
+    // Add event listeners to buttons (prevent default on the link)
+    card.querySelector('.view-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showLeadDetails(lead.id);
+    });
+    
+    card.querySelector('.edit-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openEditLeadModal(lead.id);
+    });
+    
+    return card;
+}
+        
         // Update the leads table with all leads
         function updateLeadsTable() {
             const leadsData = JSON.parse(localStorage.getItem('leads')) || {
