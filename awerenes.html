@@ -101,77 +101,6 @@
             margin: 2rem 0;
         }
 
-        /* Auth Screen */
-        .auth-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #041e2c, #0b3d91);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .auth-box {
-            background: var(--aura-gradient);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border: var(--border-style);
-        }
-
-        .auth-box h2 {
-            color: var(--color-sigil);
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-        }
-
-        .auth-box input {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: var(--border-style);
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background-color: rgba(0, 0, 0, 0.2);
-            color: var(--color-ink);
-        }
-
-        .auth-box input:focus {
-            outline: none;
-            border-color: var(--color-gold-hint);
-            box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.3);
-        }
-
-        .auth-btn {
-            background-color: var(--color-sigil);
-            color: var(--color-background);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-weight: 600;
-        }
-
-        .auth-btn:hover {
-            background-color: var(--color-gold-hint);
-        }
-
-        .error-message {
-            color: #ff6e6e;
-            margin-bottom: 1rem;
-            min-height: 1.5rem;
-        }
-
         /* App container */
         #app-container {
             display: flex;
@@ -449,10 +378,8 @@
     </style>
 </head>
 <body>
-  
-
     <!-- Main App Container -->
-    <div id="app-container" class="hidden">
+    <div id="app-container">
         <header>
             <div class="header-left">
                 <h1><i class="fas fa-bullhorn"></i> Awareness Stage</h1>
@@ -548,17 +475,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Authentication check
-            const isAuthenticated = localStorage.getItem('authenticated') === 'true';
-            
-            if (isAuthenticated) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
-                initAwarenessStage();
-            } else {
-                setupAuth();
-            }
-            
+            // Initialize awareness stage directly (no auth check)
+            initAwarenessStage();
             
             // Initialize only awareness stage
             function initAwarenessStage() {
