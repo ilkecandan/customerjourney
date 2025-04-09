@@ -11,16 +11,17 @@
         :root {
             --color-background: #041e2c;
             --color-ink: #aeeffb;
-            --color-sigil: #00b8b8; /* Toned down from 00d8d8 */
+            --color-sigil: #00b8b8;
             --color-shadow: #021015;
             --color-gold-hint: #d4a373;
             --color-accent: #0b3d91;
+            --color-danger: #ff6e6e;
 
             --font-primary: 'Cormorant Garamond', serif;
             --font-secondary: 'Inter', sans-serif;
 
             --border-style: 1px solid var(--color-sigil);
-            --glow: 0 0 8px rgba(0, 184, 184, 0.3); /* Reduced glow */
+            --glow: 0 0 8px rgba(0, 184, 184, 0.3);
             --aura-gradient: linear-gradient(145deg, #073642, #0b3d91);
         }
 
@@ -81,6 +82,10 @@
         button:hover, .action-btn:hover {
             background-color: var(--color-gold-hint);
             transform: translateY(-1px);
+        }
+
+        .delete-btn {
+            background-color: var(--color-danger);
         }
 
         /* Lead cards - enhanced */
@@ -223,6 +228,93 @@
             color: var(--color-ink);
         }
 
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--aura-gradient);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--glow);
+            position: relative;
+            padding: 2rem;
+            border: var(--border-style);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-ink);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--color-sigil);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-ink);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: var(--border-style);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--color-ink);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .detail-value {
+            padding: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            margin-top: 0.25rem;
+        }
+
         /* Print styles */
         @media print {
             body {
@@ -326,7 +418,7 @@
     </div>
 
     <!-- Lead Detail Modal -->
-    <div id="lead-detail-modal" class="modal hidden">
+    <div id="lead-detail-modal" class="modal">
         <div class="modal-content">
             <button class="close-modal" type="button">&times;</button>
             <h2>Lead Details</h2>
@@ -342,10 +434,10 @@
     </div>
 
     <!-- Edit Lead Modal -->
-    <div id="edit-lead-modal" class="modal hidden">
+    <div id="edit-lead-modal" class="modal">
         <div class="modal-content">
             <button class="close-modal" type="button">&times;</button>
-            <h2>Edit Lead</h2>
+            <h2 id="edit-lead-title">Edit Lead</h2>
             <form id="lead-form">
                 <input type="hidden" id="edit-lead-id">
                 <div class="form-group">
@@ -377,7 +469,7 @@
     </div>
 
     <!-- Content Detail Modal -->
-    <div id="content-detail-modal" class="modal hidden">
+    <div id="content-detail-modal" class="modal">
         <div class="modal-content">
             <button class="close-modal" type="button">&times;</button>
             <h2>Content Details</h2>
@@ -393,10 +485,10 @@
     </div>
 
     <!-- Edit Content Modal -->
-    <div id="edit-content-modal" class="modal hidden">
+    <div id="edit-content-modal" class="modal">
         <div class="modal-content">
             <button class="close-modal" type="button">&times;</button>
-            <h2>Edit Content Strategy</h2>
+            <h2 id="edit-content-title">Edit Content Strategy</h2>
             <form id="content-form">
                 <input type="hidden" id="edit-content-id">
                 <div class="form-group">
@@ -429,9 +521,16 @@
             
             // Initialize only awareness stage
             function initAwarenessStage() {
+                // Initialize empty data if none exists
+                if (!localStorage.getItem('leads')) {
+                    localStorage.setItem('leads', JSON.stringify({ awareness: [] }));
+                }
+                if (!localStorage.getItem('content')) {
+                    localStorage.setItem('content', JSON.stringify([]));
+                }
+                
                 loadAwarenessLeads();
                 loadAwarenessContent();
-                setupAwarenessDragDrop();
                 setupEventListeners();
                 updateStats();
             }
@@ -466,7 +565,6 @@
             function createLeadCard(lead) {
                 const card = document.createElement('div');
                 card.className = 'lead-card';
-                card.draggable = true;
                 card.dataset.leadId = lead.id;
                 
                 // Format date
@@ -506,15 +604,6 @@
                 card.querySelector('.edit-btn').addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditLeadModal(lead.id);
-                });
-                
-                card.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', lead.id);
-                    card.classList.add('dragging');
-                });
-                
-                card.addEventListener('dragend', () => {
-                    card.classList.remove('dragging');
                 });
                 
                 return card;
@@ -655,11 +744,11 @@
                 
                 // Set up edit button
                 document.getElementById('edit-lead-btn').onclick = function() {
-                    document.getElementById('lead-detail-modal').classList.add('hidden');
+                    document.getElementById('lead-detail-modal').classList.remove('show');
                     openEditLeadModal(leadId);
                 };
                 
-                document.getElementById('lead-detail-modal').classList.remove('hidden');
+                document.getElementById('lead-detail-modal').classList.add('show');
             }
             
             // 4. Show content details
@@ -711,23 +800,33 @@
                 
                 // Set up edit button
                 document.getElementById('edit-content-btn').onclick = function() {
-                    document.getElementById('content-detail-modal').classList.add('hidden');
+                    document.getElementById('content-detail-modal').classList.remove('show');
                     openEditContentModal(contentId);
                 };
                 
-                document.getElementById('content-detail-modal').classList.remove('hidden');
+                document.getElementById('content-detail-modal').classList.add('show');
             }
             
             // 5. Open edit lead modal
             function openEditLeadModal(leadId) {
                 const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
-                const lead = leads.awareness.find(l => l.id === leadId);
+                let lead = leads.awareness.find(l => l.id === leadId);
+                
+                // If no leadId, we're creating a new lead
+                if (!leadId) {
+                    document.getElementById('edit-lead-title').textContent = 'Add New Lead';
+                    document.getElementById('edit-lead-id').value = '';
+                    document.getElementById('lead-form').reset();
+                    document.getElementById('edit-lead-modal').classList.add('show');
+                    return;
+                }
                 
                 if (!lead) {
                     showNotification('Lead not found', 'error');
                     return;
                 }
                 
+                document.getElementById('edit-lead-title').textContent = 'Edit Lead';
                 document.getElementById('edit-lead-id').value = lead.id;
                 document.getElementById('lead-company').value = lead.company;
                 document.getElementById('lead-contact').value = lead.contact || '';
@@ -735,25 +834,35 @@
                 document.getElementById('lead-phone').value = lead.phone || '';
                 document.getElementById('lead-notes').value = lead.notes || '';
                 
-                document.getElementById('edit-lead-modal').classList.remove('hidden');
+                document.getElementById('edit-lead-modal').classList.add('show');
             }
             
             // 6. Open edit content modal
             function openEditContentModal(contentId) {
                 const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-                const content = contentItems.find(c => c.id === contentId);
+                let content = contentItems.find(c => c.id === contentId);
+                
+                // If no contentId, we're creating new content
+                if (!contentId) {
+                    document.getElementById('edit-content-title').textContent = 'Add New Content';
+                    document.getElementById('edit-content-id').value = '';
+                    document.getElementById('content-form').reset();
+                    document.getElementById('edit-content-modal').classList.add('show');
+                    return;
+                }
                 
                 if (!content) {
                     showNotification('Content not found', 'error');
                     return;
                 }
                 
+                document.getElementById('edit-content-title').textContent = 'Edit Content';
                 document.getElementById('edit-content-id').value = content.id;
                 document.getElementById('content-name').value = content.name;
                 document.getElementById('content-description').value = content.description || '';
                 document.getElementById('content-link').value = content.link || '';
                 
-                document.getElementById('edit-content-modal').classList.remove('hidden');
+                document.getElementById('edit-content-modal').classList.add('show');
             }
             
             // 7. Save lead changes
@@ -771,26 +880,45 @@
                 }
                 
                 const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
-                const leadIndex = leads.awareness.findIndex(l => l.id === leadId);
                 
-                if (leadIndex !== -1) {
-                    leads.awareness[leadIndex] = {
-                        ...leads.awareness[leadIndex],
+                if (leadId) {
+                    // Editing existing lead
+                    const leadIndex = leads.awareness.findIndex(l => l.id === leadId);
+                    
+                    if (leadIndex !== -1) {
+                        leads.awareness[leadIndex] = {
+                            ...leads.awareness[leadIndex],
+                            company,
+                            contact,
+                            email,
+                            phone,
+                            notes,
+                            lastContact: new Date().toISOString()
+                        };
+                    } else {
+                        showNotification('Lead not found', 'error');
+                        return;
+                    }
+                } else {
+                    // Adding new lead
+                    const newLead = {
+                        id: 'lead-' + Date.now(),
                         company,
                         contact,
                         email,
                         phone,
                         notes,
+                        currentStage: 'awareness',
+                        dateAdded: new Date().toISOString(),
                         lastContact: new Date().toISOString()
                     };
-                    
-                    localStorage.setItem('leads', JSON.stringify(leads));
-                    document.getElementById('edit-lead-modal').classList.add('hidden');
-                    loadAwarenessLeads();
-                    showNotification('Lead updated successfully');
-                } else {
-                    showNotification('Lead not found', 'error');
+                    leads.awareness.push(newLead);
                 }
+                
+                localStorage.setItem('leads', JSON.stringify(leads));
+                document.getElementById('edit-lead-modal').classList.remove('show');
+                loadAwarenessLeads();
+                showNotification(leadId ? 'Lead updated successfully' : 'Lead added successfully');
             }
             
             // 8. Save content changes
@@ -806,23 +934,39 @@
                 }
                 
                 const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-                const contentIndex = contentItems.findIndex(c => c.id === contentId);
                 
-                if (contentIndex !== -1) {
-                    contentItems[contentIndex] = {
-                        ...contentItems[contentIndex],
+                if (contentId) {
+                    // Editing existing content
+                    const contentIndex = contentItems.findIndex(c => c.id === contentId);
+                    
+                    if (contentIndex !== -1) {
+                        contentItems[contentIndex] = {
+                            ...contentItems[contentIndex],
+                            name,
+                            description,
+                            link
+                        };
+                    } else {
+                        showNotification('Content not found', 'error');
+                        return;
+                    }
+                } else {
+                    // Adding new content
+                    const newContent = {
+                        id: 'content-' + Date.now(),
                         name,
                         description,
-                        link
+                        link,
+                        stage: 'awareness',
+                        dateCreated: new Date().toISOString()
                     };
-                    
-                    localStorage.setItem('content', JSON.stringify(contentItems));
-                    document.getElementById('edit-content-modal').classList.add('hidden');
-                    loadAwarenessContent();
-                    showNotification('Content updated successfully');
-                } else {
-                    showNotification('Content not found', 'error');
+                    contentItems.push(newContent);
                 }
+                
+                localStorage.setItem('content', JSON.stringify(contentItems));
+                document.getElementById('edit-content-modal').classList.remove('show');
+                loadAwarenessContent();
+                showNotification(contentId ? 'Content updated successfully' : 'Content added successfully');
             }
             
             // 9. Delete lead
@@ -831,7 +975,7 @@
                 leads.awareness = leads.awareness.filter(l => l.id !== leadId);
                 
                 localStorage.setItem('leads', JSON.stringify(leads));
-                document.getElementById('lead-detail-modal').classList.add('hidden');
+                document.getElementById('lead-detail-modal').classList.remove('show');
                 loadAwarenessLeads();
                 showNotification('Lead deleted successfully');
             }
@@ -853,7 +997,7 @@
                 
                 localStorage.setItem('content', JSON.stringify(updatedContent));
                 localStorage.setItem('leads', JSON.stringify(leads));
-                document.getElementById('content-detail-modal').classList.add('hidden');
+                document.getElementById('content-detail-modal').classList.remove('show');
                 loadAwarenessContent();
                 loadAwarenessLeads();
                 showNotification('Content deleted successfully');
@@ -933,176 +1077,50 @@
             
             // Setup event listeners
             function setupEventListeners() {
+                // Close modals when clicking close or cancel buttons
+                document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.querySelectorAll('.modal').forEach(modal => {
+                            modal.classList.remove('show');
+                        });
+                    });
+                });
+                
+                // Close modals when clicking outside content
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.classList.remove('show');
+                        }
+                    });
+                });
+                
                 // Add Lead button
-                document.addEventListener('click', (e) => {
+                document.addEventListener('click', function(e) {
                     if (e.target.closest('#add-lead-btn')) {
-                        document.getElementById('edit-lead-id').value = '';
-                        document.getElementById('lead-form').reset();
-                        document.getElementById('edit-lead-modal').classList.remove('hidden');
+                        openEditLeadModal();
                     }
                     
                     if (e.target.closest('#add-content-btn')) {
-                        document.getElementById('edit-content-id').value = '';
-                        document.getElementById('content-form').reset();
-                        document.getElementById('edit-content-modal').classList.remove('hidden');
-                    }
-                    
-                    if (e.target.closest('.close-modal, .cancel-btn')) {
-                        document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+                        openEditContentModal();
                     }
                 });
                 
                 // Form submissions
-                document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+                document.getElementById('lead-form').addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const leadId = document.getElementById('edit-lead-id').value;
-                    if (leadId) {
-                        saveLeadChanges();
-                    } else {
-                        addLead();
-                    }
+                    saveLeadChanges();
                 });
                 
-                document.getElementById('content-form')?.addEventListener('submit', function(e) {
+                document.getElementById('content-form').addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const contentId = document.getElementById('edit-content-id').value;
-                    if (contentId) {
-                        saveContentChanges();
-                    } else {
-                        addContent();
-                    }
+                    saveContentChanges();
                 });
                 
                 // Print button
-                document.getElementById('print-btn')?.addEventListener('click', function() {
+                document.getElementById('print-btn').addEventListener('click', function() {
                     window.print();
                 });
-            }
-            
-            // Add new lead
-            function addLead() {
-                const company = document.getElementById('lead-company').value;
-                const contact = document.getElementById('lead-contact').value;
-                const email = document.getElementById('lead-email').value;
-                const phone = document.getElementById('lead-phone').value;
-                const notes = document.getElementById('lead-notes').value;
-                
-                if (!company || !contact || !email) {
-                    showNotification('Please fill in all required fields', 'error');
-                    return;
-                }
-                
-                const newLead = {
-                    id: 'lead-' + Date.now(),
-                    company,
-                    contact,
-                    email,
-                    phone,
-                    notes,
-                    currentStage: 'awareness',
-                    dateAdded: new Date().toISOString(),
-                    lastContact: new Date().toISOString()
-                };
-                
-                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
-                leads.awareness.push(newLead);
-                localStorage.setItem('leads', JSON.stringify(leads));
-                
-                document.getElementById('edit-lead-modal').classList.add('hidden');
-                document.getElementById('lead-form').reset();
-                loadAwarenessLeads();
-                showNotification('Lead added successfully');
-            }
-            
-            // Add new content
-            function addContent() {
-                const name = document.getElementById('content-name').value;
-                const description = document.getElementById('content-description').value;
-                const link = document.getElementById('content-link').value;
-                
-                if (!name) {
-                    showNotification('Please fill in all required fields', 'error');
-                    return;
-                }
-                
-                const newContent = {
-                    id: 'content-' + Date.now(),
-                    name,
-                    description,
-                    link,
-                    stage: 'awareness',
-                    dateCreated: new Date().toISOString()
-                };
-                
-                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-                contentItems.push(newContent);
-                localStorage.setItem('content', JSON.stringify(contentItems));
-                
-                document.getElementById('edit-content-modal').classList.add('hidden');
-                document.getElementById('content-form').reset();
-                loadAwarenessContent();
-                showNotification('Content added successfully');
-            }
-            
-            // 3. Drag and drop setup for awareness only
-            function setupAwarenessDragDrop() {
-                const container = document.getElementById('awareness-leads-container');
-                
-                container.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    container.style.backgroundColor = 'rgba(0, 184, 184, 0.1)';
-                });
-                
-                container.addEventListener('dragleave', () => {
-                    container.style.backgroundColor = '';
-                });
-                
-                container.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    container.style.backgroundColor = '';
-                    
-                    const leadId = e.dataTransfer.getData('text/plain');
-                    if (leadId) {
-                        moveLeadToAwareness(leadId);
-                    }
-                });
-            }
-            
-            // 4. Special function to move leads to awareness
-            function moveLeadToAwareness(leadId) {
-                const leads = JSON.parse(localStorage.getItem('leads')) || {
-                    awareness: [], interest: [], consideration: []
-                };
-                
-                // Find lead in any stage
-                let foundLead = null;
-                let sourceStage = null;
-                
-                for (const [stage, stageLeads] of Object.entries(leads)) {
-                    const index = stageLeads.findIndex(lead => lead.id === leadId);
-                    if (index !== -1) {
-                        foundLead = stageLeads[index];
-                        sourceStage = stage;
-                        break;
-                    }
-                }
-                
-                if (foundLead && sourceStage !== 'awareness') {
-                    // Remove from original stage
-                    leads[sourceStage] = leads[sourceStage].filter(lead => lead.id !== leadId);
-                    
-                    // Update stage
-                    foundLead.currentStage = 'awareness';
-                    foundLead.lastContact = new Date().toISOString();
-                    
-                    // Add to awareness
-                    leads.awareness.push(foundLead);
-                    
-                    // Save and refresh
-                    localStorage.setItem('leads', JSON.stringify(leads));
-                    loadAwarenessLeads();
-                    showNotification('Moved lead to Awareness stage');
-                }
             }
         });
     </script>
