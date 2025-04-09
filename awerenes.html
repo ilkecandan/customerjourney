@@ -1,157 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Awareness Stage | FunnelFlow</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Copy all the CSS styles from your main file here */
-        /* ... */
-        
-        /* Add specific styles for the awareness page */
-        .stage-focus {
-            background-color: #0d47a1;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-        }
-        
-        .back-to-funnel {
-            display: inline-block;
-            margin-bottom: 1rem;
-            color: #64b5f6;
-            text-decoration: none;
-            font-weight: 500;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awareness Stage | FunnelFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #0b1b1c;
+      color: #ffffff;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #1f2a30;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #64b5f6;
+    }
+
+    .back-to-funnel {
+      color: #64b5f6;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .back-to-funnel:hover {
+      color: #90caf9;
+    }
+
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .stage-focus {
+      background: linear-gradient(to right, #0d47a1, #1976d2);
+      padding: 2rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 12px rgba(100, 181, 246, 0.4);
+    }
+
+    .stage-focus h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stage-focus p {
+      margin-bottom: 1rem;
+      color: #cfd8dc;
+    }
+
+    .stage-body {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px dashed #64b5f6;
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 300px;
+      transition: background-color 0.3s;
+    }
+
+    .leads-management {
+      background-color: #10252e;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(22, 120, 170, 0.3);
+    }
+
+    .section-header {
+      margin-bottom: 1rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.5rem;
+      color: #81d4fa;
+    }
+
+    .content-items-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #b0bec5;
+    }
+
+    .empty-state i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #78909c;
+    }
+
+    .auth-container,
+    #app-container.hidden {
+      display: none;
+    }
+
+    .lead-card,
+    .content-card {
+      background-color: #1e2d38;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .lead-card:hover,
+    .content-card:hover {
+      background-color: #263846;
+    }
+  </style>
 </head>
 <body>
-    <!-- Auth Screen (same as main file) -->
-    <div id="auth-screen" class="auth-container">
-        <!-- ... -->
-    </div>
+  <div id="auth-screen" class="auth-container">
+    <!-- Auth Screen (Add your auth HTML here if needed) -->
+  </div>
 
-    <!-- Main App Container -->
-    <div id="app-container" class="hidden">
-        <header>
-            <div class="header-left">
-                <h1>Awareness Stage</h1>
-            </div>
-            <div class="header-right">
-                <a href="index.html" class="back-to-funnel">
-                    <i class="fas fa-arrow-left"></i> Back to Full Funnel
-                </a>
-            </div>
-        </header>
+  <div id="app-container">
+    <header>
+      <h1>Awareness Stage</h1>
+      <a href="index.html" class="back-to-funnel">
+        <i class="fas fa-arrow-left"></i> Back to Full Funnel
+      </a>
+    </header>
 
-        <main class="main-content">
-            <div class="stage-focus">
-                <h2><i class="fas fa-users"></i> Awareness Stage Leads</h2>
-                <p>These are leads who are just becoming aware of your product or service.</p>
-                
-                <div class="stage-body" data-drop-target="awareness" style="min-height: 300px;">
-                    <!-- Leads will appear here dynamically -->
-                </div>
-            </div>
+    <main class="main-content">
+      <div class="stage-focus">
+        <h2><i class="fas fa-users"></i> Awareness Stage Leads</h2>
+        <p>These are leads who are just becoming aware of your product or service.</p>
+        <div class="stage-body" data-drop-target="awareness"></div>
+      </div>
 
-            <div class="leads-management">
-                <div class="section-header">
-                    <h2><i class="fas fa-file-alt"></i> Awareness Content Strategies</h2>
-                </div>
-                
-                <div id="awareness-content-container" class="content-items-container">
-                    <!-- Awareness content will appear here -->
-                </div>
-            </div>
-        </main>
-    </div>
+      <div class="leads-management">
+        <div class="section-header">
+          <h2><i class="fas fa-file-alt"></i> Awareness Content Strategies</h2>
+        </div>
+        <div id="awareness-content-container" class="content-items-container"></div>
+      </div>
+    </main>
+  </div>
 
-    <script>
-        // Include all the JavaScript from your main file
-        // But modify the initialization to focus only on awareness stage
-        
-        document.addEventListener('DOMContentLoaded', function () {
-            // Authentication check (same as main file)
-            // ...
-            
-            function initializeAwarenessPage() {
-                // Load only awareness leads
-                const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
-                const container = document.querySelector('.stage-body[data-drop-target="awareness"]');
-                
-                container.innerHTML = '';
-                
-                if (leads.awareness.length === 0) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'empty-state';
-                    emptyDiv.innerHTML = `
-                        <i class="fas fa-users"></i>
-                        <p>No leads in awareness stage</p>
-                    `;
-                    container.appendChild(emptyDiv);
-                } else {
-                    leads.awareness.forEach(lead => {
-                        container.appendChild(createLeadCard(lead));
-                    });
-                }
-                
-                // Load only awareness content
-                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-                const awarenessContent = contentItems.filter(c => c.stage === 'awareness');
-                const contentContainer = document.getElementById('awareness-content-container');
-                
-                contentContainer.innerHTML = '';
-                
-                if (awarenessContent.length === 0) {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = 'empty-state';
-                    emptyState.innerHTML = `
-                        <i class="fas fa-file-alt"></i>
-                        <h3>No Awareness Content</h3>
-                        <p>Add content to attract new leads</p>
-                    `;
-                    contentContainer.appendChild(emptyState);
-                } else {
-                    awarenessContent.forEach(content => {
-                        // Create content item (use same function from main file)
-                        contentContainer.appendChild(createContentItem(content));
-                    });
-                }
-                
-                // Set up drag and drop for this stage
-                setupDragAndDropForStage('awareness');
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Replace this with your actual auth logic
+      document.getElementById('app-container').classList.remove('hidden');
+
+      function initializeAwarenessPage() {
+        const leads = JSON.parse(localStorage.getItem('leads')) || { awareness: [] };
+        const container = document.querySelector('.stage-body[data-drop-target="awareness"]');
+        container.innerHTML = '';
+
+        if (leads.awareness.length === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'empty-state';
+          emptyDiv.innerHTML = `
+            <i class="fas fa-users"></i>
+            <p>No leads in awareness stage</p>
+          `;
+          container.appendChild(emptyDiv);
+        } else {
+          leads.awareness.forEach(lead => {
+            container.appendChild(createLeadCard(lead));
+          });
+        }
+
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const awarenessContent = contentItems.filter(c => c.stage === 'awareness');
+        const contentContainer = document.getElementById('awareness-content-container');
+        contentContainer.innerHTML = '';
+
+        if (awarenessContent.length === 0) {
+          const emptyState = document.createElement('div');
+          emptyState.className = 'empty-state';
+          emptyState.innerHTML = `
+            <i class="fas fa-file-alt"></i>
+            <h3>No Awareness Content</h3>
+            <p>Add content to attract new leads</p>
+          `;
+          contentContainer.appendChild(emptyState);
+        } else {
+          awarenessContent.forEach(content => {
+            contentContainer.appendChild(createContentItem(content));
+          });
+        }
+
+        setupDragAndDropForStage('awareness');
+      }
+
+      function setupDragAndDropForStage(stage) {
+        const container = document.querySelector(`.stage-body[data-drop-target="${stage}"]`);
+
+        if (container) {
+          container.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            this.style.backgroundColor = '#152837';
+          });
+
+          container.addEventListener('dragleave', function () {
+            this.style.backgroundColor = '';
+          });
+
+          container.addEventListener('drop', function (e) {
+            e.preventDefault();
+            this.style.backgroundColor = '';
+            const leadId = e.dataTransfer.getData('text/plain');
+            if (leadId) {
+              moveLeadToStage(leadId, stage);
             }
-            
-            function setupDragAndDropForStage(stage) {
-                const container = document.querySelector(`.stage-body[data-drop-target="${stage}"]`);
-                
-                if (container) {
-                    container.addEventListener('dragover', function(e) {
-                        e.preventDefault();
-                        this.style.backgroundColor = '#2e3a4a';
-                    });
-                    
-                    container.addEventListener('dragleave', function() {
-                        this.style.backgroundColor = '';
-                    });
-                    
-                    container.addEventListener('drop', function(e) {
-                        e.preventDefault();
-                        this.style.backgroundColor = '';
-                        
-                        const leadId = e.dataTransfer.getData('text/plain');
-                        if (leadId) {
-                            moveLeadToStage(leadId, stage);
-                        }
-                    });
-                }
-            }
-            
-            // Include all other necessary functions from main file
-            // createLeadCard, createContentItem, moveLeadToStage, etc.
-        });
-    </script>
+          });
+        }
+      }
+
+      // Placeholder functions — add real ones from your main file
+      function createLeadCard(lead) {
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        card.innerText = lead.name || 'Unnamed Lead';
+        return card;
+      }
+
+      function createContentItem(content) {
+        const card = document.createElement('div');
+        card.className = 'content-card';
+        card.innerText = content.title || 'Untitled Content';
+        return card;
+      }
+
+      function moveLeadToStage(leadId, stage) {
+        // Add your actual move logic here
+        console.log(`Moving lead ${leadId} to stage ${stage}`);
+      }
+
+      // Fire it up!
+      initializeAwarenessPage();
+    });
+  </script>
 </body>
 </html>
