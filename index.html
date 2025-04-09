@@ -104,7 +104,6 @@
             box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.3);
         }
         
-        
         .auth-btn {
             background-color: #64b5f6;
             color: #121212;
@@ -1737,35 +1736,6 @@
         grid-template-columns: 1fr;
     }
 }
-
-    .section-header-link {
-    color: #64b5f6;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.section-header-link:hover {
-    color: #42a5f5;
-}
-
-.section-header-link .click-hint {
-    position: relative;
-    right: auto;
-    top: auto;
-    transform: none;
-    display: inline-flex;
-    margin-left: 0.5rem;
-    font-size: 0.8rem;
-    opacity: 0.7;
-}
-
-.section-header-link:hover .click-hint {
-    opacity: 1;
-    color: #42a5f5;
-}
 </style>
 
 <script>
@@ -1831,51 +1801,28 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
             <!-- Right Side: Lead Management -->
-
             <div class="leads-management">
-    <div class="section-header">
-        <h2>
-            <a href="https://ilkecandan.github.io/customerjourney/lead-management.html" class="section-header-link">
-                <i class="fas fa-users"></i> Lead Management
-                <span class="click-hint">
-                    <i class="fas fa-external-link-alt"></i>
-                </span>
-            </a>
-        </h2>
-        <div class="lead-actions">
-            <div class="lead-search tooltip">
-                <input type="text" id="lead-search" placeholder="Search leads...">
-                <i class="fas fa-search"></i>
-                <span class="tooltiptext">Search by company or contact name</span>
-            </div>
-            <div class="tooltip">
-                <select id="lead-stage-filter" class="lead-stage-filter">
-                    <option value="all">All Stages</option>
-                    <option value="awareness">Awareness</option>
-                    <option value="interest">Interest</option>
-                    <option value="intent">Intent</option>
-                    <option value="evaluation">Evaluation</option>
-                    <option value="purchase">Purchase</option>
-                </select>
-                <span class="tooltiptext">Filter leads by funnel stage</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Rest of the leads-management content remains the same -->
-    <div class="lead-management-guide">
-        <h3>Lead Management Guide</h3>
-        <ul>
-            <li><strong>Add New Leads:</strong> Click "Add Lead" to create new lead records</li>
-            <li><strong>Edit Leads:</strong> Click on any lead or use the edit button in the table</li>
-            <li><strong>Delete Leads:</strong> Remove unwanted leads using the delete button</li>
-            <li><strong>View All Leads:</strong> Browse all leads in the table below</li>
-            <li><strong>Drag & Drop:</strong> Move leads between stages in the funnel visualization</li>
-        </ul>
-    </div>
-
-    <!-- Rest of the existing content... -->
-</div>
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Lead Management</h2>
+                    <div class="lead-actions">
+                        <div class="lead-search tooltip">
+                            <input type="text" id="lead-search" placeholder="Search leads...">
+                            <i class="fas fa-search"></i>
+                            <span class="tooltiptext">Search by company or contact name</span>
+                        </div>
+                        <div class="tooltip">
+                            <select id="lead-stage-filter" class="lead-stage-filter">
+                                <option value="all">All Stages</option>
+                                <option value="awareness">Awareness</option>
+                                <option value="interest">Interest</option>
+                                <option value="intent">Intent</option>
+                                <option value="evaluation">Evaluation</option>
+                                <option value="purchase">Purchase</option>
+                            </select>
+                            <span class="tooltiptext">Filter leads by funnel stage</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Lead Management Guide -->
                 <div class="lead-management-guide">
