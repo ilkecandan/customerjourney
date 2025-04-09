@@ -449,15 +449,7 @@
     </style>
 </head>
 <body>
-    <!-- Auth Screen -->
-    <div id="auth-screen" class="auth-container">
-        <div class="auth-box">
-            <h2>FunnelFlow Login</h2>
-            <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="4">
-            <p id="pin-error" class="error-message"></p>
-            <button id="login-btn" class="auth-btn">Login</button>
-        </div>
-    </div>
+  
 
     <!-- Main App Container -->
     <div id="app-container" class="hidden">
@@ -567,32 +559,6 @@
                 setupAuth();
             }
             
-            function setupAuth() {
-                const pinInput = document.getElementById('pin-input');
-                const loginBtn = document.getElementById('login-btn');
-                const pinError = document.getElementById('pin-error');
-                
-                const validPins = ['1234', '4321', '0000'];
-                
-                loginBtn.addEventListener('click', function() {
-                    if (validPins.includes(pinInput.value)) {
-                        localStorage.setItem('authenticated', 'true');
-                        document.getElementById('auth-screen').classList.add('hidden');
-                        document.getElementById('app-container').classList.remove('hidden');
-                        initAwarenessStage();
-                    } else {
-                        pinError.textContent = 'Incorrect PIN. Please try again.';
-                        pinInput.value = '';
-                        pinInput.focus();
-                    }
-                });
-                
-                pinInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        loginBtn.click();
-                    }
-                });
-            }
             
             // Initialize only awareness stage
             function initAwarenessStage() {
