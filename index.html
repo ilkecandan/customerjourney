@@ -2,7 +2,7 @@
 <html lang="en">
 <head> 
     <meta charset="UTF-8">
-        <link rel="manifest" href="manifest.json" type="application/manifest+json">
+    <link rel="manifest" href="manifest.json" type="application/manifest+json">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marketing Funnel Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -49,6 +49,7 @@
             font-size: 0.8rem;
             font-weight: normal;
             border: 1px solid #444;
+            pointer-events: none;
         }
         
         .tooltip:hover .tooltiptext {
@@ -218,7 +219,7 @@
             background-color: #1e1e1e;
             border-radius: 12px;
             height: 100%;
-              flex-direction: column;
+            flex-direction: column;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             padding: 1.5rem;
             overflow-y: auto;
@@ -261,10 +262,10 @@
         
         .funnel-stage {
             border-radius: 1px;
-             position: relative; /* Establish a stacking context */
-             z-index: 1; /* Base z-index for the stage */
+            position: relative;
+            z-index: 1;
             overflow: hidden;
-              flex-direction: column;
+            flex-direction: column;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             width: 100%;
             transition: all 0.3s ease;
@@ -622,21 +623,67 @@
             background-color: #64b5f6;
             color: #121212;
             border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            border-radius: 50px;
+            width: auto;
+            height: auto;
+            padding: 12px 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             z-index: 100;
             transition: all 0.3s ease;
+            font-weight: 600;
+            gap: 8px;
         }
         
         .install-btn:hover {
             background-color: #42a5f5;
-            transform: scale(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .install-btn:active {
+            transform: translateY(0);
+        }
+        
+        .install-btn i {
+            font-size: 1.2rem;
+        }
+        
+        /* Smart advice box */
+        .smart-advice-box {
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid #64b5f6;
+        }
+        
+        .smart-advice-box h3 {
+            color: #64b5f6;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .smart-advice-box p {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        .smart-advice-box ul {
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            color: #9e9e9e;
+        }
+        
+        .smart-advice-box li {
+            margin-bottom: 0.25rem;
         }
         
         /* Modals */
@@ -780,6 +827,7 @@
         /* Select2 customization */
         .select2-container {
             width: 100% !important;
+            z-index: 2000 !important;
         }
         
         .select2-selection {
@@ -1039,277 +1087,277 @@
             .form-columns {
                 grid-template-columns: 1fr;
             }
+            
+            .install-btn {
+                bottom: 10px;
+                right: 10px;
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
         }
-        .select2-container {
-    z-index: 2000 !important;
-}
-        .tooltip .tooltiptext {
-    pointer-events: none;
-}
-
+        
         /* Funnel Container */
-.funnel-sidebar {
-    width: 100%;
-    height: 100%;
-    padding: 1rem;
-    box-sizing: border-box;
-    background: #1e1e1e;
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+        .funnel-sidebar {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+            background: #1e1e1e;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-.funnel-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    height: calc(100% - 40px);
-}
+        .funnel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            height: calc(100% - 40px);
+        }
 
-.funnel-stage-wrapper {
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    background: #2d2d2d;
-    border: 1px solid #3a3a3a;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 120px;
-}
+        .funnel-stage-wrapper {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            background: #2d2d2d;
+            border: 1px solid #3a3a3a;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+        }
 
-/* Stage Header */
-.stage-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    min-height: 60px;
-    box-sizing: border-box;
-}
+        /* Stage Header */
+        .stage-header {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            min-height: 60px;
+            box-sizing: border-box;
+        }
 
-.stage-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #fff;
-    font-weight: 500;
-}
+        .stage-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: 500;
+        }
 
-.stage-stats {
-    display: flex;
-    gap: 1.5rem;
-    padding: 0 1rem; 
-}
+        .stage-stats {
+            display: flex;
+            gap: 1.5rem;
+            padding: 0 1rem; 
+        }
 
-.stat-item {
-    text-align: center;
-    min-width: 50px;
-}
+        .stat-item {
+            text-align: center;
+            min-width: 50px;
+        }
 
-.stat-value {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #64b5f6;
-    display: block;
-}
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #64b5f6;
+            display: block;
+        }
 
-.stat-label {
-    font-size: 0.7rem;
-    color: #aaa;
-    display: block;
-    text-transform: uppercase;
-}
+        .stat-label {
+            font-size: 0.7rem;
+            color: #aaa;
+            display: block;
+            text-transform: uppercase;
+        }
 
-/* Stage Body */
-.stage-body {
-    padding: 1rem;
-    flex: 1;
-    background: #252525;
-    min-height: 100px;
-    overflow-y: auto;
-}
+        /* Stage Body */
+        .stage-body {
+            padding: 1rem;
+            flex: 1;
+            background: #252525;
+            min-height: 100px;
+            overflow-y: auto;
+        }
 
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    height: 100%;
-    padding: 1rem;
-    box-sizing: border-box;
-}
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            height: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
 
-.empty-state i {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    opacity: 0.5;
-}
+        .empty-state i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
 
-.empty-state p {
-    margin: 0;
-    font-size: 0.9rem;
-}
+        .empty-state p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
 
-/* Sublevels */
-.stage-sublevels {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: #252525;
-    flex: 1;
-}
+        /* Sublevels */
+        .stage-sublevels {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #252525;
+            flex: 1;
+        }
 
-.sublevel {
-    background: #2d2d2d;
-    border-radius: 6px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
+        .sublevel {
+            background: #2d2d2d;
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 
-.sublevel-header {
-    margin: 0;
-    padding: 0.75rem;
-    font-size: 0.9rem;
-    text-align: center;
-    background: #3a3a3a;
-    color: #fff;
-    font-weight: 500;
-}
+        .sublevel-header {
+            margin: 0;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            text-align: center;
+            background: #3a3a3a;
+            color: #fff;
+            font-weight: 500;
+        }
 
-.sublevel .stage-body {
-    min-height: 80px;
-    height: calc(100% - 40px);
-}
+        .sublevel .stage-body {
+            min-height: 80px;
+            height: calc(100% - 40px);
+        }
 
-/* Clickable elements */
-.funnel-stage-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
+        /* Clickable elements */
+        .funnel-stage-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
 
-.clickable {
-    transition: all 0.2s ease;
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
-    position: relative;
-}
+        .clickable {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            position: relative;
+        }
 
-.clickable:hover {
-    filter: brightness(110%);
-    transform: translateY(-2px);
-}
+        .clickable:hover {
+            filter: brightness(110%);
+            transform: translateY(-2px);
+        }
 
-.click-hint {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255,255,255,0.7);
-    transition: all 0.2s ease;
-    opacity: 0.7;
-    font-size: 0.9rem;
-}
+        .click-hint {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            transition: all 0.2s ease;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
 
-.funnel-stage-link:hover .click-hint {
-    color: white;
-    opacity: 1;
-    transform: translateY(-50%) scale(1.1);
-}
+        .funnel-stage-link:hover .click-hint {
+            color: white;
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+        }
 
-.funnel-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-}
+        .funnel-container {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+          margin-top: 2rem;
+        }
 
-.funnel-stage {
-  color: white;
-  text-align: center;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
-  transform-origin: center;
-}
+        .funnel-stage {
+          color: white;
+          text-align: center;
+          padding: 1.5rem;
+          border-radius: 10px;
+          box-shadow: 0 0 8px rgba(0,0,0,0.2);
+          transform-origin: center;
+        }
 
-/* Funnel shape! */
-.stage1 {
-  width: 90%;
-  background-color:#0d47a1;
-  transform: perspective(200px) rotateX(-3deg);
-}
-.stage2 {
-  width: 75%;
-  background-color: #26f6f6;
-  transform: perspective(200px) rotateX(-2deg);
-}
-.stage3 {
-  width: 60%;
-  background-color: #1fbaba;
-  transform: perspective(200px) rotateX(-1deg);
-}
-.stage4 {
-  width: 45%;
-  background-color: #357a7a;
-}
-/* Stage Colors */
-.stage-awareness .stage-header {
-    background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
-}
+        /* Funnel shape! */
+        .stage1 {
+          width: 90%;
+          background-color:#0d47a1;
+          transform: perspective(200px) rotateX(-3deg);
+        }
+        .stage2 {
+          width: 75%;
+          background-color: #26f6f6;
+          transform: perspective(200px) rotateX(-2deg);
+        }
+        .stage3 {
+          width: 60%;
+          background-color: #1fbaba;
+          transform: perspective(200px) rotateX(-1deg);
+        }
+        .stage4 {
+          width: 45%;
+          background-color: #357a7a;
+        }
+        /* Stage Colors */
+        .stage-awareness .stage-header {
+            background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+        }
 
-.stage-interest .stage-header {
-    background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%);
-}
+        .stage-interest .stage-header {
+            background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%);
+        }
 
-.stage-consideration .stage-header {
-    background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
-}
+        .stage-consideration .stage-header {
+            background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
+        }
 
-/* Lead cards */
-.lead-card {
-    background: #333;
-    padding: 0.75rem;
-    margin-bottom: 0.5rem;
-    border-radius: 4px;
-    border-left: 3px solid #64b5f6;
-    cursor: move;
-    transition: all 0.2s ease;
-}
+        /* Lead cards */
+        .lead-card {
+            background: #333;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            border-left: 3px solid #64b5f6;
+            cursor: move;
+            transition: all 0.2s ease;
+        }
 
-.lead-card:hover {
-    background: #3a3a3a;
-    transform: translateX(2px);
-}
+        .lead-card:hover {
+            background: #3a3a3a;
+            transform: translateX(2px);
+        }
 
-/* Section Header */
-.section-header {
-    padding: 0.5rem 0 1rem 0;
-    border-bottom: 1px solid #3a3a3a;
-    margin-bottom: 0.5rem;
-}
+        /* Section Header */
+        .section-header {
+            padding: 0.5rem 0 1rem 0;
+            border-bottom: 1px solid #3a3a3a;
+            margin-bottom: 0.5rem;
+        }
 
-.section-header h2 {
-    margin: 0;
-    font-size: 1.3rem;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-.section-header i {
-    color: #64b5f6;
-}
-
+        .section-header i {
+            color: #64b5f6;
+        }
     </style>
 </head>
 <body>
@@ -1322,9 +1370,7 @@
             <button id="login-btn" class="auth-btn">Login</button>
         </div>
     </div>
-     <section id="install-section" class="animate__animated animate__fadeIn">
-            <button id="install-btn" class="primary-btn">📥 Install App</button>
-        </section>
+
     <!-- Main App Container -->
     <div id="app-container" class="hidden">
         <!-- Header -->
@@ -1380,440 +1426,132 @@
         <main class="main-content">
             <!-- Left Side: Compact Funnel Visualization -->
             <div class="funnel-sidebar" style="width: 100%; height: 100%;">
-    <div class="section-header">
-        <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
-    </div>
-    <div class="funnel-container">
-        <!-- Awareness Stage - Now Larger -->
-        <div class="funnel-stage stage1"">
-            <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
-                <div class="stage-header clickable">
-                    <h3>Awareness</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
+                <div class="section-header">
+                    <h2><i class="fas fa-filter"></i> Funnel Visualization</h2>
+                </div>
+                <div class="funnel-container">
+                    <!-- Awareness Stage - Now Larger -->
+                    <div class="funnel-stage stage1">
+                        <a href="https://ilkecandan.github.io/customerjourney/awerenes.html" class="funnel-stage-link">
+                            <div class="stage-header clickable">
+                                <h3>Awareness</h3>
+                                <div class="stage-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-value">0</span>
+                                        <span class="stat-label">Leads</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">0%</span>
+                                        <span class="stat-label">Conversion</span>
+                                    </div>
+                                </div>
+                                <div class="click-hint">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="stage-body" data-drop-target="awareness">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>Drop leads here</p>
+                            </div>
+                            <!-- Leads will appear here dynamically -->
                         </div>
                     </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
+
+                    <!-- Interest Stage - Now Larger -->
+                    <div class="funnel-stage stage2">
+                        <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
+                            <div class="stage-header clickable">
+                                <h3>Interest</h3>
+                                <div class="stage-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-value">0</span>
+                                        <span class="stat-label">Leads</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">0%</span>
+                                        <span class="stat-label">Conversion</span>
+                                    </div>
+                                </div>
+                                <div class="click-hint">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="stage-body" data-drop-target="interest">
+                            <div class="empty-state">
+                                <i class="fas fa-hand-pointer"></i>
+                                <p>Drop leads here</p>
+                            </div>
+                            <!-- Leads will appear here dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Consideration Stage with Functional Sub-Levels -->
+                    <div class="funnel-stage stage3">
+                        <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
+                            <div class="stage-header clickable">
+                                <h3>Consideration</h3>
+                                <div class="stage-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-value">0</span>
+                                        <span class="stat-label">Leads</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-value">0%</span>
+                                        <span class="stat-label">Conversion</span>
+                                    </div>
+                                </div>
+                                <div class="click-hint">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="stage-sublevels">
+                            <div class="sublevel">
+                                <div class="sublevel-header">Intent</div>
+                                <div class="stage-body" data-drop-target="intent">
+                                    <div class="empty-state">
+                                        <i class="fas fa-shopping-cart"></i>
+                                        <p>Drop leads here</p>
+                                    </div>
+                                    <!-- Leads will appear here dynamically -->
+                                </div>
+                            </div>
+                            <div class="sublevel">
+                                <div class="sublevel-header">Evaluation</div>
+                                <div class="stage-body" data-drop-target="evaluation">
+                                    <div class="empty-state">
+                                        <i class="fas fa-search"></i>
+                                        <p>Drop leads here</p>
+                                    </div>
+                                    <!-- Leads will appear here dynamically -->
+                                </div>
+                            </div>
+                            <div class="sublevel">
+                                <div class="sublevel-header">Purchase</div>
+                                <div class="stage-body" data-drop-target="purchase">
+                                    <div class="empty-state">
+                                        <i class="fas fa-check-circle"></i>
+                                        <p>Drop leads here</p>
+                                    </div>
+                                    <!-- Leads will appear here dynamically -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </a>
-            <div class="stage-body" data-drop-target="awareness">
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <p>Drop leads here</p>
-                </div>
-                <!-- Leads will appear here dynamically -->
-            </div>
-        </div>
-
-        <!-- Interest Stage - Now Larger -->
-        <div class="funnel-stage stage2"">
-            <a href="https://ilkecandan.github.io/customerjourney/interest.html" class="funnel-stage-link">
-                <div class="stage-header clickable">
-                    <h3>Interest</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
-                        </div>
-                    </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
-                    </div>
-                </div>
-            </a>
-            <div class="stage-body" data-drop-target="interest">
-                <div class="empty-state">
-                    <i class="fas fa-hand-pointer"></i>
-                    <p>Drop leads here</p>
-                </div>
-                <!-- Leads will appear here dynamically -->
-            </div>
-        </div>
-
-        <!-- Consideration Stage with Functional Sub-Levels -->
-        <div class="funnel-stage stage3">
-            <a href="https://ilkecandan.github.io/customerjourney/consideration.html" class="funnel-stage-link">
-                <div class="stage-header clickable">
-                    <h3>Consideration</h3>
-                    <div class="stage-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">0</span>
-                            <span class="stat-label">Leads</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">0%</span>
-                            <span class="stat-label">Conversion</span>
-                        </div>
-                    </div>
-                    <div class="click-hint">
-                        <i class="fas fa-external-link-alt"></i>
-                    </div>
-                </div>
-            </a>
-            <div class="stage-sublevels">
-                <div class="sublevel">
-                    <div class="sublevel-header">Intent</div>
-                    <div class="stage-body" data-drop-target="intent">
-                        <div class="empty-state">
-                            <i class="fas fa-shopping-cart"></i>
-                            <p>Drop leads here</p>
-                        </div>
-                        <!-- Leads will appear here dynamically -->
-                    </div>
-                </div>
-                <div class="sublevel">
-                    <div class="sublevel-header">Evaluation</div>
-                    <div class="stage-body" data-drop-target="evaluation">
-                        <div class="empty-state">
-                            <i class="fas fa-search"></i>
-                            <p>Drop leads here</p>
-                        </div>
-                        <!-- Leads will appear here dynamically -->
-                    </div>
-                </div>
-                <div class="sublevel">
-                    <div class="sublevel-header">Purchase</div>
-                    <div class="stage-body" data-drop-target="purchase">
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <p>Drop leads here</p>
-                        </div>
-                        <!-- Leads will appear here dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-/* Base Styles */
-.funnel-sidebar {
-    width: 100%;
-    height: 100%;
-    padding: 1.5rem;
-    box-sizing: border-box;
-    background: #1e1e1e;
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow-y: auto;
-}
-
-.section-header {
-    padding: 0.5rem 0 1.5rem 0;
-    border-bottom: 1px solid #3a3a3a;
-    margin-bottom: 0.5rem;
-}
-
-.section-header h2 {
-    margin: 0;
-    font-size: 1.4rem;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.section-header i {
-    color: #64b5f6;
-    font-size: 1.2rem;
-}
-
-/* Funnel Container */
-.funnel-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
-    height: calc(100% - 50px);
-}
-
-/* Stage Wrapper - Larger Click Areas */
-.funnel-stage-wrapper {
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    background: #2d2d2d;
-    border: 1px solid #3a3a3a;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 150px;
-    transition: transform 0.2s ease;
-}
-
-.funnel-stage-wrapper:hover {
-    transform: translateY(-3px);
-}
-
-/* Stage Header - Bigger and Bolder */
-.stage-header {
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 90px;
-    box-sizing: border-box;
-    position: relative;
-}
-
-.stage-header h3 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #fff;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.stage-stats {
-    display: flex;
-    gap: 2rem;
-    padding: 0 1rem; 
-}
-
-.stat-item {
-    text-align: center;
-    min-width: 80px;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #64b5f6;
-    display: block;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: #aaa;
-    display: block;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Clickable Elements */
-.funnel-stage-link {
-display: inline-block; 
-    z-index: 1; 
-    width: 100%;
-    height: 100%;
-    position: relative;
-    text-decoration: none;
-    color: inherit;
-}
-
-.clickable {
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.clickable:hover {
-    filter: brightness(115%);
-}
-
-.click-hint {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 1.3rem;
-    transition: all 0.2s ease;
-}
-
-.funnel-stage-link:hover .click-hint {
-    color: white;
-    transform: translateY(-50%) scale(1.15);
-}
-
-/* Stage Body - Drop Zones */
-.stage-body {
-    padding: 1.5rem;
-    flex: 1;
-    background: #252525;
-    min-height: 120px;
-    overflow-y: auto;
-    transition: background 0.3s ease;
-}
-
-.stage-body[dragover] {
-    background: #2e3a4a;
-    outline: 2px dashed #64b5f6;
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    height: 100%;
-    padding: 1.5rem;
-    box-sizing: border-box;
-}
-
-.empty-state i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    opacity: 0.6;
-}
-
-.empty-state p {
-    margin: 0;
-    font-size: 1rem;
-}
-
-/* Sublevels - Functional Drop Areas */
-.stage-sublevels {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: #252525;
-    flex: 1;
-}
-
-.sublevel {
-    background: #2d2d2d;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border: 1px solid #3a3a3a;
-}
-
-.sublevel-header {
-    margin: 0;
-    padding: 0.75rem;
-    font-size: 1.1rem;
-    text-align: center;
-    background: #3a3a3a;
-    color: #fff;
-    font-weight: 500;
-}
-
-.sublevel .stage-body {
-    min-height: 100px;
-    height: calc(100% - 50px);
-}
-
-/* Stage Colors */
-.stage-awareness .stage-header {
-    background: #1b7fa0;
-}
-
-.stage-interest .stage-header {
-    background: #5b9ca7;
-}
-
-.stage-consideration .stage-header {
-    background: #26f6f6;
-}
-
-/* Lead Cards - Example Styling */
-.lead-card {
-    background: #333;
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    border-radius: 6px;
-    border-left: 4px solid #64b5f6;
-    cursor: grab;
-    transition: all 0.2s ease;
-}
-
-.lead-card:hover {
-    background: #3a3a3a;
-    transform: translateX(3px);
-}
-
-.lead-card:active {
-    cursor: grabbing;
-    box-shadow: 0 0 10px rgba(100, 181, 246, 0.5);
-}
-
-/* Responsive Adjustments */
-@media (max-width: 1200px) {
-    .stage-sublevels {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-
-<script>
-// Basic Drag and Drop Functionality (Example)
-document.addEventListener('DOMContentLoaded', function() {
-    const dropTargets = document.querySelectorAll('[data-drop-target]');
-    
-    // Make lead cards draggable (you would generate these dynamically)
-    function makeDraggable(element) {
-        element.setAttribute('draggable', 'true');
-        
-        element.addEventListener('dragstart', function(e) {
-            e.dataTransfer.setData('text/plain', element.id);
-            element.classList.add('dragging');
-        });
-        
-        element.addEventListener('dragend', function() {
-            element.classList.remove('dragging');
-        });
-    }
-    
-    // Set up drop targets
-    dropTargets.forEach(target => {
-        target.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.setAttribute('dragover', 'true');
-        });
-        
-        target.addEventListener('dragleave', function() {
-            this.removeAttribute('dragover');
-        });
-        
-        target.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.removeAttribute('dragover');
-            
-            const leadId = e.dataTransfer.getData('text/plain');
-            const lead = document.getElementById(leadId);
-            
-            if (lead) {
-                // Remove from previous location
-                lead.parentNode.removeChild(lead);
                 
-                // Add to new location (before empty state if exists)
-                const emptyState = this.querySelector('.empty-state');
-                if (emptyState) {
-                    this.insertBefore(lead, emptyState);
-                } else {
-                    this.appendChild(lead);
-                }
-                
-                // Update stats (you would implement this)
-                updateFunnelStats();
-            }
-        });
-    });
-    
-    // Function to update funnel stats (example)
-    function updateFunnelStats() {
-        // You would implement actual logic here
-        console.log("Updating funnel stats...");
-    }
-});
-</script>
+                <!-- Smart Advice Box -->
+                <div id="smart-advice-box" class="smart-advice-box">
+                    <h3><i class="fas fa-robot"></i> Smart Funnel Insights</h3>
+                    <div id="funnel-advice">
+                        <p>Analyzing your funnel data...</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Right Side: Lead Management -->
             <a href="https://ilkecandan.github.io/customerjourney/lead.html" class="leads-management" style="display: block; text-decoration: none; color: inherit;">
                 <div class="section-header">
@@ -1937,6 +1675,27 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <option value="other">Other</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="lead-industry">Industry</label>
+                            <select id="lead-industry">
+                                <option value="saas">SaaS</option>
+                                <option value="ecommerce">E-commerce</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="realestate">Real Estate</option>
+                                <option value="education">Education</option>
+                                <option value="consulting">Consulting</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lead-status">Status</label>
+                            <select id="lead-status">
+                                <option value="new">New</option>
+                                <option value="hot">Hot</option>
+                                <option value="cold">Cold</option>
+                                <option value="stalled">Stalled</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group full-width">
                         <label for="lead-content">Content Strategy</label>
@@ -2055,6 +1814,27 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <option value="other">Other</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="edit-lead-industry">Industry</label>
+                            <select id="edit-lead-industry">
+                                <option value="saas">SaaS</option>
+                                <option value="ecommerce">E-commerce</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="realestate">Real Estate</option>
+                                <option value="education">Education</option>
+                                <option value="consulting">Consulting</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-lead-status">Status</label>
+                            <select id="edit-lead-status">
+                                <option value="new">New</option>
+                                <option value="hot">Hot</option>
+                                <option value="cold">Cold</option>
+                                <option value="stalled">Stalled</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group full-width">
                         <label for="edit-lead-content">Content Strategy</label>
@@ -2134,7 +1914,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <!-- Install Button -->
         <button id="install-btn" class="install-btn hidden" title="Install FunnelFlow">
-            <i class="fas fa-download"></i>
+            <i class="fas fa-download"></i> Install App
         </button>
     </div>
 
@@ -2226,7 +2006,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             notes: 'Interested in our blog content',
                             contentStrategies: ['content-1'],
                             dateAdded: new Date().toISOString(),
-                            lastContact: new Date().toISOString()
+                            lastContact: new Date().toISOString(),
+                            industry: 'saas',
+                            status: 'new'
                         }
                     ],
                     interest: [
@@ -2240,7 +2022,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             notes: 'Downloaded our whitepaper',
                             contentStrategies: ['content-2'],
                             dateAdded: new Date().toISOString(),
-                            lastContact: new Date().toISOString()
+                            lastContact: new Date().toISOString(),
+                            industry: 'ecommerce',
+                            status: 'hot'
                         }
                     ],
                     intent: [],
@@ -2355,6 +2139,13 @@ document.addEventListener('DOMContentLoaded', function() {
             let deferredPrompt;
             const installBtn = document.getElementById('install-btn');
             
+            // Check if the app is already installed
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            if (isStandalone) {
+                installBtn.classList.add('hidden');
+                return;
+            }
+            
             window.addEventListener('beforeinstallprompt', (e) => {
                 // Prevent the mini-infobar from appearing on mobile
                 e.preventDefault();
@@ -2385,6 +2176,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deferredPrompt = null;
                 // Optionally, send analytics event to indicate successful install
                 console.log('PWA was installed');
+                showNotification('App installed successfully!', 'success');
             });
         }
 
@@ -2441,6 +2233,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             updateLeadsTable();
             updateConversionPercentages();
+            generateSmartAdvice();
         }
 
         // Handle content drag start
@@ -2595,6 +2388,22 @@ document.addEventListener('DOMContentLoaded', function() {
             contact.className = 'contact';
             contact.textContent = lead.contact || 'No contact';
 
+            // Add industry tag if available
+            if (lead.industry) {
+                const industryTag = document.createElement('span');
+                industryTag.className = 'tag';
+                industryTag.textContent = lead.industry;
+                leadCard.appendChild(industryTag);
+            }
+
+            // Add status tag if available
+            if (lead.status) {
+                const statusTag = document.createElement('span');
+                statusTag.className = 'tag';
+                statusTag.textContent = lead.status;
+                leadCard.appendChild(statusTag);
+            }
+
             leadCard.appendChild(company);
             leadCard.appendChild(contact);
 
@@ -2655,8 +2464,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Format last contact date
                 const lastContactDate = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
 
+                // Add industry and status to the company cell
+                const companyCell = document.createElement('td');
+                companyCell.className = 'company-cell';
+                companyCell.textContent = lead.company;
+                
+                if (lead.industry || lead.status) {
+                    const tags = document.createElement('div');
+                    tags.style.display = 'flex';
+                    tags.style.gap = '4px';
+                    tags.style.marginTop = '4px';
+                    
+                    if (lead.industry) {
+                        const industryTag = document.createElement('span');
+                        industryTag.style.background = '#333';
+                        industryTag.style.padding = '2px 6px';
+                        industryTag.style.borderRadius = '4px';
+                        industryTag.style.fontSize = '0.7rem';
+                        industryTag.textContent = lead.industry;
+                        tags.appendChild(industryTag);
+                    }
+                    
+                    if (lead.status) {
+                        const statusTag = document.createElement('span');
+                        statusTag.style.background = lead.status === 'hot' ? '#ff5252' : 
+                                                     lead.status === 'cold' ? '#64b5f6' : '#9e9e9e';
+                        statusTag.style.padding = '2px 6px';
+                        statusTag.style.borderRadius = '4px';
+                        statusTag.style.fontSize = '0.7rem';
+                        statusTag.textContent = lead.status;
+                        tags.appendChild(statusTag);
+                    }
+                    
+                    companyCell.appendChild(tags);
+                }
+
                 row.innerHTML = `
-                    <td class="company-cell">${lead.company}</td>
                     <td class="contact-cell">${lead.contact || 'N/A'}</td>
                     <td>${capitalizeFirstLetter(lead.stage)}</td>
                     <td>${contentUsed.join(', ') || 'None'}</td>
@@ -2666,6 +2509,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
+                
+                // Insert the company cell at the beginning
+                row.insertBefore(companyCell, row.firstChild);
 
                 tableBody.appendChild(row);
             });
@@ -2873,6 +2719,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Email': lead.email || '',
                         'Phone': lead.phone || '',
                         'Stage': capitalizeFirstLetter(stage),
+                        'Industry': capitalizeFirstLetter(lead.industry || ''),
+                        'Status': capitalizeFirstLetter(lead.status || ''),
                         'Source': capitalizeFirstLetter(lead.source || ''),
                         'Content Used': contentUsed.join(', '),
                         'Notes': lead.notes || '',
@@ -3006,6 +2854,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const phone = document.getElementById('lead-phone').value;
             const stage = document.getElementById('lead-stage').value;
             const source = document.getElementById('lead-source').value;
+            const industry = document.getElementById('lead-industry').value;
+            const status = document.getElementById('lead-status').value;
             const notes = document.getElementById('lead-notes').value;
 
             // Get selected content strategies
@@ -3025,6 +2875,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 phone,
                 source,
                 currentStage: stage,
+                industry,
+                status,
                 notes,
                 contentStrategies,
                 dateAdded: new Date().toISOString(),
@@ -3096,6 +2948,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit-lead-phone').value = lead.phone || '';
             document.getElementById('edit-lead-stage').value = lead.currentStage;
             document.getElementById('edit-lead-source').value = lead.source || 'website';
+            document.getElementById('edit-lead-industry').value = lead.industry || 'other';
+            document.getElementById('edit-lead-status').value = lead.status || 'new';
             document.getElementById('edit-lead-notes').value = lead.notes || '';
 
             // Set content strategies
@@ -3114,6 +2968,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const phone = document.getElementById('edit-lead-phone').value;
             const stage = document.getElementById('edit-lead-stage').value;
             const source = document.getElementById('edit-lead-source').value;
+            const industry = document.getElementById('edit-lead-industry').value;
+            const status = document.getElementById('edit-lead-status').value;
             const notes = document.getElementById('edit-lead-notes').value;
 
             // Get selected content strategies
@@ -3145,6 +3001,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         lead.email = email;
                         lead.phone = phone;
                         lead.source = source;
+                        lead.industry = industry;
+                        lead.status = status;
                         lead.currentStage = stage;
                         lead.notes = notes;
                         lead.contentStrategies = contentStrategies;
@@ -3160,6 +3018,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         lead.email = email;
                         lead.phone = phone;
                         lead.source = source;
+                        lead.industry = industry;
+                        lead.status = status;
                         lead.notes = notes;
                         lead.contentStrategies = contentStrategies;
                         lead.lastContact = new Date().toISOString();
@@ -3295,6 +3155,162 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('conversion-rate').textContent = `${overallConversionRate}%`;
         }
 
+        // Generate smart advice based on funnel state
+        function generateSmartAdvice() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            
+            const totalLeads = Object.values(leads).reduce((sum, stageLeads) => sum + stageLeads.length, 0);
+            const awarenessCount = leads.awareness.length;
+            const interestCount = leads.interest.length;
+            const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
+            const purchaseCount = leads.purchase.length;
+            
+            // Calculate content assigned stats
+            const leadsWithContent = Object.values(leads).flat().filter(lead => 
+                lead.contentStrategies && lead.contentStrategies.length > 0
+            ).length;
+            
+            // Calculate contact recency
+            const today = new Date();
+            const leadsNotContactedRecently = Object.values(leads).flat().filter(lead => {
+                if (!lead.lastContact) return true;
+                const lastContactDate = new Date(lead.lastContact);
+                const daysSinceContact = Math.floor((today - lastContactDate) / (1000 * 60 * 60 * 24));
+                return daysSinceContact > 7;
+            }).length;
+            
+            // Calculate stalled leads
+            const stalledLeads = Object.values(leads).flat().filter(lead => {
+                if (!lead.dateAdded) return false;
+                const addedDate = new Date(lead.dateAdded);
+                const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
+                return daysInStage > 14;
+            }).length;
+            
+            // Calculate hot leads
+            const hotLeads = Object.values(leads).flat().filter(lead => lead.status === 'hot').length;
+            
+            // Generate advice based on funnel state
+            let advice = [];
+            let insights = [];
+            
+            // General funnel advice
+            if (totalLeads === 0) {
+                advice.push("Your funnel is empty. Add new leads to get started!");
+            } else if (awarenessCount === 0 && totalLeads > 0) {
+                advice.push("You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.");
+            } else if (interestCount > 0 && considerationCount === 0) {
+                advice.push("Your leads are stuck in Interest. Try assigning content or follow-ups to keep them moving!");
+            } else if (purchaseCount === 0 && considerationCount > 0) {
+                advice.push("You have leads in Consideration but no purchases. Review your final stage content and offers.");
+            }
+            
+            // Content advice
+            if (leadsWithContent === 0 && totalLeads > 0) {
+                advice.push("Content can drive conversions. Assign content to your leads to make progress measurable.");
+            }
+            
+            // Contact recency advice
+            if (leadsNotContactedRecently > 0) {
+                advice.push(`${leadsNotContactedRecently} leads haven't been contacted in over a week. Keep things warm by reaching out again.`);
+            }
+            
+            // Stalled leads advice
+            if (stalledLeads > 0) {
+                advice.push(`${stalledLeads} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.`);
+            }
+            
+            // Hot leads advice
+            if (hotLeads > 0) {
+                advice.push(`You have ${hotLeads} hot leads. Prioritize these for quick follow-ups and personalized attention.`);
+            }
+            
+            // Industry-specific advice
+            const leadsByIndustry = {};
+            Object.values(leads).flat().forEach(lead => {
+                if (!lead.industry) return;
+                if (!leadsByIndustry[lead.industry]) {
+                    leadsByIndustry[lead.industry] = [];
+                }
+                leadsByIndustry[lead.industry].push(lead);
+            });
+            
+            for (const [industry, industryLeads] of Object.entries(leadsByIndustry)) {
+                const industryCount = industryLeads.length;
+                const industryStalled = industryLeads.filter(lead => {
+                    if (!lead.dateAdded) return false;
+                    const addedDate = new Date(lead.dateAdded);
+                    const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
+                    return daysInStage > 14;
+                }).length;
+                
+                const industryHot = industryLeads.filter(lead => lead.status === 'hot').length;
+                
+                // Generate industry-specific insights
+                if (industry === 'saas') {
+                    if (industryHot > 0) {
+                        insights.push(`${industryHot} SaaS leads are marked as hot. Schedule demos or free trials to convert them.`);
+                    }
+                    if (industryStalled > 0) {
+                        insights.push(`${industryStalled} SaaS leads are stalled. Try case studies or ROI calculators to move them forward.`);
+                    }
+                } else if (industry === 'ecommerce') {
+                    if (industryHot > 0) {
+                        insights.push(`${industryHot} E-commerce leads are hot. Use urgency tactics like limited-time offers.`);
+                    }
+                    if (industryStalled > 0) {
+                        insights.push(`${industryStalled} E-commerce leads are stalled. Try retargeting or abandoned cart emails.`);
+                    }
+                } else if (industry === 'healthcare') {
+                    if (industryHot > 0) {
+                        insights.push(`${industryHot} Healthcare leads are hot. Provide testimonials and compliance info.`);
+                    }
+                    if (industryStalled > 0) {
+                        insights.push(`${industryStalled} Healthcare leads are stalled. Offer free consultations to build trust.`);
+                    }
+                }
+            }
+            
+            // If no specific advice, show positive message
+            if (advice.length === 0 && insights.length === 0) {
+                advice.push("Everything looks good! Keep the momentum going.");
+            }
+            
+            // Update the advice box
+            const adviceBox = document.getElementById('funnel-advice');
+            adviceBox.innerHTML = '';
+            
+            if (advice.length > 0) {
+                const adviceList = document.createElement('ul');
+                advice.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    adviceList.appendChild(li);
+                });
+                adviceBox.appendChild(adviceList);
+            }
+            
+            if (insights.length > 0) {
+                const insightsHeader = document.createElement('h4');
+                insightsHeader.textContent = 'Industry Insights:';
+                insightsHeader.style.marginTop = '1rem';
+                insightsHeader.style.color = '#64b5f6';
+                adviceBox.appendChild(insightsHeader);
+                
+                const insightsList = document.createElement('ul');
+                insightsList.style.marginTop = '0.5rem';
+                insights.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    insightsList.appendChild(li);
+                });
+                adviceBox.appendChild(insightsList);
+            }
+        }
+
         // Update analytics charts and metrics
         function updateAnalytics() {
             const leads = JSON.parse(localStorage.getItem('leads')) || {
@@ -3307,6 +3323,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Update conversion percentages
             updateConversionPercentages();
+            
+            // Generate smart advice
+            generateSmartAdvice();
         }
 
         // Filter leads table by stage
@@ -3444,43 +3463,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 toast.classList.remove('show');
             }, 3000);
         }
-        // Check for PWA install prompt
-function checkInstallPrompt() {
-    let deferredPrompt;
-
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isStandalone && getElement("install-btn")) {
-        getElement("install-btn").classList.add("hidden");
-        return;
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (getElement("install-btn")) {
-            getElement("install-btn").classList.remove("hidden");
-        }
-    });
-
-    if (getElement("install-btn")) {
-        getElement("install-btn").addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
-                        getElement("install-btn").classList.add("hidden");
-                        showNotification("App installed successfully!", "success");
-                    } else {
-                        console.log('User dismissed the install prompt');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        });
-    }
-}
-
     </script>
 </body>
 </html>
