@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marketing Funnel Dashboard</title>
@@ -1321,7 +1321,9 @@
             <button id="login-btn" class="auth-btn">Login</button>
         </div>
     </div>
-
+     <section id="install-section" class="animate__animated animate__fadeIn">
+            <button id="install-btn" class="primary-btn">📥 Install App</button>
+        </section>
     <!-- Main App Container -->
     <div id="app-container" class="hidden">
         <!-- Header -->
@@ -3441,6 +3443,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 toast.classList.remove('show');
             }, 3000);
         }
+        // Check for PWA install prompt
+function checkInstallPrompt() {
+    let deferredPrompt;
+
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    if (isStandalone && getElement("install-btn")) {
+        getElement("install-btn").classList.add("hidden");
+        return;
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (getElement("install-btn")) {
+            getElement("install-btn").classList.remove("hidden");
+        }
+    });
+
+    if (getElement("install-btn")) {
+        getElement("install-btn").addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        getElement("install-btn").classList.add("hidden");
+                        showNotification("App installed successfully!", "success");
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+    }
+}
+
     </script>
 </body>
 </html>
