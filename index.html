@@ -260,6 +260,8 @@
         
         .funnel-stage {
             border-radius: 1px;
+             position: relative; /* Establish a stacking context */
+             z-index: 1; /* Base z-index for the stage */
             overflow: hidden;
               flex-direction: column;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -313,6 +315,8 @@
         .stage-body {
             min-height: 100px;
             padding: 2rem;
+            position: relative;
+            z-index: 3;
             background-color: #252525;
             transition: all 0.3s ease;
         }
@@ -1192,6 +1196,8 @@
     transition: all 0.2s ease;
     cursor: pointer;
     position: relative;
+    z-index: 2;
+    position: relative;
 }
 
 .clickable:hover {
@@ -1596,7 +1602,11 @@
 
 /* Clickable Elements */
 .funnel-stage-link {
-    display: block;
+display: inline-block; 
+    z-index: 1; 
+    width: 100%;
+    height: 100%;
+    position: relative;
     text-decoration: none;
     color: inherit;
 }
