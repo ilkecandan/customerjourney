@@ -90,10 +90,12 @@
             text-align: center;
             border-radius: var(--border-radius);
             padding: 8px;
+             transform: translateX(-50%);
             white-space: normal; /* Add this */
             position: absolute;
             z-index: 1;
-            bottom: 125%;
+            bottom: auto;
+            top: 125%;
             left: 50%;
             transform: translateX(-50%);
             opacity: 0;
@@ -103,6 +105,11 @@
             border: 1px solid var(--primary-color);
             pointer-events: none;
         }
+        .tooltip .tooltiptext::after {
+  top: -5px; /* ⬅️ arrow now points upward */
+  bottom: auto;
+  border-color: transparent transparent var(--accent-color) transparent;
+}
         
         .tooltip:hover .tooltiptext {
             visibility: visible;
