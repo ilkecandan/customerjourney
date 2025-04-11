@@ -1225,3 +1225,20 @@ function showNotification(message, type = 'success') {
         toast.classList.remove('show');
     }, 3000);
 }
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) installBtn.style.display = 'block';
+
+    installBtn.addEventListener('click', async () => {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+    });
+});
