@@ -690,39 +690,31 @@
         .edit-content:hover {
             color: var(--accent-color);
         }
-         #install-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--accent-color);
-            color: var(--secondary-color);
-            border: none;
-            border-radius: 50px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            box-shadow: var(--box-shadow);
-            z-index: 100;
-            transition: var(--transition);
-            font-weight: 600;
-        }
         
-        #install-btn:hover {
-            background-color: var(--primary-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-        }
-        
-        #install-btn i {
-            font-size: 1.2rem;
-        }
-        
-        #install-btn.hidden {
-            display: none;
-        }
-        
+        /* Remove the old install button style */
+#install-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+#install-btn:hover {
+    background-color: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+#install-btn.hidden {
+    display: none !important;
+}
         
         /* Smart advice box */
         .smart-advice-box {
@@ -1318,26 +1310,29 @@
                 <h1>FunnelFlow <span class="tooltip"><i class="fas fa-info-circle" style="color: var(--text-muted); font-size: 0.8rem;"></i><span class="tooltiptext">Drag & drop leads through your marketing funnel. Track conversions and optimize your content strategy.</span></span></h1>
             </div>
             <div class="header-right">
-                <div class="header-actions">
-
-                    <button id="add-lead-btn" class="action-btn tooltip pulse-on-hover" type="button">
-                        <i class="fas fa-plus"></i> Add Lead
-                        <span class="tooltiptext">Add a new lead to your marketing funnel</span>
-                    </button>
-                    <button id="add-content-btn" class="action-btn tooltip pulse-on-hover" type="button">
-                        <i class="fas fa-file-alt"></i> Add Content
-                        <span class="tooltiptext">Add content assets to move leads through the funnel</span>
-                    </button>
-                    <button id="export-pdf" class="action-btn tooltip pulse-on-hover" type="button">
-                        <i class="fas fa-file-pdf"></i> Export PDF
-                        <span class="tooltiptext">Export a PDF report of your funnel</span>
-                    </button>
-                    <button id="export-excel" class="action-btn tooltip pulse-on-hover" type="button">
-                        <i class="fas fa-file-excel"></i> Export Excel
-                        <span class="tooltiptext">Export all leads to Excel</span>
-                    </button>
-                           <!-- Install Button -->
-                </div>
+               <!-- In the header section, add the install button with the other action buttons -->
+<div class="header-actions">
+    <button id="add-lead-btn" class="action-btn tooltip pulse-on-hover" type="button">
+        <i class="fas fa-plus"></i> Add Lead
+        <span class="tooltiptext">Add a new lead to your marketing funnel</span>
+    </button>
+    <button id="add-content-btn" class="action-btn tooltip pulse-on-hover" type="button">
+        <i class="fas fa-file-alt"></i> Add Content
+        <span class="tooltiptext">Add content assets to move leads through the funnel</span>
+    </button>
+    <button id="install-btn" class="action-btn hidden">
+        <i class="fas fa-download"></i> Install App
+        <span class="tooltiptext">Install this app on your device</span>
+    </button>
+    <button id="export-pdf" class="action-btn tooltip pulse-on-hover" type="button">
+        <i class="fas fa-file-pdf"></i> Export PDF
+        <span class="tooltiptext">Export a PDF report of your funnel</span>
+    </button>
+    <button id="export-excel" class="action-btn tooltip pulse-on-hover" type="button">
+        <i class="fas fa-file-excel"></i> Export Excel
+        <span class="tooltiptext">Export all leads to Excel</span>
+    </button>
+</div>
                 <div class="analytics-summary">
                     <div class="analytics-item tooltip">
                         <span>Total Leads</span>
@@ -3744,52 +3739,64 @@ function setupOnboardingTour() {
             doc.save('Marketing_Funnel_Report.pdf');
             showNotification('PDF exported successfully');
         }
-
-        function setupInstallButton() {
-            let deferredPrompt;
-            const installBtn = document.getElementById('install-btn');
+// Install button functionality
+function setupInstallButton() {
+    const installBtn = document.getElementById('install-btn');
+    
+    // Check if the app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone ||
+        document.referrer.includes('android-app://')) {
+        installBtn.classList.add('hidden');
+        return;
+    }
+    
+    // Listen for beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('beforeinstallprompt event fired');
+        e.preventDefault();
+        window.deferredPrompt = e;
+        
+        // Show the install button
+        installBtn.classList.remove('hidden');
+    });
+    
+    // Handle install button click
+    installBtn.addEventListener('click', async () => {
+        if (window.deferredPrompt) {
+            console.log('Showing install prompt');
+            window.deferredPrompt.prompt();
             
-            // Only show the install button if the app isn't already installed
-            if (window.matchMedia('(display-mode: standalone)').matches) {
+            const { outcome } = await window.deferredPrompt.userChoice;
+            console.log(`User response to install prompt: ${outcome}`);
+            
+            if (outcome === 'accepted') {
+                console.log('User accepted the install prompt');
                 installBtn.classList.add('hidden');
-                return;
+                showNotification('App installed successfully!');
             }
             
-            window.addEventListener('beforeinstallprompt', (e) => {
-                console.log('beforeinstallprompt event fired');
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                // Show the install button
-                installBtn.classList.remove('hidden');
-                
-                // Add click event listener
-                installBtn.addEventListener('click', async () => {
-                    if (deferredPrompt) {
-                        console.log('Showing install prompt');
-                        deferredPrompt.prompt();
-                        
-                        const { outcome } = await deferredPrompt.userChoice;
-                        console.log(`User response to install prompt: ${outcome}`);
-                        
-                        if (outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                            installBtn.classList.add('hidden');
-                            showNotification('App installed successfully!');
-                        }
-                        
-                        deferredPrompt = null;
-                    }
-                });
-            });
-            
-            // Hide the install button if the app is already installed
-            window.addEventListener('appinstalled', () => {
-                console.log('PWA was installed');
-                installBtn.classList.add('hidden');
-                deferredPrompt = null;
-            });
+            window.deferredPrompt = null;
         }
+    });
+    
+    // Hide the install button if the app is installed
+    window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        installBtn.classList.add('hidden');
+        window.deferredPrompt = null;
+    });
+}
+
+// Call this function during app initialization
+function initializeApp() {
+    // ... existing initialization code ...
+    setupInstallButton();
+    // ... rest of initialization ...
+}
+
+
+        
 function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('service-worker.js')
