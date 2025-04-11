@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="images/icon.png" type="image/x-icon">
+    <link rel="icon" href="images/icon.png" type="image/x-icon">
     <title>Marketing Funnel Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -691,30 +690,30 @@
             color: var(--accent-color);
         }
         
-        /* Remove the old install button style */
-#install-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: var(--accent-color);
-    color: var(--secondary-color);
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: var(--transition);
-    font-weight: 500;
-}
+        /* Install button styles */
+        #install-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--accent-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
 
-#install-btn:hover {
-    background-color: var(--primary-light);
-    transform: translateY(-1px);
-}
+        #install-btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+        }
 
-#install-btn.hidden {
-    display: none !important;
-}
+        #install-btn.hidden {
+            display: none !important;
+        }
         
         /* Smart advice box */
         .smart-advice-box {
@@ -1939,28 +1938,28 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-    // First hide the app container
-    document.getElementById('app-container').classList.add('hidden');
+            // First hide the app container
+            document.getElementById('app-container').classList.add('hidden');
 
-    // Check authentication status
-    const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+            // Check authentication status
+            const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
-    if (isAuthenticated) {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-
-        // Check if onboarding has been completed
-        if (!localStorage.getItem('onboarding_completed')) {
-            document.getElementById('onboarding-overlay').classList.remove('hidden');
-            setupOnboarding(); // <-- Add this line here to make onboarding buttons work
-        } else {
-            initializeApp();
-        }
-    } else {
-        setupAuth();
-    }
-});
-
+            if (isAuthenticated) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                setupInstallButton();
+                
+                // Check if onboarding has been completed
+                if (!localStorage.getItem('onboarding_completed')) {
+                    document.getElementById('onboarding-overlay').classList.remove('hidden');
+                    setupOnboarding();
+                } else {
+                    initializeApp();
+                }
+            } else {
+                setupAuth();
+            }
+        });
 
         // Authentication setup
         function setupAuth() {
@@ -1976,19 +1975,19 @@
 
             loginBtn.addEventListener('click', function() {
                if (validPins.includes(pinInput.value)) {
-    localStorage.setItem('authenticated', 'true');
-    document.getElementById('auth-screen').classList.add('hidden');
-    document.getElementById('app-container').classList.remove('hidden');
+                    localStorage.setItem('authenticated', 'true');
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
 
-    // Show onboarding if first time
-    if (!localStorage.getItem('onboarding_completed')) {
-        document.getElementById('onboarding-overlay').classList.remove('hidden');
-        setupOnboarding(); // ← 🔥 Add this line here!
-    } else {
-        initializeApp();
-    }
-}
- else {
+                    // Show onboarding if first time
+                    if (!localStorage.getItem('onboarding_completed')) {
+                        document.getElementById('onboarding-overlay').classList.remove('hidden');
+                        setupOnboarding();
+                    } else {
+                        initializeApp();
+                    }
+                }
+                else {
                     pinError.textContent = 'Incorrect PIN. Please try again.';
                     pinInput.value = '';
                     pinInput.focus();
@@ -2007,86 +2006,85 @@
             });
         }
 
-function setupOnboardingTour() {
-    const steps = [
-        {
-            targetId: 'add-lead-btn',
-            message: 'Start here by adding your first lead.'
-        },
-        {
-            targetId: 'add-content-btn',
-            message: 'Now add some content to nurture them.'
-        },
-        {
-            targetId: 'funnel-advice',
-            message: 'Check here for smart funnel insights.'
-        },
-        {
-            targetId: 'awareness-count',
-            message: 'Drag your leads into the funnel stages to track progress.'
-        }
-    ];
-
-    let currentStep = 0;
-
-    function showStep(stepIndex) {
-        const step = steps[stepIndex];
-        const target = document.getElementById(step.targetId);
-
-        if (!target) return;
-
-        const tooltip = document.createElement('div');
-        tooltip.className = 'onboarding-tooltip';
-        tooltip.innerText = step.message;
-
-        document.body.appendChild(tooltip);
-
-        const rect = target.getBoundingClientRect();
-        tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
-        tooltip.style.left = `${rect.left + rect.width / 2 - 100}px`;
-
-        target.classList.add('pulse-highlight');
-
-        const nextBtn = document.createElement('button');
-        nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
-        nextBtn.className = 'submit-btn';
-        nextBtn.style.marginTop = '0.5rem';
-        tooltip.appendChild(nextBtn);
-
-        nextBtn.addEventListener('click', () => {
-            tooltip.remove();
-            target.classList.remove('pulse-highlight');
-            if (stepIndex + 1 < steps.length) {
-                showStep(stepIndex + 1);
-            } else {
-                // End of tour
-                localStorage.setItem('onboarding_completed', 'true');
-            }
-        });
-    }
-
-    showStep(0);
-}
-
-        
-        
         // Onboarding setup
-       function setupOnboarding() {
-    document.getElementById('skip-onboarding').addEventListener('click', function() {
-        localStorage.setItem('onboarding_completed', 'true');
-        document.getElementById('onboarding-overlay').classList.add('hidden');
-        initializeApp();
-    });
+        function setupOnboarding() {
+            document.getElementById('skip-onboarding').addEventListener('click', function() {
+                localStorage.setItem('onboarding_completed', 'true');
+                document.getElementById('onboarding-overlay').classList.add('hidden');
+                initializeApp();
+            });
 
-    document.getElementById('start-using-app').addEventListener('click', function() {
-        localStorage.setItem('onboarding_completed', 'true');
-        document.getElementById('onboarding-overlay').classList.add('hidden');
-        initializeApp();
+            document.getElementById('start-using-app').addEventListener('click', function() {
+                localStorage.setItem('onboarding_completed', 'true');
+                document.getElementById('onboarding-overlay').classList.add('hidden');
+                initializeApp();
 
-        // Start guided tooltip tour
-        setTimeout(setupOnboardingTour, 700);
-    });
-}
+                // Start guided tooltip tour
+                setTimeout(setupOnboardingTour, 700);
+            });
+        }
+
+        // Onboarding tour
+        function setupOnboardingTour() {
+            const steps = [
+                {
+                    targetId: 'add-lead-btn',
+                    message: 'Start here by adding your first lead.'
+                },
+                {
+                    targetId: 'add-content-btn',
+                    message: 'Now add some content to nurture them.'
+                },
+                {
+                    targetId: 'funnel-advice',
+                    message: 'Check here for smart funnel insights.'
+                },
+                {
+                    targetId: 'awareness-count',
+                    message: 'Drag your leads into the funnel stages to track progress.'
+                }
+            ];
+
+            let currentStep = 0;
+
+            function showStep(stepIndex) {
+                const step = steps[stepIndex];
+                const target = document.getElementById(step.targetId);
+
+                if (!target) return;
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'onboarding-tooltip';
+                tooltip.innerText = step.message;
+
+                document.body.appendChild(tooltip);
+
+                const rect = target.getBoundingClientRect();
+                tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+                tooltip.style.left = `${rect.left + rect.width / 2 - 100}px`;
+
+                target.classList.add('pulse-highlight');
+
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+                nextBtn.className = 'submit-btn';
+                nextBtn.style.marginTop = '0.5rem';
+                tooltip.appendChild(nextBtn);
+
+                nextBtn.addEventListener('click', () => {
+                    tooltip.remove();
+                    target.classList.remove('pulse-highlight');
+                    if (stepIndex + 1 < steps.length) {
+                        showStep(stepIndex + 1);
+                    } else {
+                        // End of tour
+                        localStorage.setItem('onboarding_completed', 'true');
+                    }
+                });
+            }
+
+            showStep(0);
+        }
 
         // Main application initialization
         function initializeApp() {
@@ -2220,11 +2218,8 @@ function setupOnboardingTour() {
             updateAnalytics();
             setupDragAndDrop();
             setupInstallButton();
-            setupOnboarding();
         }
 
-
-    
         // Load leads with content badges
         function loadLeads() {
             const leads = JSON.parse(localStorage.getItem('leads')) || {
@@ -3739,65 +3734,58 @@ function setupOnboardingTour() {
             doc.save('Marketing_Funnel_Report.pdf');
             showNotification('PDF exported successfully');
         }
-// Install button functionality
-function setupInstallButton() {
-    const installBtn = document.getElementById('install-btn');
-    
-    // Check if the app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || 
-        window.navigator.standalone ||
-        document.referrer.includes('android-app://')) {
-        installBtn.classList.add('hidden');
-        return;
-    }
-    
-    // Listen for beforeinstallprompt event
-    window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('beforeinstallprompt event fired');
-        e.preventDefault();
-        window.deferredPrompt = e;
-        
-        // Show the install button
-        installBtn.classList.remove('hidden');
-    });
-    
-    // Handle install button click
-    installBtn.addEventListener('click', async () => {
-        if (window.deferredPrompt) {
-            console.log('Showing install prompt');
-            window.deferredPrompt.prompt();
+
+        // Install button functionality
+        function setupInstallButton() {
+            const installBtn = document.getElementById('install-btn');
             
-            const { outcome } = await window.deferredPrompt.userChoice;
-            console.log(`User response to install prompt: ${outcome}`);
-            
-            if (outcome === 'accepted') {
-                console.log('User accepted the install prompt');
+            // Check if the app is already installed
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone ||
+                document.referrer.includes('android-app://')) {
                 installBtn.classList.add('hidden');
-                showNotification('App installed successfully!');
+                return;
             }
             
-            window.deferredPrompt = null;
+            // Listen for beforeinstallprompt event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('beforeinstallprompt event fired');
+                e.preventDefault();
+                window.deferredPrompt = e;
+                
+                // Show the install button
+                installBtn.classList.remove('hidden');
+            });
+            
+            // Handle install button click
+            installBtn.addEventListener('click', async () => {
+                if (window.deferredPrompt) {
+                    console.log('Showing install prompt');
+                    window.deferredPrompt.prompt();
+                    
+                    const { outcome } = await window.deferredPrompt.userChoice;
+                    console.log(`User response to install prompt: ${outcome}`);
+                    
+                    if (outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        installBtn.classList.add('hidden');
+                        showNotification('App installed successfully!');
+                    }
+                    
+                    window.deferredPrompt = null;
+                }
+            });
+            
+            // Hide the install button if the app is installed
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA was installed');
+                installBtn.classList.add('hidden');
+                window.deferredPrompt = null;
+            });
         }
-    });
-    
-    // Hide the install button if the app is installed
-    window.addEventListener('appinstalled', () => {
-        console.log('PWA was installed');
-        installBtn.classList.add('hidden');
-        window.deferredPrompt = null;
-    });
-}
 
-// Call this function during app initialization
-function initializeApp() {
-    // ... existing initialization code ...
-    setupInstallButton();
-    // ... rest of initialization ...
-}
-
-
-        
-function registerServiceWorker() {
+        // Register service worker
+        function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('service-worker.js')
                     .then(registration => {
@@ -3808,7 +3796,6 @@ function registerServiceWorker() {
                     });
             }
         }
-
 
         // Show notification
         function showNotification(message, type = 'success') {
@@ -3826,58 +3813,14 @@ function registerServiceWorker() {
             }, 3000);
         }
 
+        // Register service worker on page load
         if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('✅ Service worker registered:', reg))
-        .catch(err => console.error('❌ Service worker registration failed:', err));
-}
-window.addEventListener('appinstalled', () => {
-    const installBtn = getElement("install-btn");
-    if (installBtn) {
-        installBtn.classList.add("hidden");
-    }
-});
-
-        function checkInstallPrompt() {
-    let deferredPrompt;
-
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isStandalone && getElement("install-btn")) {
-        getElement("install-btn").classList.add("hidden");
-        return;
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (getElement("install-btn")) {
-            getElement("install-btn").classList.remove("hidden");
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('✅ Service worker registered:', reg))
+                    .catch(err => console.error('❌ Service worker registration failed:', err));
+            });
         }
-    });
-
-    if (getElement("install-btn")) {
-        getElement("install-btn").addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
-                        getElement("install-btn").classList.add("hidden");
-                        showNotification("App installed successfully!", "success");
-                    } else {
-                        console.log('User dismissed the install prompt');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        });
-    }
-}
-
-
     </script>
-      <button id="install-btn" class="hidden">
-        <i class="fas fa-download"></i> Install App
-    </button>
 </body>
 </html>
