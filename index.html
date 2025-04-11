@@ -54,7 +54,7 @@
             color: var(--text-primary);
             line-height: 1.6;
             transition: var(--transition);
-            padding-top: 50px; /* Added padding to prevent header overlap */
+            padding-top: 20px; /* Added padding to prevent header overlap */
         }
 
         .smart-advice-box li,
@@ -82,12 +82,15 @@
         .tooltip .tooltiptext {
             visibility: hidden;
             width: 200px;
+            text-align: left;
+            max-width: 220px;
+            word-wrap: break-word;
             background-color: var(--primary-dark);
             color: var(--text-primary);
             text-align: center;
             border-radius: var(--border-radius);
             padding: 8px;
-            white-space: nowrap; /* Add this */
+            white-space: normal; /* Add this */
             position: absolute;
             z-index: 1;
             bottom: 125%;
