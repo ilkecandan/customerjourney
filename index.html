@@ -1980,18 +1980,20 @@
             pinInput.focus();
 
             loginBtn.addEventListener('click', function() {
-                if (validPins.includes(pinInput.value)) {
-                    localStorage.setItem('authenticated', 'true');
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('app-container').classList.remove('hidden');
-                    
-                    // Show onboarding if first time
-                    if (!localStorage.getItem('onboarding_completed')) {
-                        document.getElementById('onboarding-overlay').classList.remove('hidden');
-                    } else {
-                        initializeApp();
-                    }
-                } else {
+               if (validPins.includes(pinInput.value)) {
+    localStorage.setItem('authenticated', 'true');
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-container').classList.remove('hidden');
+
+    // Show onboarding if first time
+    if (!localStorage.getItem('onboarding_completed')) {
+        document.getElementById('onboarding-overlay').classList.remove('hidden');
+        setupOnboarding(); // ← 🔥 Add this line here!
+    } else {
+        initializeApp();
+    }
+}
+ else {
                     pinError.textContent = 'Incorrect PIN. Please try again.';
                     pinInput.value = '';
                     pinInput.focus();
