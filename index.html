@@ -1420,7 +1420,6 @@
                         </div>
                         <div class="stage-body" data-drop-target="awareness">
                             <div class="empty-state">
-                                <i class="fas fa-users"></i>
                                 <p>Drop leads here</p>
                             </div>
                             <!-- Leads will appear here dynamically -->
@@ -2070,7 +2069,12 @@
                 {
                     targetId: 'awareness-count',
                     message: 'Drag your leads into the funnel stages to track progress.'
-                }
+                },
+
+                 {
+                    targetId: 'fas fa-users',
+                    message: 'Click here for the whole lead list.'
+                   },
             ];
 
             let currentStep = 0;
