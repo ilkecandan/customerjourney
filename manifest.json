@@ -1,14 +1,46 @@
 {
   "name": "FunnelFlow",
   "short_name": "FunnelFlow",
+  "description": "Marketing Funnel Dashboard for tracking leads and conversions",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B1B1C",
   "theme_color": "#0E4954",
+  "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "images/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
     {
       "src": "images/icon-192x192.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-384x384.png",
+      "sizes": "384x384",
       "type": "image/png"
     },
     {
@@ -16,5 +48,43 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "images/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "description": "Marketing Funnel Dashboard showing lead progression"
+    },
+    {
+      "src": "images/screenshot2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "description": "Lead management interface"
+    }
+  ],
+  "categories": ["business", "productivity", "marketing"],
+  "shortcuts": [
+    {
+      "name": "Add New Lead",
+      "short_name": "Add Lead",
+      "description": "Create a new lead record",
+      "url": "/?action=add_lead",
+      "icons": [{ "src": "images/add-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "View Analytics",
+      "short_name": "Analytics",
+      "description": "View funnel analytics",
+      "url": "/?action=analytics",
+      "icons": [{ "src": "images/chart-icon.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "web",
+      "url": "https://yourdomain.com"
+    }
+  ],
+  "prefer_related_applications": false
 }
