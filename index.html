@@ -171,8 +171,7 @@
         /* Header styles - Fixed position */
         header {
             background-color: var(--primary-dark);
-            padding: 1.5rem 2rem;
-            flex-wrap: wrap;
+            padding: 1rem 2rem;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             display: flex;
             justify-content: space-between;
@@ -191,15 +190,9 @@
            font-weight: 700;
            padding: 0.5rem 0;
         }
-
-        .header-left {
-         margin-bottom: 1rem;
-         }
+        
         .header-right {
-            display:  grid;
-            gap: 1rem;
-            grid-template-columns: auto 1fr;
-            flex-direction: column;
+            display: flex;
             align-items: center;
             gap: 2rem;
         }
@@ -1277,9 +1270,8 @@
             }
             
             .header-actions {
-               justify-content: flex-end;
-               flex-wrap: wrap;
-
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
             .lead-actions {
@@ -2242,23 +2234,7 @@
                 localStorage.setItem('content', JSON.stringify(defaultContent));
             }
 
-const tips = [
-    "Use SEO content to bring new traffic.",
-    "Retarget visitors who didn't convert with reminder ads.",
-    "Offer case studies to convince mid-funnel leads.",
-    "Use live demos for hot leads in evaluation stage.",
-    "Email sequences convert better when segmented by industry.",
-    "Leads love comparison charts vs competitors.",
-    "Testimonials on landing pages improve conversions by 20%.",
-    "Don't forget LinkedIn for B2B cold leads.",
-    "Add urgency in emails for faster replies."
-];
-
-document.getElementById('refresh-advice').addEventListener('click', () => {
-    const adviceBox = document.getElementById('funnel-advice');
-    const randomTip = tips[Math.floor(Math.random() * tips.length)];
-    adviceBox.innerHTML = `<p>${randomTip}</p>`;
-});
+            document.getElementById('refresh-advice').addEventListener('click', () => {
     const adviceBox = document.getElementById('funnel-advice');
     const tips = [
         "Consider creating educational content for the awareness stage.",
