@@ -1938,9 +1938,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script>
-
-
-
         document.addEventListener('DOMContentLoaded', function () {
     // First hide the app container
     document.getElementById('app-container').classList.add('hidden');
@@ -1951,12 +1948,11 @@
     if (isAuthenticated) {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-container').classList.remove('hidden');
-        setupInstallButton(); // Add this line here
-        
+
         // Check if onboarding has been completed
         if (!localStorage.getItem('onboarding_completed')) {
             document.getElementById('onboarding-overlay').classList.remove('hidden');
-            setupOnboarding();
+            setupOnboarding(); // <-- Add this line here to make onboarding buttons work
         } else {
             initializeApp();
         }
@@ -1964,6 +1960,7 @@
         setupAuth();
     }
 });
+
 
         // Authentication setup
         function setupAuth() {
@@ -3876,21 +3873,11 @@ window.addEventListener('appinstalled', () => {
         });
     }
 }
-// Listen for app installed event
-window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed');
-    const installBtn = document.getElementById('install-btn');
-    if (installBtn) installBtn.classList.add('hidden');
-    showNotification('App installed successfully!');
-});
 
-// Check if already installed
-if (window.matchMedia('(display-mode: standalone)').matches || 
-    window.navigator.standalone) {
-    const installBtn = document.getElementById('install-btn');
-    if (installBtn) installBtn.classList.add('hidden');
-}
 
     </script>
+      <button id="install-btn" class="hidden">
+        <i class="fas fa-download"></i> Install App
+    </button>
 </body>
 </html>
