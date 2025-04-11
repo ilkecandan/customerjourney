@@ -3801,32 +3801,6 @@ function setupOnboardingTour() {
       let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // Prevent automatic mini bar
-    deferredPrompt = e;
-
-    const installBtn = document.getElementById('install-btn');
-    if (installBtn) {
-        installBtn.classList.remove('hidden');
-
-        installBtn.addEventListener('click', () => {
-            installBtn.classList.add('hidden'); // Hide again after click
-            deferredPrompt.prompt();
-
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('✅ User accepted the install prompt');
-                } else {
-                    console.log('❌ User dismissed the install prompt');
-                }
-                deferredPrompt = null;
-            });
-        });
-    }
-});
-
-        let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault(); // Prevent the default mini bar
     deferredPrompt = e;
 
