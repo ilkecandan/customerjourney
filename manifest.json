@@ -1,8 +1,11 @@
 {
   "name": "FunnelFlow",
   "short_name": "FunnelFlow",
+  "description": "Marketing Funnel Dashboard",
   "start_url": "/",
   "display": "standalone",
+  "background_color": "#0B1B1C",
+  "theme_color": "#0E4954",
   "icons": [
     {
       "src": "/images/icon-192x192.png",
