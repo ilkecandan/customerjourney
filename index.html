@@ -53,6 +53,7 @@
             color: var(--text-primary);
             line-height: 1.6;
             transition: var(--transition);
+            padding-top: 70px; /* Added padding to prevent header overlap */
         }
         
         /* Tooltip styles */
@@ -165,7 +166,7 @@
             min-height: 100vh;
         }
         
-        /* Header styles */
+        /* Header styles - Fixed position */
         header {
             background-color: var(--primary-dark);
             padding: 1rem 2rem;
@@ -174,6 +175,11 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--primary-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
         
         .header-left h1 {
@@ -248,6 +254,7 @@
             flex: 1;
             padding: 1.5rem;
             gap: 1.5rem;
+            margin-top: 20px; /* Added margin to account for fixed header */
         }
         
         .funnel-sidebar {
@@ -1119,6 +1126,108 @@
             outline-offset: 2px;
         }
         
+        /* Onboarding overlay */
+        .onboarding-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .onboarding-content {
+            max-width: 600px;
+            background: var(--primary-dark);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--accent-color);
+        }
+        
+        .onboarding-steps {
+            margin: 1.5rem 0;
+        }
+        
+        .onboarding-step {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            text-align: left;
+            gap: 1rem;
+        }
+        
+        .onboarding-step i {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+        
+        .onboarding-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        
+        /* Enhanced analytics styles */
+        .analytics-details {
+            background-color: var(--primary-dark);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--gold-accent);
+        }
+        
+        .analytics-details h3 {
+            color: var(--gold-accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .analytics-card {
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            border: 1px solid var(--primary-color);
+        }
+        
+        .analytics-card h4 {
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .analytics-card p {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .analytics-card .trend-up {
+            color: var(--success-color);
+        }
+        
+        .analytics-card .trend-down {
+            color: var(--error-color);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 1200px) {
             .main-content {
@@ -1133,6 +1242,10 @@
             
             .analytics-item {
                 min-width: 120px;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
         }
         
@@ -1176,6 +1289,14 @@
             
             .stage-sublevels {
                 grid-template-columns: 1fr;
+            }
+            
+            .onboarding-content {
+                padding: 1rem;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -1426,6 +1547,37 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- Enhanced Analytics Section -->
+                <div class="analytics-details">
+                    <h3><i class="fas fa-chart-line"></i> Advanced Analytics</h3>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h4>Avg. Time in Funnel</h4>
+                            <p id="avg-funnel-time">7.2 days</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Hot Leads</h4>
+                            <p id="hot-leads-count">12</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Content Effectiveness</h4>
+                            <p id="content-effectiveness">68%</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Engagement Rate</h4>
+                            <p id="engagement-rate">42%</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Response Time</h4>
+                            <p id="response-time">2.4 hrs</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4>Revenue Potential</h4>
+                            <p id="revenue-potential">$24,500</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Content Management Section -->
@@ -1736,6 +1888,50 @@
         <button id="install-btn" class="install-btn hidden" title="Install FunnelFlow">
             <i class="fas fa-download"></i> Install App
         </button>
+        
+        <!-- Onboarding Overlay -->
+        <div id="onboarding-overlay" class="onboarding-overlay hidden">
+            <div class="onboarding-content">
+                <h2>Welcome to FunnelFlow</h2>
+                <p>Let's get you started with your marketing funnel management</p>
+                
+                <div class="onboarding-steps">
+                    <div class="onboarding-step">
+                        <i class="fas fa-plus-circle"></i>
+                        <div>
+                            <h4>Add Leads</h4>
+                            <p>Start by adding leads to your funnel. Click the "Add Lead" button to create new lead records.</p>
+                        </div>
+                    </div>
+                    <div class="onboarding-step">
+                        <i class="fas fa-file-alt"></i>
+                        <div>
+                            <h4>Create Content</h4>
+                            <p>Add content strategies for each stage of your funnel to help move leads forward.</p>
+                        </div>
+                    </div>
+                    <div class="onboarding-step">
+                        <i class="fas fa-exchange-alt"></i>
+                        <div>
+                            <h4>Drag & Drop</h4>
+                            <p>Move leads between stages by dragging them to track their progress through the funnel.</p>
+                        </div>
+                    </div>
+                    <div class="onboarding-step">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <h4>Track Analytics</h4>
+                            <p>Monitor conversion rates and get smart insights to optimize your funnel performance.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="onboarding-actions">
+                    <button id="skip-onboarding" class="cancel-btn">Skip Tutorial</button>
+                    <button id="start-using-app" class="submit-btn">Get Started</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- JavaScript Libraries -->
@@ -1756,7 +1952,13 @@
             if (isAuthenticated) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
-                initializeApp();
+                
+                // Check if onboarding has been completed
+                if (!localStorage.getItem('onboarding_completed')) {
+                    document.getElementById('onboarding-overlay').classList.remove('hidden');
+                } else {
+                    initializeApp();
+                }
             } else {
                 setupAuth();
             }
@@ -1779,7 +1981,13 @@
                     localStorage.setItem('authenticated', 'true');
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app-container').classList.remove('hidden');
-                    initializeApp();
+                    
+                    // Show onboarding if first time
+                    if (!localStorage.getItem('onboarding_completed')) {
+                        document.getElementById('onboarding-overlay').classList.remove('hidden');
+                    } else {
+                        initializeApp();
+                    }
                 } else {
                     pinError.textContent = 'Incorrect PIN. Please try again.';
                     pinInput.value = '';
@@ -1796,6 +2004,43 @@
 
             pinInput.addEventListener('input', function() {
                 pinError.textContent = '';
+            });
+        }
+
+        // Onboarding setup
+        function setupOnboarding() {
+            document.getElementById('skip-onboarding').addEventListener('click', function() {
+                localStorage.setItem('onboarding_completed', 'true');
+                document.getElementById('onboarding-overlay').classList.add('hidden');
+                initializeApp();
+            });
+            
+            document.getElementById('start-using-app').addEventListener('click', function() {
+                localStorage.setItem('onboarding_completed', 'true');
+                document.getElementById('onboarding-overlay').classList.add('hidden');
+                initializeApp();
+                
+                // Show tooltips for key elements
+                setTimeout(() => {
+                    const addLeadBtn = document.getElementById('add-lead-btn');
+                    const addContentBtn = document.getElementById('add-content-btn');
+                    const firstStage = document.querySelector('.funnel-stage');
+                    
+                    if (addLeadBtn) {
+                        addLeadBtn.classList.add('pulse-highlight');
+                        setTimeout(() => addLeadBtn.classList.remove('pulse-highlight'), 3000);
+                    }
+                    
+                    if (addContentBtn) {
+                        addContentBtn.classList.add('pulse-highlight');
+                        setTimeout(() => addContentBtn.classList.remove('pulse-highlight'), 3000);
+                    }
+                    
+                    if (firstStage) {
+                        firstStage.classList.add('pulse-highlight');
+                        setTimeout(() => firstStage.classList.remove('pulse-highlight'), 3000);
+                    }
+                }, 500);
             });
         }
 
@@ -1818,9 +2063,9 @@
                     awareness: [
                         {
                             id: 'lead-' + Date.now(),
-                            company: 'Acme Inc',
+                            company: 'Example Corp',
                             contact: 'John Smith',
-                            email: 'john@acme.com',
+                            email: 'john@example.com',
                             phone: '555-1234',
                             currentStage: 'awareness',
                             notes: 'Interested in our blog content',
@@ -1828,15 +2073,17 @@
                             dateAdded: new Date().toISOString(),
                             lastContact: new Date().toISOString(),
                             industry: 'saas',
-                            status: 'new'
+                            status: 'new',
+                            value: 5000,
+                            source: 'website'
                         }
                     ],
                     interest: [
                         {
                             id: 'lead-' + Date.now(),
-                            company: 'Globex Corp',
+                            company: 'Sample Inc',
                             contact: 'Sarah Johnson',
-                            email: 'sarah@globex.com',
+                            email: 'sarah@sample.com',
                             phone: '555-5678',
                             currentStage: 'interest',
                             notes: 'Downloaded our whitepaper',
@@ -1844,7 +2091,9 @@
                             dateAdded: new Date().toISOString(),
                             lastContact: new Date().toISOString(),
                             industry: 'ecommerce',
-                            status: 'hot'
+                            status: 'hot',
+                            value: 10000,
+                            source: 'social'
                         }
                     ],
                     intent: [],
@@ -1859,48 +2108,53 @@
                 const defaultContent = [
                     {
                         id: 'content-1',
-                        name: 'Introductory Blog Post',
+                        name: 'Example Blog Post',
                         description: 'Basic introduction to our product',
                         stage: 'awareness',
                         type: 'blog',
                         link: 'https://example.com/blog/intro',
-                        targetConversion: 5
+                        targetConversion: 5,
+                        dateCreated: new Date().toISOString()
                     },
                     {
                         id: 'content-2',
-                        name: 'Product Demo Video',
+                        name: 'Sample Demo Video',
                         description: 'Detailed product demonstration',
                         stage: 'interest',
                         type: 'video',
                         link: 'https://example.com/demo',
-                        targetConversion: 15
+                        targetConversion: 15,
+                        dateCreated: new Date().toISOString()
                     },
                     {
                         id: 'content-3',
-                        name: 'Case Study',
+                        name: 'Example Case Study',
                         description: 'Success story from existing customer',
                         stage: 'intent',
                         type: 'casestudy',
                         link: 'https://example.com/case-study',
-                        targetConversion: 25
+                        targetConversion: 25,
+                        dateCreated: new Date().toISOString()
                     },
                     {
                         id: 'content-4',
-                        name: 'Pricing Guide',
+                        name: 'Sample Pricing Guide',
                         description: 'Detailed pricing information',
                         stage: 'evaluation',
                         type: 'ebook',
                         link: 'https://example.com/pricing',
-                        targetConversion: 20
+                        targetConversion: 20,
+                        dateCreated: new Date().toISOString()
                     },
                     {
                         id: 'content-5',
-                        name: 'Customer Testimonials',
+                        name: 'Example Testimonials',
                         description: 'Video testimonials from happy customers',
                         stage: 'purchase',
                         type: 'video',
                         link: 'https://example.com/testimonials',
-                        targetConversion: 30
+                        targetConversion: 30,
+                        dateCreated: new Date().toISOString()
                     }
                 ];
                 localStorage.setItem('content', JSON.stringify(defaultContent));
@@ -1922,36 +2176,7 @@
             updateAnalytics();
             setupDragAndDrop();
             setupInstallButton();
-            
-            // Show onboarding tooltips for first-time users
-            if (!localStorage.getItem('onboarding_shown')) {
-                setTimeout(showOnboardingTips, 1000);
-                localStorage.setItem('onboarding_shown', 'true');
-            }
-        }
-
-        // Show onboarding tooltips
-        function showOnboardingTips() {
-            const funnelTip = document.createElement('div');
-            funnelTip.className = 'onboarding-tooltip';
-            funnelTip.innerHTML = 'Drag leads between stages to track their progress through your marketing funnel';
-            funnelTip.style.top = '200px';
-            funnelTip.style.left = '50%';
-            funnelTip.style.transform = 'translateX(-50%)';
-            document.querySelector('.funnel-container').appendChild(funnelTip);
-            
-            const contentTip = document.createElement('div');
-            contentTip.className = 'onboarding-tooltip';
-            contentTip.innerHTML = 'Add content strategies to each stage to help move leads forward in the funnel';
-            contentTip.style.top = '400px';
-            contentTip.style.left = '50%';
-            contentTip.style.transform = 'translateX(-50%)';
-            document.querySelector('.funnel-container').appendChild(contentTip);
-            
-            setTimeout(() => {
-                funnelTip.remove();
-                contentTip.remove();
-            }, 8000);
+            setupOnboarding();
         }
 
         // Setup PWA install button
@@ -2052,6 +2277,105 @@
             updateLeadsTable();
             updateConversionPercentages();
             generateSmartAdvice();
+            updateAdvancedAnalytics();
+        }
+
+        // Update advanced analytics metrics
+        function updateAdvancedAnalytics() {
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            
+            // Calculate average time in funnel
+            const allLeads = Object.values(leads).flat();
+            const now = new Date();
+            let totalDays = 0;
+            let leadCount = 0;
+            
+            allLeads.forEach(lead => {
+                if (lead.dateAdded) {
+                    const addedDate = new Date(lead.dateAdded);
+                    const daysInFunnel = (now - addedDate) / (1000 * 60 * 60 * 24);
+                    totalDays += daysInFunnel;
+                    leadCount++;
+                }
+            });
+            
+            const avgDays = leadCount > 0 ? (totalDays / leadCount).toFixed(1) : 0;
+            document.getElementById('avg-funnel-time').textContent = `${avgDays} days`;
+            
+            // Count hot leads
+            const hotLeads = allLeads.filter(lead => lead.status === 'hot').length;
+            document.getElementById('hot-leads-count').textContent = hotLeads;
+            
+            // Calculate content effectiveness
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+            let effectiveContentCount = 0;
+            let totalContentUsage = 0;
+            
+            contentItems.forEach(content => {
+                const leadsUsingContent = allLeads.filter(lead => 
+                    lead.contentStrategies && lead.contentStrategies.includes(content.id)
+                ).length;
+                
+                if (leadsUsingContent > 0) {
+                    const nextStageLeads = allLeads.filter(lead => {
+                        const currentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(lead.currentStage);
+                        const contentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(content.stage);
+                        return currentStageIndex > contentStageIndex && 
+                               lead.contentStrategies && 
+                               lead.contentStrategies.includes(content.id);
+                    }).length;
+                    
+                    if (nextStageLeads > 0) {
+                        effectiveContentCount++;
+                    }
+                    totalContentUsage++;
+                }
+            });
+            
+            const effectivenessRate = totalContentUsage > 0 ? 
+                Math.round((effectiveContentCount / totalContentUsage) * 100) : 0;
+            document.getElementById('content-effectiveness').textContent = `${effectivenessRate}%`;
+            
+            // Calculate engagement rate (leads contacted in last 7 days)
+            const engagedLeads = allLeads.filter(lead => {
+                if (!lead.lastContact) return false;
+                const lastContactDate = new Date(lead.lastContact);
+                const daysSinceContact = (now - lastContactDate) / (1000 * 60 * 60 * 24);
+                return daysSinceContact <= 7;
+            }).length;
+            
+            const engagementRate = allLeads.length > 0 ? 
+                Math.round((engagedLeads / allLeads.length) * 100) : 0;
+            document.getElementById('engagement-rate').textContent = `${engagementRate}%`;
+            
+            // Calculate average response time (simplified)
+            let totalResponseHours = 0;
+            let responseCount = 0;
+            
+            allLeads.forEach(lead => {
+                if (lead.dateAdded && lead.lastContact) {
+                    const addedDate = new Date(lead.dateAdded);
+                    const contactDate = new Date(lead.lastContact);
+                    const responseHours = (contactDate - addedDate) / (1000 * 60 * 60);
+                    totalResponseHours += responseHours;
+                    responseCount++;
+                }
+            });
+            
+            const avgResponseTime = responseCount > 0 ? (totalResponseHours / responseCount).toFixed(1) : 0;
+            document.getElementById('response-time').textContent = `${avgResponseTime} hrs`;
+            
+            // Calculate revenue potential (sum of all lead values)
+            let revenuePotential = 0;
+            allLeads.forEach(lead => {
+                if (lead.value) {
+                    revenuePotential += lead.value;
+                }
+            });
+            
+            document.getElementById('revenue-potential').textContent = `$${revenuePotential.toLocaleString()}`;
         }
 
         // Handle content drag start
@@ -2557,7 +2881,8 @@
                         'Content Used': contentUsed.join(', '),
                         'Notes': lead.notes || '',
                         'Date Added': new Date(lead.dateAdded).toLocaleDateString(),
-                        'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : ''
+                        'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : '',
+                        'Value': lead.value || ''
                     });
                 });
             }
@@ -2713,7 +3038,8 @@
                 notes,
                 contentStrategies,
                 dateAdded: new Date().toISOString(),
-                lastContact: new Date().toISOString()
+                lastContact: new Date().toISOString(),
+                value: Math.floor(Math.random() * 10000) + 1000 // Random value for demo
             };
 
             // Add to storage
@@ -2999,7 +3325,7 @@
             };
             const contentItems = JSON.parse(localStorage.getItem('content')) || [];
             
-            const totalLeads = Object.values(leads).reduce((sum, stageLeads) => sum + stageLeads.length, 0);
+            const totalLeads = Object.values(leads).flat().length;
             const awarenessCount = leads.awareness.length;
             const interestCount = leads.interest.length;
             const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
@@ -3260,6 +3586,9 @@
             
             // Generate smart advice
             generateSmartAdvice();
+            
+            // Update advanced analytics
+            updateAdvancedAnalytics();
         }
 
         // Filter leads table by stage
@@ -3351,6 +3680,27 @@
             doc.text(`Interest → Consideration: ${document.getElementById('interest-consideration-rate').textContent}`, 14, yPosition);
             yPosition += 7;
             doc.text(`Overall Conversion: ${document.getElementById('conversion-rate').textContent}`, 14, yPosition);
+            yPosition += 15;
+            
+            // Add advanced analytics
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 255);
+            doc.text('Advanced Analytics', 14, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Average Time in Funnel: ${document.getElementById('avg-funnel-time').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Hot Leads: ${document.getElementById('hot-leads-count').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Content Effectiveness: ${document.getElementById('content-effectiveness').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Engagement Rate: ${document.getElementById('engagement-rate').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Average Response Time: ${document.getElementById('response-time').textContent}`, 14, yPosition);
+            yPosition += 7;
+            doc.text(`Revenue Potential: ${document.getElementById('revenue-potential').textContent}`, 14, yPosition);
             yPosition += 15;
             
             // Add content strategy summary
