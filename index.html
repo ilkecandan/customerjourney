@@ -197,14 +197,17 @@
         }
         
         .header-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap; /* let them break to new line */
-            justify-content: flex-start;
+   display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center; /* NEW */
+    justify-content: flex-start;
         }
         
         .action-btn {
             display: flex;
+            min-width: 130px; /* NEW */
+            justify-content: center; /* NEW */
             align-items: center;
             height: auto; /* Add this */
             gap: 0.5rem;
@@ -257,13 +260,14 @@
         .main-content {
             display: flex;
             flex: 1;
-            padding: 1.5rem;
-            gap: 1.5rem;
+            padding: 2rem;
+            gap: 2rem;
             margin-top: 20px; /* Added margin to account for fixed header */
         }
         
         .funnel-sidebar {
             flex: 1;
+            min-width: 0;
             background-color: var(--primary-dark);
             border-radius: var(--border-radius);
             height: 100%;
@@ -282,10 +286,15 @@
             border-radius: var(--border-radius);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             padding: 1.5rem;
+             min-width: 0;
             overflow-y: auto;
             border: 1px solid var(--primary-color);
         }
-        
+
+        .leads-table th, .leads-table td {
+          padding: 1rem;
+             }
+
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -1299,6 +1308,8 @@
     </style>
 </head>
 <body>
+    <span class="tooltiptext">Install this app to your device</span>
+
     <!-- Auth Screen -->
     <div id="auth-screen" class="auth-container">
         <div class="auth-box">
@@ -1499,7 +1510,7 @@
             <!-- Right Side: Lead Management -->
             <div class="leads-management">
                 <div class="section-header">
-                    <h2><i class="fas fa-users"></i> Lead Management</h2>
+               <h2><i class="fas fa-users"></i> <a href="https://ilkecandan.github.io/customerjourney/lead.html" style="color: var(--accent-color); text-decoration: none;">Lead Management</a></h2>
                     <div class="lead-actions">
                         <div class="lead-search tooltip">
                             <input type="text" id="lead-search" placeholder="Search leads...">
@@ -2212,6 +2223,20 @@
                 localStorage.setItem('content', JSON.stringify(defaultContent));
             }
 
+            document.getElementById('refresh-advice').addEventListener('click', () => {
+    const adviceBox = document.getElementById('funnel-advice');
+    const tips = [
+        "Add more content to move cold leads forward.",
+        "Focus on leads stuck in Interest stage.",
+        "Consider running a campaign for Evaluation stage.",
+        "Re-engage stalled leads with a new offer.",
+        "Optimize content by tracking conversions per asset."
+    ];
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    adviceBox.innerHTML = `<p>${randomTip}</p>`;
+});
+
+
             // Initialize Select2 for content selection
             $('.content-select').select2({
                 placeholder: 'Select content strategies',
@@ -2229,6 +2254,7 @@
             setupDragAndDrop();
             setupInstallButton();
         }
+        
 
         // Load leads with content badges
         function loadLeads() {
