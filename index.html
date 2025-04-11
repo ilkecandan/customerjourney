@@ -3797,6 +3797,34 @@ function setupOnboardingTour() {
                 toast.classList.remove('show');
             }, 3000);
         }
+
+        let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Show the custom install button
+    const installBtn = document.getElementById('install-btn');
+    if (installBtn) {
+        installBtn.classList.remove('hidden');
+
+        installBtn.addEventListener('click', () => {
+            installBtn.classList.add('hidden');
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                deferredPrompt = null;
+            });
+        });
+    }
+});
+
     </script>
 </body>
 </html>
