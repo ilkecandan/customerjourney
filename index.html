@@ -2242,7 +2242,7 @@
                 localStorage.setItem('content', JSON.stringify(defaultContent));
             }
 
-const smartInsights  = [
+const tips = [
     "Use SEO content to bring new traffic.",
     "Retarget visitors who didn't convert with reminder ads.",
     "Offer case studies to convince mid-funnel leads.",
@@ -2273,7 +2273,7 @@ document.getElementById('refresh-advice').addEventListener('click', () => {
     ];
     const randomTip = tips[Math.floor(Math.random() * tips.length)];
     adviceBox.innerHTML = `<p>${randomTip}</p>`;
-};
+});
 
 
             // Initialize Select2 for content selection
