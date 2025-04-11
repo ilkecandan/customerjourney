@@ -185,9 +185,10 @@
         }
         
         .header-left h1 {
-            color: var(--accent-color);
-            font-size: 1.5rem;
-            font-weight: 700;
+           color: var(--accent-color);
+           font-size: 1.75rem;
+           font-weight: 700;
+           padding: 0.5rem 0;
         }
         
         .header-right {
@@ -260,7 +261,7 @@
         .main-content {
             display: flex;
             flex: 1;
-            padding: 2rem;
+            padding: 2.5rem 2rem; 
             gap: 2rem;
             margin-top: 20px; /* Added margin to account for fixed header */
         }
@@ -1241,8 +1242,8 @@
             }
             
             .analytics-summary {
+                justify-content: space-around;
                 flex-wrap: wrap;
-                justify-content: center;
                 gap: 1rem;
             }
             
@@ -2052,6 +2053,12 @@
                     targetId: 'add-lead-btn',
                     message: 'Start here by adding your first lead.'
                 },
+
+                {
+                    targetId: 'install-btn',
+                    message: 'Install this app to your device for easier access later.'
+                },
+
                 {
                     targetId: 'add-content-btn',
                     message: 'Now add some content to nurture them.'
@@ -2226,11 +2233,15 @@
             document.getElementById('refresh-advice').addEventListener('click', () => {
     const adviceBox = document.getElementById('funnel-advice');
     const tips = [
-        "Add more content to move cold leads forward.",
-        "Focus on leads stuck in Interest stage.",
-        "Consider running a campaign for Evaluation stage.",
-        "Re-engage stalled leads with a new offer.",
-        "Optimize content by tracking conversions per asset."
+        "Consider creating educational content for the awareness stage.",
+        "Use email drip campaigns for leads in the interest stage.",
+        "Offer a case study or comparison chart at the evaluation stage.",
+        "Use retargeting ads to bring back stalled leads.",
+        "Update your landing page based on heatmap data.",
+        "Record a quick demo for high-value hot leads.",
+        "Host a live Q&A session for prospects in the consideration stage.",
+        "Introduce social proof (testimonials, logos) to increase trust.",
+        "Target cold leads with industry-specific value propositions."
     ];
     const randomTip = tips[Math.floor(Math.random() * tips.length)];
     adviceBox.innerHTML = `<p>${randomTip}</p>`;
