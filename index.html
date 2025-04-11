@@ -3823,7 +3823,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
 
     document.addEventListener('DOMContentLoaded', () => {
-        const installBtn = document.getElementById('installBtn');
+        const installBtn = document.getElementById('install-btn');
         if (!installBtn) {
             console.error('Install button not found in DOM');
             return;
