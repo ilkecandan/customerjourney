@@ -1335,7 +1335,6 @@
         <i class="fas fa-file-excel"></i> Export Excel
         <span class="tooltiptext">Export all leads to Excel</span>
     </button>
-<button id="install-btn" style="display: none;">Install App</button>
 
 </div>
                 <div class="analytics-summary">
@@ -3744,52 +3743,40 @@
 
         // Install button functionality
         function setupInstallButton() {
-            const installBtn = document.getElementById('install-btn');
-            
-            // Check if the app is already installed
-            if (window.matchMedia('(display-mode: standalone)').matches || 
-                window.navigator.standalone ||
-                document.referrer.includes('android-app://')) {
-                installBtn.classList.add('hidden');
-                return;
-            }
-            
-            // Listen for beforeinstallprompt event
-            window.addEventListener('beforeinstallprompt', (e) => {
-                console.log('beforeinstallprompt event fired');
-                e.preventDefault();
-                window.deferredPrompt = e;
-                
-                // Show the install button
-                installBtn.classList.remove('hidden');
-            });
-            
-            // Handle install button click
-            installBtn.addEventListener('click', async () => {
-                if (window.deferredPrompt) {
-                    console.log('Showing install prompt');
-                    window.deferredPrompt.prompt();
-                    
-                    const { outcome } = await window.deferredPrompt.userChoice;
-                    console.log(`User response to install prompt: ${outcome}`);
-                    
-                    if (outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
-                        installBtn.classList.add('hidden');
-                        showNotification('App installed successfully!');
-                    }
-                    
-                    window.deferredPrompt = null;
-                }
-            });
-            
-            // Hide the install button if the app is installed
-            window.addEventListener('appinstalled', () => {
-                console.log('PWA was installed');
-                installBtn.classList.add('hidden');
-                window.deferredPrompt = null;
-            });
-        }
+  let deferredPrompt;
+  const installBtn = document.getElementById('install-btn');
+
+  if (!installBtn) {
+    console.error('❌ Install button not found');
+    return;
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+
+    installBtn.classList.remove('hidden');
+    installBtn.style.display = 'inline-flex';
+
+    installBtn.addEventListener('click', async () => {
+      installBtn.classList.add('hidden');
+      installBtn.style.display = 'none';
+
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+
+      console.log(`✅ User response: ${outcome}`);
+      deferredPrompt = null;
+    });
+  });
+
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ App was installed');
+    installBtn.classList.add('hidden');
+    installBtn.style.display = 'none';
+  });
+}
+
 
         // Register service worker
         function registerServiceWorker() {
