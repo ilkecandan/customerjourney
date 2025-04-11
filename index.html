@@ -71,6 +71,7 @@
             text-align: center;
             border-radius: var(--border-radius);
             padding: 8px;
+            white-space: nowrap; /* Add this */
             position: absolute;
             z-index: 1;
             bottom: 125%;
@@ -198,18 +199,21 @@
         .header-actions {
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap; /* let them break to new line */
+            justify-content: flex-start;
         }
         
         .action-btn {
             display: flex;
             align-items: center;
+            height: auto; /* Add this */
             gap: 0.5rem;
-            background-color: var(--accent-color);
             color: var(--secondary-color);
             border: none;
-            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-light));
+            padding: 0.4rem 0.8rem;
             border-radius: var(--border-radius);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: var(--transition);
             font-weight: 500;
