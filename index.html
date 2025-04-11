@@ -690,9 +690,7 @@
         .edit-content:hover {
             color: var(--accent-color);
         }
-        
-        /* Install button */
-        .install-btn {
+         #install-btn {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -700,33 +698,31 @@
             color: var(--secondary-color);
             border: none;
             border-radius: 50px;
-            width: auto;
-            height: auto;
             padding: 12px 20px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            gap: 8px;
             cursor: pointer;
             box-shadow: var(--box-shadow);
             z-index: 100;
             transition: var(--transition);
             font-weight: 600;
-            gap: 8px;
         }
         
-        .install-btn:hover {
+        #install-btn:hover {
             background-color: var(--primary-light);
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
         }
         
-        .install-btn:active {
-            transform: translateY(0);
-        }
-        
-        .install-btn i {
+        #install-btn i {
             font-size: 1.2rem;
         }
+        
+        #install-btn.hidden {
+            display: none;
+        }
+        
         
         /* Smart advice box */
         .smart-advice-box {
@@ -1341,9 +1337,6 @@
                         <span class="tooltiptext">Export all leads to Excel</span>
                     </button>
                            <!-- Install Button -->
-        <section id="install-section" class="animate__animated animate__fadeIn">
-            <button id="install-btn" class="primary-btn">📥 Install App</button>
-        </section>
                 </div>
                 <div class="analytics-summary">
                     <div class="analytics-item tooltip">
@@ -3753,26 +3746,61 @@ function setupOnboardingTour() {
         }
 
         function setupInstallButton() {
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('🔥 beforeinstallprompt fired');
-        e.preventDefault();
-        deferredPrompt = e;
-
-        const installBtn = document.getElementById('installBtn');
-        if (installBtn) {
-            installBtn.style.display = 'block';
-            installBtn.addEventListener('click', async () => {
-                installBtn.style.display = 'none';
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response: ${outcome}`);
+            let deferredPrompt;
+            const installBtn = document.getElementById('install-btn');
+            
+            // Only show the install button if the app isn't already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                installBtn.classList.add('hidden');
+                return;
+            }
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('beforeinstallprompt event fired');
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show the install button
+                installBtn.classList.remove('hidden');
+                
+                // Add click event listener
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        console.log('Showing install prompt');
+                        deferredPrompt.prompt();
+                        
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`User response to install prompt: ${outcome}`);
+                        
+                        if (outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                            installBtn.classList.add('hidden');
+                            showNotification('App installed successfully!');
+                        }
+                        
+                        deferredPrompt = null;
+                    }
+                });
+            });
+            
+            // Hide the install button if the app is already installed
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA was installed');
+                installBtn.classList.add('hidden');
                 deferredPrompt = null;
             });
         }
-    });
-}
+function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            }
+        }
 
 
         // Show notification
@@ -3841,5 +3869,8 @@ window.addEventListener('appinstalled', () => {
 
 
     </script>
+      <button id="install-btn" class="hidden">
+        <i class="fas fa-download"></i> Install App
+    </button>
 </body>
 </html>
