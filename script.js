@@ -1,3 +1,10 @@
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('✅ Service Worker Registered'))
+        .catch(err => console.error('❌ Service Worker Error:', err));
+}
+
+
 document.addEventListener('DOMContentLoaded', function () {
     // First hide the app container
     document.getElementById('app-container').classList.add('hidden');
