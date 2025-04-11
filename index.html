@@ -1929,6 +1929,7 @@
                 <div class="onboarding-actions">
                     <button id="skip-onboarding" class="cancel-btn">Skip Tutorial</button>
                     <button id="start-using-app" class="submit-btn">Get Started</button>
+                    
                 </div>
             </div>
         </div>
@@ -2009,42 +2010,86 @@
             });
         }
 
-        // Onboarding setup
-        function setupOnboarding() {
-            document.getElementById('skip-onboarding').addEventListener('click', function() {
-                localStorage.setItem('onboarding_completed', 'true');
-                document.getElementById('onboarding-overlay').classList.add('hidden');
-                initializeApp();
-            });
-            
-            document.getElementById('start-using-app').addEventListener('click', function() {
-                localStorage.setItem('onboarding_completed', 'true');
-                document.getElementById('onboarding-overlay').classList.add('hidden');
-                initializeApp();
-                
-                // Show tooltips for key elements
-                setTimeout(() => {
-                    const addLeadBtn = document.getElementById('add-lead-btn');
-                    const addContentBtn = document.getElementById('add-content-btn');
-                    const firstStage = document.querySelector('.funnel-stage');
-                    
-                    if (addLeadBtn) {
-                        addLeadBtn.classList.add('pulse-highlight');
-                        setTimeout(() => addLeadBtn.classList.remove('pulse-highlight'), 3000);
-                    }
-                    
-                    if (addContentBtn) {
-                        addContentBtn.classList.add('pulse-highlight');
-                        setTimeout(() => addContentBtn.classList.remove('pulse-highlight'), 3000);
-                    }
-                    
-                    if (firstStage) {
-                        firstStage.classList.add('pulse-highlight');
-                        setTimeout(() => firstStage.classList.remove('pulse-highlight'), 3000);
-                    }
-                }, 500);
-            });
+function setupOnboardingTour() {
+    const steps = [
+        {
+            targetId: 'add-lead-btn',
+            message: 'Start here by adding your first lead.'
+        },
+        {
+            targetId: 'add-content-btn',
+            message: 'Now add some content to nurture them.'
+        },
+        {
+            targetId: 'funnel-advice',
+            message: 'Check here for smart funnel insights.'
+        },
+        {
+            targetId: 'awareness-count',
+            message: 'Drag your leads into the funnel stages to track progress.'
         }
+    ];
+
+    let currentStep = 0;
+
+    function showStep(stepIndex) {
+        const step = steps[stepIndex];
+        const target = document.getElementById(step.targetId);
+
+        if (!target) return;
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'onboarding-tooltip';
+        tooltip.innerText = step.message;
+
+        document.body.appendChild(tooltip);
+
+        const rect = target.getBoundingClientRect();
+        tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+        tooltip.style.left = `${rect.left + rect.width / 2 - 100}px`;
+
+        target.classList.add('pulse-highlight');
+
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+        nextBtn.className = 'submit-btn';
+        nextBtn.style.marginTop = '0.5rem';
+        tooltip.appendChild(nextBtn);
+
+        nextBtn.addEventListener('click', () => {
+            tooltip.remove();
+            target.classList.remove('pulse-highlight');
+            if (stepIndex + 1 < steps.length) {
+                showStep(stepIndex + 1);
+            } else {
+                // End of tour
+                localStorage.setItem('onboarding_completed', 'true');
+            }
+        });
+    }
+
+    showStep(0);
+}
+
+        
+        
+        // Onboarding setup
+       function setupOnboarding() {
+    document.getElementById('skip-onboarding').addEventListener('click', function() {
+        localStorage.setItem('onboarding_completed', 'true');
+        document.getElementById('onboarding-overlay').classList.add('hidden');
+        initializeApp();
+    });
+
+    document.getElementById('start-using-app').addEventListener('click', function() {
+        localStorage.setItem('onboarding_completed', 'true');
+        document.getElementById('onboarding-overlay').classList.add('hidden');
+        initializeApp();
+
+        // Start guided tooltip tour
+        setTimeout(setupOnboardingTour, 700);
+    });
+}
 
         // Main application initialization
         function initializeApp() {
@@ -2180,6 +2225,7 @@
             setupInstallButton();
             setupOnboarding();
         }
+
 
         // Setup PWA install button
         function setupInstallButton() {
