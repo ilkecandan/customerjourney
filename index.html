@@ -320,6 +320,7 @@
         
         .leads-management {
             display: flex;
+                max-height: calc(100vh - 250px); /* leaves space for header + analytics */
             flex-direction: column;
             justify-content: flex-start;
             flex: 1;
@@ -332,9 +333,13 @@
             border: 1px solid var(--primary-color);
         }
 
-        .leads-table th, .leads-table td {
-          padding: 1rem;
-             }
+            .leads-table td {
+             vertical-align: top;
+             white-space: normal;
+             word-break: break-word;
+             padding: 0.5rem 0.75rem;
+}
+
 
         .section-header {
             display: flex;
@@ -581,7 +586,9 @@
         
         /* Leads table */
         .leads-table-container {
-            overflow-x: auto;
+            max-height: 500px; /* or whatever fits your layout */
+           overflow-y: auto;
+            padding-bottom: 1rem;
         }
         
         .leads-table {
