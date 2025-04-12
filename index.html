@@ -2155,6 +2155,8 @@
              tooltip.innerText = step.message;
 
             document.body.appendChild(tooltip);
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
 
               const rect = target.getBoundingClientRect();
               const tooltipWidth = 220;
