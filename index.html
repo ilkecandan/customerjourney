@@ -57,12 +57,6 @@
             padding-top: 20px; /* Added padding to prevent header overlap */
         }
 
-
-        .leads-management {
-    max-height: calc(100vh - 250px);
-    overflow-y: auto;
-}
-
         .smart-advice-box li,
 .lead-management-guide li {
     line-height: 1.6;
@@ -326,7 +320,6 @@
         
         .leads-management {
             display: flex;
-                max-height: calc(100vh - 250px); /* leaves space for header + analytics */
             flex-direction: column;
             justify-content: flex-start;
             flex: 1;
@@ -339,13 +332,9 @@
             border: 1px solid var(--primary-color);
         }
 
-            .leads-table td {
-             vertical-align: top;
-             white-space: normal;
-             word-break: break-word;
-             padding: 0.5rem 0.75rem;
-}
-
+        .leads-table th, .leads-table td {
+          padding: 1rem;
+             }
 
         .section-header {
             display: flex;
@@ -592,9 +581,7 @@
         
         /* Leads table */
         .leads-table-container {
-            max-height: none;
-            overflow-y: auto;
-            padding-bottom: 1rem;
+            overflow-x: auto;
         }
         
         .leads-table {
