@@ -581,7 +581,9 @@
         
         /* Leads table */
         .leads-table-container {
+            max-height: 500px;
             overflow-x: auto;
+            overflow-y: auto;
         }
         
         .leads-table {
@@ -590,10 +592,14 @@
         }
         
         .leads-table th, .leads-table td {
-            padding: 0.75rem;
+            padding: 0.6rem 0.8rem;
             text-align: left;
             border-bottom: 1px solid var(--primary-color);
+            white-space: normal;
+            word-break: break-word;
+            vertical-align: top;
         }
+
         
         .leads-table th {
             font-weight: 600;
