@@ -1066,15 +1066,17 @@
         
         /* Onboarding tooltip */
         .onboarding-tooltip {
-            position: absolute;
-            background-color: var(--accent-color);
-            color: var(--secondary-color);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            z-index: 1000;
-            max-width: 250px;
-            font-size: 0.9rem;
-            box-shadow: var(--box-shadow);
+              background-color: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 1rem;
+    border-radius: 10px;
+    width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 9999;
+    font-size: 0.95rem;
+    position: absolute;
+    transition: all 0.3s ease-in-out;
+    animation: floatIn 0.3s ease-out;
         }
         
         .onboarding-tooltip:after {
@@ -2134,15 +2136,19 @@
 
                 if (!target) return;
 
-                const tooltip = document.createElement('div');
-                tooltip.className = 'onboarding-tooltip';
-                tooltip.innerText = step.message;
+             const tooltip = document.createElement('div');
+             tooltip.className = 'onboarding-tooltip';
+             tooltip.innerText = step.message;
 
-                document.body.appendChild(tooltip);
+            document.body.appendChild(tooltip);
 
-                const rect = target.getBoundingClientRect();
-                tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
-                tooltip.style.left = `${rect.left + rect.width / 2 - 100}px`;
+              const rect = target.getBoundingClientRect();
+              const tooltipWidth = 220;
+              let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+              left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+
+tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+tooltip.style.left = `${left}px`;
 
                 target.classList.add('pulse-highlight');
 
