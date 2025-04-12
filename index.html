@@ -2514,6 +2514,10 @@
                 });
                 return;
             }
+            document.getElementById('add-content-empty-btn').addEventListener('click', function () {
+            document.getElementById('add-content-btn').click();
+            });
+
 
             contentItems.forEach(content => {
                 const item = document.createElement('div');
