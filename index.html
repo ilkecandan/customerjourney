@@ -260,7 +260,8 @@
         
         .action-btn:hover {
             background-color: var(--primary-light);
-            transform: translateY(-1px);
+            color: var(--text-dark);
+            transform: scale(1.02);
         }
         
         .analytics-summary {
@@ -832,9 +833,19 @@
             50% { transform: scale(1.05); box-shadow: var(--accent-glow); }
             100% { transform: scale(1); box-shadow: none; }
         }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0px var(--accent-color); }
+            50% { box-shadow: 0 0 10px var(--accent-color); }
+            100% { box-shadow: 0 0 0px var(--accent-color); }
+        }
         
         .pulse-highlight {
             animation: pulse 2s infinite;
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 1.5s ease-out;
         }
         
         /* Modals */
@@ -943,6 +954,12 @@
             cursor: pointer;
             transition: var(--transition);
             font-weight: 500;
+        }
+        
+        .submit-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--text-dark);
+            transform: scale(1.02);
         }
         
         .cancel-btn {
@@ -2144,8 +2161,8 @@
               let left = rect.left + rect.width / 2 - tooltipWidth / 2;
               left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
 
-tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
-tooltip.style.left = `${left}px`;
+              tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+              tooltip.style.left = `${left}px`;
 
                 target.classList.add('pulse-highlight');
 
@@ -2287,22 +2304,9 @@ tooltip.style.left = `${left}px`;
             }
 
             document.getElementById('refresh-advice').addEventListener('click', () => {
-    const adviceBox = document.getElementById('funnel-advice');
-    const tips = [
-        "Consider creating educational content for the awareness stage.",
-        "Use email drip campaigns for leads in the interest stage.",
-        "Offer a case study or comparison chart at the evaluation stage.",
-        "Use retargeting ads to bring back stalled leads.",
-        "Update your landing page based on heatmap data.",
-        "Record a quick demo for high-value hot leads.",
-        "Host a live Q&A session for prospects in the consideration stage.",
-        "Introduce social proof (testimonials, logos) to increase trust.",
-        "Target cold leads with industry-specific value propositions."
-    ];
-    const randomTip = tips[Math.floor(Math.random() * tips.length)];
-    adviceBox.innerHTML = `<p>${randomTip}</p>`;
-});
-
+                generateSmartAdvice();
+                showNotification('Insights refreshed');
+            });
 
             // Initialize Select2 for content selection
             $('.content-select').select2({
@@ -2864,8 +2868,8 @@ tooltip.style.left = `${left}px`;
                     return;
                 }
                 
-                // Add Content Button
-                if (e.target.matches('#add-content-btn, #add-content-btn *')) {
+                // Add Content Button (both buttons)
+                if (e.target.matches('#add-content-btn, #add-content-btn *, #add-content-empty-btn, #add-content-empty-btn *')) {
                     document.getElementById('content-form').reset();
                     const modal = document.getElementById('add-content-modal');
                     modal.classList.remove('hidden');
@@ -3393,129 +3397,129 @@ tooltip.style.left = `${left}px`;
             });
         }
 
+        // Calculate key metrics
+        function calculateMetrics(leads) {
+            const totalLeads = Object.values(leads).flat().length;
+            const awarenessCount = leads.awareness.length;
+            const interestCount = leads.interest.length;
+            const considerationCount = leads.intent.length + leads.evaluation.length;
+            const purchaseCount = leads.purchase.length;
+
+            // Conversion rates (dummy basic logic)
+            const awarenessToInterest = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
+            const interestToConsideration = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
+            const totalConversion = totalLeads > 0 ? Math.round((purchaseCount / totalLeads) * 100) : 0;
+
+            // Hot leads count (if status is 'hot')
+            const allLeads = Object.values(leads).flat();
+            const hotLeads = allLeads.filter(l => l.status === 'hot');
+
+            return {
+                totalLeads,
+                awarenessToInterest,
+                interestToConsideration,
+                totalConversion,
+                hotLeadCount: hotLeads.length
+            };
+        }
+
         // Update conversion percentages between stages
         function updateConversionPercentages() {
             const leads = JSON.parse(localStorage.getItem('leads')) || {
                 awareness: [], interest: [], intent: [], evaluation: [], purchase: []
             };
 
-            // Calculate counts
-            const awarenessCount = leads.awareness.length;
-            const interestCount = leads.interest.length;
-            const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
-            const purchaseCount = leads.purchase.length;
-            
-            // Awareness → Interest
-            const awarenessInterestRate = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
-            document.getElementById('awareness-interest-rate').textContent = `${awarenessInterestRate}%`;
-            document.getElementById('awareness-conversion-rate').textContent = `${awarenessInterestRate}%`;
+            // Calculate metrics
+            const metrics = calculateMetrics(leads);
 
-            // Interest → Consideration (average of intent, evaluation, purchase)
-            const interestConsiderationRate = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
-            document.getElementById('interest-consideration-rate').textContent = `${interestConsiderationRate}%`;
-            document.getElementById('interest-conversion-rate').textContent = `${interestConsiderationRate}%`;
-
-            // Overall conversion rate (awareness → purchase)
-            const overallConversionRate = awarenessCount > 0 ? Math.round((purchaseCount / awarenessCount) * 100) : 0;
-            document.getElementById('conversion-rate').textContent = `${overallConversionRate}%`;
+            // Update DOM with metrics
+            document.getElementById('total-leads').textContent = metrics.totalLeads;
+            document.getElementById('awareness-interest-rate').textContent = `${metrics.awarenessToInterest}%`;
+            document.getElementById('awareness-conversion-rate').textContent = `${metrics.awarenessToInterest}%`;
+            document.getElementById('interest-consideration-rate').textContent = `${metrics.interestToConsideration}%`;
+            document.getElementById('interest-conversion-rate').textContent = `${metrics.interestToConsideration}%`;
+            document.getElementById('conversion-rate').textContent = `${metrics.totalConversion}%`;
+            document.getElementById('hot-leads-count').textContent = metrics.hotLeadCount;
             
-            // Update total leads count
-            const totalLeads = Object.values(leads).reduce((sum, stageLeads) => sum + stageLeads.length, 0);
-            document.getElementById('total-leads').textContent = totalLeads;
+            // Store metrics in localStorage
+            localStorage.setItem('funnel_metrics', JSON.stringify(metrics));
         }
 
         // Generate smart advice based on funnel state
         function generateSmartAdvice() {
+            const metrics = JSON.parse(localStorage.getItem('funnel_metrics')) || {};
             const leads = JSON.parse(localStorage.getItem('leads')) || {
                 awareness: [], interest: [], intent: [], evaluation: [], purchase: []
             };
             const contentItems = JSON.parse(localStorage.getItem('content')) || [];
             
-            const totalLeads = Object.values(leads).flat().length;
-            const awarenessCount = leads.awareness.length;
-            const interestCount = leads.interest.length;
-            const considerationCount = leads.intent.length + leads.evaluation.length + leads.purchase.length;
-            const purchaseCount = leads.purchase.length;
-            
-            // Calculate content assigned stats
-            const leadsWithContent = Object.values(leads).flat().filter(lead => 
-                lead.contentStrategies && lead.contentStrategies.length > 0
-            ).length;
-            
-            // Calculate contact recency
+            const allLeads = Object.values(leads).flat();
             const today = new Date();
-            const leadsNotContactedRecently = Object.values(leads).flat().filter(lead => {
-                if (!lead.lastContact) return true;
-                const lastContactDate = new Date(lead.lastContact);
-                const daysSinceContact = Math.floor((today - lastContactDate) / (1000 * 60 * 60 * 24));
-                return daysSinceContact > 7;
-            }).length;
             
             // Calculate stalled leads
-            const stalledLeads = Object.values(leads).flat().filter(lead => {
+            const stalledLeads = allLeads.filter(lead => {
                 if (!lead.dateAdded) return false;
                 const addedDate = new Date(lead.dateAdded);
                 const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
                 return daysInStage > 14;
             }).length;
             
-            // Calculate hot leads
-            const hotLeads = Object.values(leads).flat().filter(lead => lead.status === 'hot').length;
+            // Calculate leads not contacted recently
+            const leadsNotContactedRecently = allLeads.filter(lead => {
+                if (!lead.lastContact) return true;
+                const lastContactDate = new Date(lead.lastContact);
+                const daysSinceContact = Math.floor((today - lastContactDate) / (1000 * 60 * 60 * 24));
+                return daysSinceContact > 7;
+            }).length;
             
-            // Generate advice based on funnel state
+            // Calculate content effectiveness
+            const contentEffectiveness = {};
+            contentItems.forEach(content => {
+                const leadsUsingContent = allLeads.filter(lead => 
+                    lead.contentStrategies && lead.contentStrategies.includes(content.id)
+                ).length;
+                
+                if (leadsUsingContent > 0) {
+                    const nextStageLeads = allLeads.filter(lead => {
+                        const currentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(lead.currentStage);
+                        const contentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(content.stage);
+                        return currentStageIndex > contentStageIndex && 
+                               lead.contentStrategies && 
+                               lead.contentStrategies.includes(content.id);
+                    }).length;
+                    
+                    const conversionRate = Math.round((nextStageLeads / leadsUsingContent) * 100);
+                    contentEffectiveness[content.id] = {
+                        name: content.name,
+                        rate: conversionRate,
+                        target: content.targetConversion || 0
+                    };
+                }
+            });
+            
+            // Find underperforming content
+            const underperformingContent = Object.entries(contentEffectiveness)
+                .filter(([_, stats]) => stats.rate < stats.target)
+                .map(([_, stats]) => stats.name);
+            
+            // Generate advice based on metrics
             let advice = [];
             let insights = [];
             
             // General funnel advice
-            if (totalLeads === 0) {
+            if (metrics.totalLeads === 0) {
                 advice.push("Your funnel is empty. Add new leads to get started!");
-            } else if (awarenessCount === 0 && totalLeads > 0) {
+            } else if (leads.awareness.length === 0 && metrics.totalLeads > 0) {
                 advice.push("You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.");
-            } else if (interestCount > 0 && considerationCount === 0) {
+            } else if (leads.interest.length > 0 && (leads.intent.length + leads.evaluation.length) === 0) {
                 advice.push("Your leads are stuck in Interest. Try assigning content or follow-ups to keep them moving!");
-            } else if (purchaseCount === 0 && considerationCount > 0) {
+            } else if (leads.purchase.length === 0 && (leads.intent.length + leads.evaluation.length) > 0) {
                 advice.push("You have leads in Consideration but no purchases. Review your final stage content and offers.");
             }
             
             // Content advice
-            if (leadsWithContent === 0 && totalLeads > 0) {
-                advice.push("Content can drive conversions. Assign content to your leads to make progress measurable.");
-            } else {
-                // Content effectiveness analysis
-                const contentEffectiveness = {};
-                contentItems.forEach(content => {
-                    const leadsUsingContent = Object.values(leads).flat().filter(lead => 
-                        lead.contentStrategies && lead.contentStrategies.includes(content.id)
-                    ).length;
-                    
-                    if (leadsUsingContent > 0) {
-                        const nextStageLeads = Object.values(leads)
-                            .flat()
-                            .filter(lead => {
-                                const currentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(lead.currentStage);
-                                const contentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(content.stage);
-                                return currentStageIndex > contentStageIndex && 
-                                       lead.contentStrategies && 
-                                       lead.contentStrategies.includes(content.id);
-                            }).length;
-                        
-                        const conversionRate = Math.round((nextStageLeads / leadsUsingContent) * 100);
-                        contentEffectiveness[content.id] = {
-                            name: content.name,
-                            rate: conversionRate,
-                            target: content.targetConversion || 0
-                        };
-                    }
-                });
-                
-                // Find underperforming content
-                const underperformingContent = Object.entries(contentEffectiveness)
-                    .filter(([_, stats]) => stats.rate < stats.target)
-                    .map(([_, stats]) => stats.name);
-                
-                if (underperformingContent.length > 0) {
-                    advice.push(`Some content may need improvement: ${underperformingContent.join(', ')}. Consider updating or replacing these assets.`);
-                }
+            if (underperformingContent.length > 0) {
+                advice.push(`Some content may need improvement: ${underperformingContent.join(', ')}. Consider updating or replacing these assets.`);
             }
             
             // Contact recency advice
@@ -3526,128 +3530,17 @@ tooltip.style.left = `${left}px`;
             // Stalled leads advice
             if (stalledLeads > 0) {
                 advice.push(`${stalledLeads} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.`);
-                
-                // Specific advice for stalled leads
-                const stalledAwareness = leads.awareness.filter(lead => {
-                    const addedDate = new Date(lead.dateAdded);
-                    const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
-                    return daysInStage > 14;
-                }).length;
-                
-                if (stalledAwareness > 0) {
-                    insights.push(`${stalledAwareness} leads stuck in Awareness. Try different content types or more targeted messaging.`);
-                }
-                
-                const stalledInterest = leads.interest.filter(lead => {
-                    const addedDate = new Date(lead.dateAdded);
-                    const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
-                    return daysInStage > 14;
-                }).length;
-                
-                if (stalledInterest > 0) {
-                    insights.push(`${stalledInterest} leads stuck in Interest. Offer case studies or product demos to move them forward.`);
-                }
             }
             
             // Hot leads advice
-            if (hotLeads > 0) {
-                advice.push(`You have ${hotLeads} hot leads. Prioritize these for quick follow-ups and personalized attention.`);
-                
-                // Hot leads by stage
-                const hotAwareness = leads.awareness.filter(lead => lead.status === 'hot').length;
-                if (hotAwareness > 0) {
-                    insights.push(`${hotAwareness} hot leads in Awareness. These are highly engaged - send them premium content or schedule a call.`);
-                }
-                
-                const hotInterest = leads.interest.filter(lead => lead.status === 'hot').length;
-                if (hotInterest > 0) {
-                    insights.push(`${hotInterest} hot leads in Interest. Offer limited-time discounts or bonuses to convert them.`);
-                }
+            if (metrics.hotLeadCount > 0) {
+                advice.push(`You have ${metrics.hotLeadCount} hot leads. Prioritize these for quick follow-ups and personalized attention.`);
             }
             
-            // Industry-specific advice
-            const leadsByIndustry = {};
-            Object.values(leads).flat().forEach(lead => {
-                if (!lead.industry) return;
-                if (!leadsByIndustry[lead.industry]) {
-                    leadsByIndustry[lead.industry] = [];
-                }
-                leadsByIndustry[lead.industry].push(lead);
-            });
-            
-            for (const [industry, industryLeads] of Object.entries(leadsByIndustry)) {
-                const industryCount = industryLeads.length;
-                const industryStalled = industryLeads.filter(lead => {
-                    if (!lead.dateAdded) return false;
-                    const addedDate = new Date(lead.dateAdded);
-                    const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
-                    return daysInStage > 14;
-                }).length;
-                
-                const industryHot = industryLeads.filter(lead => lead.status === 'hot').length;
-                
-                // Generate industry-specific insights
-                if (industry === 'saas') {
-                    if (industryHot > 0) {
-                        insights.push(`${industryHot} SaaS leads are marked as hot. Schedule demos or free trials to convert them.`);
-                    }
-                    if (industryStalled > 0) {
-                        insights.push(`${industryStalled} SaaS leads are stalled. Try case studies or ROI calculators to move them forward.`);
-                    }
-                } else if (industry === 'ecommerce') {
-                    if (industryHot > 0) {
-                        insights.push(`${industryHot} E-commerce leads are hot. Use urgency tactics like limited-time offers.`);
-                    }
-                    if (industryStalled > 0) {
-                        insights.push(`${industryStalled} E-commerce leads are stalled. Try retargeting or abandoned cart emails.`);
-                    }
-                } else if (industry === 'healthcare') {
-                    if (industryHot > 0) {
-                        insights.push(`${industryHot} Healthcare leads are hot. Provide testimonials and compliance info.`);
-                    }
-                    if (industryStalled > 0) {
-                        insights.push(`${industryStalled} Healthcare leads are stalled. Offer free consultations to build trust.`);
-                    }
-                } else if (industry === 'realestate') {
-                    if (industryHot > 0) {
-                        insights.push(`${industryHot} Real Estate leads are hot. Provide virtual tours and financing options.`);
-                    }
-                    if (industryStalled > 0) {
-                        insights.push(`${industryStalled} Real Estate leads are stalled. Offer market analysis reports.`);
-                    }
-                }
-            }
-            
-            // Conversion rate analysis
-            if (purchaseCount > 0) {
-                const highConverters = Object.values(leads)
-                    .flat()
-                    .filter(lead => lead.currentStage === 'purchase')
-                    .reduce((acc, lead) => {
-                        lead.contentStrategies?.forEach(contentId => {
-                            acc[contentId] = (acc[contentId] || 0) + 1;
-                        });
-                        return acc;
-                    }, {});
-                
-                const topContent = Object.entries(highConverters)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3)
-                    .map(([contentId, count]) => {
-                        const content = contentItems.find(c => c.id === contentId);
-                        return content ? content.name : '';
-                    })
-                    .filter(name => name);
-                
-                if (topContent.length > 0) {
-                    insights.push(`Top converting content: ${topContent.join(', ')}. Consider creating more content like this.`);
-                }
-            }
-            
-            // If no specific advice, show positive message
-            if (advice.length === 0 && insights.length === 0) {
-                advice.push("Everything looks good! Keep the momentum going.");
-            }
+            // Conversion rate insights
+            insights.push(`Awareness → Interest conversion: ${metrics.awarenessToInterest || 0}%`);
+            insights.push(`Interest → Consideration conversion: ${metrics.interestToConsideration || 0}%`);
+            insights.push(`Overall conversion rate: ${metrics.totalConversion || 0}%`);
             
             // Update the advice box
             const adviceBox = document.getElementById('funnel-advice');
@@ -3665,7 +3558,7 @@ tooltip.style.left = `${left}px`;
             
             if (insights.length > 0) {
                 const insightsHeader = document.createElement('h4');
-                insightsHeader.textContent = 'Industry Insights:';
+                insightsHeader.textContent = 'Key Metrics:';
                 insightsHeader.style.marginTop = '1rem';
                 insightsHeader.style.color = 'var(--accent-color)';
                 adviceBox.appendChild(insightsHeader);
