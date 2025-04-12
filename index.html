@@ -57,6 +57,12 @@
             padding-top: 20px; /* Added padding to prevent header overlap */
         }
 
+
+        .leads-management {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
         .smart-advice-box li,
 .lead-management-guide li {
     line-height: 1.6;
@@ -586,8 +592,8 @@
         
         /* Leads table */
         .leads-table-container {
-            max-height: 500px; /* or whatever fits your layout */
-           overflow-y: auto;
+            max-height: none;
+            overflow-y: auto;
             padding-bottom: 1rem;
         }
         
