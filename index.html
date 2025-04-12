@@ -2495,28 +2495,26 @@
 
             container.innerHTML = '';
 
-            if (contentItems.length === 0) {
-                const emptyState = document.createElement('div');
-                emptyState.className = 'empty-state';
-                emptyState.innerHTML = `
-                    <i class="fas fa-file-alt"></i>
-                    <h3>No Content Strategies</h3>
-                    <p>Add content to help move leads through your funnel</p>
-                    <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
-                        <i class="fas fa-plus"></i> Add Content
-                    </button>
-                `;
-                container.appendChild(emptyState);
-                
-                document.getElementById('add-content-empty-btn').addEventListener('click', () => {
-                    document.getElementById('content-form').reset();
-                    document.getElementById('add-content-modal').classList.remove('hidden');
-                });
-                return;
-            }
-            document.getElementById('add-content-empty-btn').addEventListener('click', function () {
-            document.getElementById('add-content-btn').click();
-            });
+         if (contentItems.length === 0) {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.innerHTML = `
+        <i class="fas fa-file-alt"></i>
+        <h3>No Content Strategies</h3>
+        <p>Add content to help move leads through your funnel</p>
+        <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
+            <i class="fas fa-plus"></i> Add Content
+        </button>
+    `;
+
+    contentItemsContainer.appendChild(emptyState);
+
+    // 🧩 FIX HERE:
+    document.getElementById('add-content-empty-btn').addEventListener('click', function () {
+        document.getElementById('add-content-btn').click();
+    });
+}
+
 
 
             contentItems.forEach(content => {
