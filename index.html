@@ -2940,7 +2940,7 @@ function updateLeadsTable() {
             }
 
             if (leadFound) {
-                localStorage.setItem('leads', JSON.stringify(leads));
+        localStorage.setItem('leads', JSON.stringify(leads));
                 loadLeads();
                 updateAnalytics();
                 showNotification('Lead deleted successfully');
