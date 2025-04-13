@@ -2855,8 +2855,8 @@ function updateLeadsTable() {
         function toggleModal(modalId, show = true) {
             const modal = document.getElementById(modalId);
             if (show) {
-                modal.style.display = 'block';
                 modal.classList.remove('hidden');
+                modal.classList.add('show');
             } else {
                 modal.classList.remove('show');
                 modal.classList.add('hidden');
