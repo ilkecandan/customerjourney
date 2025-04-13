@@ -2733,54 +2733,68 @@ function openEditModal(leadId) {
         }
 
         // Create a lead card element for the funnel
-        function createLeadCard(lead) {
-            const leadCard = document.createElement('div');
-            leadCard.className = 'lead-card interactive-element';
-            leadCard.draggable = true;
-            leadCard.dataset.leadId = lead.id;
-            leadCard.dataset.currentStage = lead.currentStage;
 
-            const company = document.createElement('div');
-            company.className = 'company';
-            company.textContent = lead.company;
+function createLeadCard(lead) {
+    const leadCard = document.createElement('div');
+    leadCard.className = 'lead-card interactive-element';
+    leadCard.draggable = true;
+    leadCard.dataset.leadId = lead.id;
+    leadCard.dataset.currentStage = lead.currentStage;
 
-            const contact = document.createElement('div');
-            contact.className = 'contact';
-            contact.textContent = lead.contact || 'No contact';
+    const company = document.createElement('div');
+    company.className = 'company';
+    company.textContent = lead.company;
 
-            // Add industry tag if available
-            if (lead.industry) {
-                const industryTag = document.createElement('span');
-                industryTag.className = 'tag';
-                industryTag.textContent = lead.industry;
-                leadCard.appendChild(industryTag);
-            }
+    const contact = document.createElement('div');
+    contact.className = 'contact';
+    contact.textContent = lead.contact || 'No contact';
 
-            // Add status tag if available
-            if (lead.status) {
-                const statusTag = document.createElement('span');
-                statusTag.className = 'tag';
-                statusTag.textContent = lead.status;
-                leadCard.appendChild(statusTag);
-            }
+    // Tags container
+    const tagsWrapper = document.createElement('div');
+    tagsWrapper.className = 'tags-wrapper';
+    tagsWrapper.style.display = 'flex';
+    tagsWrapper.style.gap = '4px';
+    tagsWrapper.style.marginTop = '4px';
 
-            leadCard.appendChild(company);
-            leadCard.appendChild(contact);
+    if (lead.industry) {
+        const industryTag = document.createElement('span');
+        industryTag.className = 'tag';
+        industryTag.textContent = lead.industry;
+        tagsWrapper.appendChild(industryTag);
+    }
 
-            // Add drag events
-            leadCard.addEventListener('dragstart', handleDragStart);
+    if (lead.status) {
+        const statusTag = document.createElement('span');
+        statusTag.className = 'tag';
+        statusTag.textContent = lead.status;
+        tagsWrapper.appendChild(statusTag);
+    }
 
-            // Add click event to show edit modal
-            leadCard.addEventListener('click', (e) => {
-                // Only open edit modal if not dragging
-                if (!e.target.classList.contains('dragging')) {
-                    openEditLeadModal(lead);
-                }
-            });
+    // Build card
+    leadCard.appendChild(company);
+    leadCard.appendChild(contact);
+    if (tagsWrapper.children.length > 0) {
+        leadCard.appendChild(tagsWrapper);
+    }
 
-            return leadCard;
+    // Drag events
+    leadCard.addEventListener('dragstart', handleDragStart);
+
+    // 🧠 Edit on click
+    leadCard.addEventListener('click', (e) => {
+        // Don't trigger edit while dragging
+        if (!e.target.classList.contains('dragging')) {
+            openEditLeadModal(lead.id); // <- Only pass the ID
         }
+    });
 
+    return leadCard;
+}
+
+
+
+
+        
         // Update the leads table with all leads
       
 function updateLeadsTable() {
