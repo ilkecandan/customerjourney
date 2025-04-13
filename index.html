@@ -2789,6 +2789,7 @@ function updateLeadsTable() {
     tableBody.innerHTML = '';
 
     const allLeads = [];
+
     for (const [stage, stageLeads] of Object.entries(leadsData)) {
         stageLeads.forEach(lead => {
             if (!lead.id) {
@@ -2807,12 +2808,13 @@ function updateLeadsTable() {
 
     allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
 
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
     allLeads.forEach(lead => {
         const row = document.createElement('tr');
         row.dataset.leadId = lead.id;
         row.dataset.stage = lead.stage;
 
-        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
         const contentUsed = lead.contentStrategies?.map(contentId => {
             const content = contentItems.find(c => c.id === contentId);
             return content ? content.name : '';
@@ -2866,8 +2868,12 @@ function updateLeadsTable() {
             <td>${contentUsed.join(', ') || 'None'}</td>
             <td>${lastContactDate}</td>
             <td>
-                <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
-                <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+                <button class="edit-btn" data-lead-id="${lead.id}" title="Edit Lead">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-btn" data-lead-id="${lead.id}" title="Delete Lead">
+                    <i class="fas fa-trash"></i>
+                </button>
             </td>
         `;
 
@@ -2875,17 +2881,17 @@ function updateLeadsTable() {
         tableBody.appendChild(row);
     });
 
-    // ✅ Hook up buttons
+    // 🧠 Attach event listeners
     document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', e => {
             e.stopPropagation();
             const leadId = btn.dataset.leadId;
-            openEditLeadModal(leadId); // <- 🧠 Just pass the ID
+            openEditLeadModal(leadId); // This is your modal-opening function
         });
     });
 
     document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', e => {
             e.stopPropagation();
             const leadId = btn.dataset.leadId;
             if (confirm('Are you sure you want to delete this lead?')) {
@@ -2894,7 +2900,6 @@ function updateLeadsTable() {
         });
     });
 }
-
 
         
         // Helper function to capitalize first letter
