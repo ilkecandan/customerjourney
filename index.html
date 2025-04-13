@@ -2889,11 +2889,12 @@
                 }
                 
                 // Refresh advice button
-                if (e.target.matches('#refresh-advice, #refresh-advice *')) {
-                    generateSmartAdvice();
-                    showNotification('Insights refreshed');
-                    return;
-                }
+              if (e.target.matches('#refresh-advice, #refresh-advice *')) {
+    updateAnalytics(); // This will recalculate and regenerate everything
+    showNotification('Insights refreshed');
+    return;
+}
+
                 
                 // Expand funnel button
                 if (e.target.matches('#expand-funnel, #expand-funnel *')) {
