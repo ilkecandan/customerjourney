@@ -2697,17 +2697,13 @@ function updateLeadsTable() {
     const leadsData = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
-
+    
     const tableBody = document.getElementById('leads-table-body');
     tableBody.innerHTML = '';
 
     const allLeads = [];
     for (const [stage, stageLeads] of Object.entries(leadsData)) {
         stageLeads.forEach(lead => {
-            // Ensure each lead has a unique ID
-            if (!lead.id) {
-                lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
-            }
             allLeads.push({ ...lead, stage });
         });
     }
@@ -2780,35 +2776,14 @@ function updateLeadsTable() {
             <td>${contentUsed.join(', ') || 'None'}</td>
             <td>${lastContactDate}</td>
             <td>
-                <button class="edit-btn" data-lead-id="${lead.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="delete-btn" data-lead-id="${lead.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
             </td>
         `;
 
         row.insertBefore(companyCell, row.firstChild);
         tableBody.appendChild(row);
     });
-
-    // Save updated leads with generated IDs back to storage
-    const updatedLeads = {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
-    };
-
-    allLeads.forEach(lead => {
-        updatedLeads[lead.stage].push(lead);
-    });
-
-    localStorage.setItem('leads', JSON.stringify(updatedLeads));
-}
-
 
     // 🛠 Attach edit button click
     document.querySelectorAll('.edit-btn').forEach(btn => {
