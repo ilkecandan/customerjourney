@@ -2913,6 +2913,16 @@
     showNotification('Insights refreshed');
     return;
 }
+                        // Edit lead button
+if (e.target.matches('.edit-btn, .edit-btn *')) {
+    const row = e.target.closest('tr');
+    const leadId = row?.dataset.leadId;
+    if (leadId) {
+        openEditLeadModal(leadId);
+    }
+    return;
+}
+
 
                 
                 // Expand funnel button
@@ -2984,15 +2994,6 @@
                 });
             }
         }
-        // Edit lead button
-if (e.target.matches('.edit-btn, .edit-btn *')) {
-    const row = e.target.closest('tr');
-    const leadId = row?.dataset.leadId;
-    if (leadId) {
-        openEditLeadModal(leadId);
-    }
-    return;
-}
 
 
         // Export to Excel
