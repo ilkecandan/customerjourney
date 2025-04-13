@@ -2692,138 +2692,139 @@
         }
 
         // Update the leads table with all leads
-        function updateLeadsTable() {
-            const leadsData = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-            
-            const tableBody = document.getElementById('leads-table-body');
-            tableBody.innerHTML = '';
+      
+function updateLeadsTable() {
+    const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    
+    const tableBody = document.getElementById('leads-table-body');
+    tableBody.innerHTML = '';
 
-            // Combine all leads from all stages
-            const allLeads = [];
-            for (const [stage, stageLeads] of Object.entries(leadsData)) {
-                stageLeads.forEach(lead => {
-                    allLeads.push({...lead, stage: stage});
-                });
+    const allLeads = [];
+    for (const [stage, stageLeads] of Object.entries(leadsData)) {
+        stageLeads.forEach(lead => {
+            allLeads.push({ ...lead, stage });
+        });
+    }
+
+    if (allLeads.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
+        tableBody.appendChild(row);
+        return;
+    }
+
+    allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+    allLeads.forEach(lead => {
+        const row = document.createElement('tr');
+        row.dataset.leadId = lead.id;
+        row.dataset.stage = lead.stage;
+
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const contentUsed = lead.contentStrategies?.map(contentId => {
+            const content = contentItems.find(c => c.id === contentId);
+            return content ? content.name : '';
+        }).filter(Boolean) || [];
+
+        const lastContactDate = lead.lastContact
+            ? new Date(lead.lastContact).toLocaleDateString()
+            : 'Never';
+
+        const companyCell = document.createElement('td');
+        companyCell.className = 'company-cell';
+        companyCell.textContent = lead.company;
+
+        if (lead.industry || lead.status) {
+            const tags = document.createElement('div');
+            tags.style.display = 'flex';
+            tags.style.gap = '4px';
+            tags.style.marginTop = '4px';
+
+            if (lead.industry) {
+                const industryTag = document.createElement('span');
+                industryTag.style.background = 'var(--primary-color)';
+                industryTag.style.padding = '2px 6px';
+                industryTag.style.borderRadius = '4px';
+                industryTag.style.fontSize = '0.7rem';
+                industryTag.textContent = lead.industry;
+                tags.appendChild(industryTag);
             }
 
-            if (allLeads.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
-                tableBody.appendChild(row);
-                return;
+            if (lead.status) {
+                const statusTag = document.createElement('span');
+                statusTag.style.background =
+                    lead.status === 'hot'
+                        ? 'var(--error-color)'
+                        : lead.status === 'cold'
+                        ? 'var(--accent-color)'
+                        : 'var(--text-muted)';
+                statusTag.style.padding = '2px 6px';
+                statusTag.style.borderRadius = '4px';
+                statusTag.style.fontSize = '0.7rem';
+                statusTag.textContent = lead.status;
+                tags.appendChild(statusTag);
             }
 
-            // Sort by date added (newest first)
-            allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
-
-            // Add each lead to the table
-            allLeads.forEach(lead => {
-                const row = document.createElement('tr');
-                row.dataset.leadId = lead.id;
-                row.dataset.stage = lead.stage;
-
-                // Get content names
-                const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-                const contentUsed = lead.contentStrategies?.map(contentId => {
-                    const content = contentItems.find(c => c.id === contentId);
-                    return content ? content.name : '';
-                }).filter(name => name) || [];
-
-                // Format last contact date
-                const lastContactDate = lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never';
-
-                // Add industry and status to the company cell
-                const companyCell = document.createElement('td');
-                companyCell.className = 'company-cell';
-                companyCell.textContent = lead.company;
-                
-                if (lead.industry || lead.status) {
-                    const tags = document.createElement('div');
-                    tags.style.display = 'flex';
-                    tags.style.gap = '4px';
-                    tags.style.marginTop = '4px';
-                    
-                    if (lead.industry) {
-                        const industryTag = document.createElement('span');
-                        industryTag.style.background = 'var(--primary-color)';
-                        industryTag.style.padding = '2px 6px';
-                        industryTag.style.borderRadius = '4px';
-                        industryTag.style.fontSize = '0.7rem';
-                        industryTag.textContent = lead.industry;
-                        tags.appendChild(industryTag);
-                    }
-                    
-                    if (lead.status) {
-                        const statusTag = document.createElement('span');
-                        statusTag.style.background = lead.status === 'hot' ? 'var(--error-color)' : 
-                                                     lead.status === 'cold' ? 'var(--accent-color)' : 'var(--text-muted)';
-                        statusTag.style.padding = '2px 6px';
-                        statusTag.style.borderRadius = '4px';
-                        statusTag.style.fontSize = '0.7rem';
-                        statusTag.textContent = lead.status;
-                        tags.appendChild(statusTag);
-                    }
-                    
-                    companyCell.appendChild(tags);
-                }
-
-                row.innerHTML = `
-                    <td class="contact-cell">${lead.contact || 'N/A'}</td>
-                    <td>${capitalizeFirstLetter(lead.stage)}</td>
-                    <td>${contentUsed.join(', ') || 'None'}</td>
-                    <td>${lastContactDate}</td>
-                    <td>
-                        <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
-                        <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
-                    </td>
-                `;
-                
-                // Insert the company cell at the beginning
-                row.insertBefore(companyCell, row.firstChild);
-
-                tableBody.appendChild(row);
-            });
-
-            // Add event listeners to the action buttons
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const leadId = btn.dataset.leadId;
-                    const leads = JSON.parse(localStorage.getItem('leads'));
-                    let foundLead = null;
-                    
-                    // Search through all stages to find the lead
-                    for (const stageLeads of Object.values(leads)) {
-                        const lead = stageLeads.find(l => l.id === leadId);
-                        if (lead) {
-                            foundLead = lead;
-                            break;
-                        }
-                    }
-                    
-                    if (foundLead) {
-                        console.log('Opening edit modal for lead:', leadId); // Debug log
-                        openEditLeadModal(foundLead);
-                    } else {
-                        console.error('Lead not found:', leadId);
-                        showNotification('Lead not found', 'error');
-                    }
-                });
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const leadId = btn.dataset.leadId;
-                    if (confirm('Are you sure you want to delete this lead?')) {
-                        deleteLeadById(leadId);
-                    }
-                });
-            });
+            companyCell.appendChild(tags);
         }
 
+        row.innerHTML = `
+            <td class="contact-cell">${lead.contact || 'N/A'}</td>
+            <td>${capitalizeFirstLetter(lead.stage)}</td>
+            <td>${contentUsed.join(', ') || 'None'}</td>
+            <td>${lastContactDate}</td>
+            <td>
+                <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+
+        row.insertBefore(companyCell, row.firstChild);
+        tableBody.appendChild(row);
+    });
+
+    // 🛠 Attach edit button click
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const leadId = btn.dataset.leadId;
+            const leads = JSON.parse(localStorage.getItem('leads'));
+            let foundLead = null;
+
+            for (const stageLeads of Object.values(leads)) {
+                const lead = stageLeads.find(l => l.id === leadId);
+                if (lead) {
+                    foundLead = lead;
+                    break;
+                }
+            }
+
+            if (foundLead) {
+                openEditLeadModal(foundLead);
+            } else {
+                showNotification('Lead not found', 'error');
+            }
+        });
+    });
+
+    // 🗑️ Attach delete button click
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const leadId = btn.dataset.leadId;
+            if (confirm('Are you sure you want to delete this lead?')) {
+                deleteLeadById(leadId);
+            }
+        });
+    });
+}
+
+
+
+
+        
         // Helper function to capitalize first letter
         function capitalizeFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
