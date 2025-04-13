@@ -2417,6 +2417,13 @@ function loadLeads() {
             `;
             tableBody.appendChild(row);
         });
+        row.addEventListener('click', () => {
+    const leadId = row.dataset.leadId;
+    if (leadId) {
+        openEditLeadModal(leadId);
+    }
+});
+
 
         // Add edit/delete button listeners
         document.querySelectorAll('.edit-btn').forEach(btn => {
