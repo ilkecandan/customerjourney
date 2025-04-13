@@ -2326,67 +2326,140 @@
         
 
         // Load leads with content badges
-        function loadLeads() {
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+function loadLeads() {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
 
-            document.querySelectorAll('.stage-body').forEach(container => {
-                container.innerHTML = '';
-                const stage = container.dataset.dropTarget;
-                
-                // Add content badges for this stage
-                const stageContent = contentItems.filter(c => c.stage === stage);
-                if (stageContent.length > 0) {
-                    const contentBadges = document.createElement('div');
-                    contentBadges.className = 'content-badges';
-                    
-                    stageContent.forEach(content => {
-                        const badge = document.createElement('div');
-                        badge.className = 'content-badge';
-                        badge.dataset.contentId = content.id;
-                        badge.draggable = true;
-                        badge.title = `${content.name}\n${content.description}`;
-                        
-                        badge.innerHTML = `
-                            <i class="${getContentIcon(content.type)}"></i>
-                            <span>${content.name.substring(0, 3)}</span>
-                        `;
-                        
-                        badge.addEventListener('dragstart', handleContentDragStart);
-                        badge.addEventListener('click', () => openEditContentModal(content));
-                        
-                        contentBadges.appendChild(badge);
-                    });
-                    
-                    container.appendChild(contentBadges);
-                }
+    // Clear and populate each stage body
+    document.querySelectorAll('.stage-body').forEach(container => {
+        container.innerHTML = '';
+        const stage = container.dataset.dropTarget;
 
-                // Add leads
-                if (leads[stage] && leads[stage].length === 0) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'empty';
-                    emptyDiv.textContent = 'Drop leads here';
-                    container.appendChild(emptyDiv);
-                } else if (leads[stage]) {
-                    leads[stage].forEach(lead => {
-                        container.appendChild(createLeadCard(lead));
-                    });
-                }
+        // Content badges for this stage
+        const stageContent = contentItems.filter(c => c.stage === stage);
+        if (stageContent.length > 0) {
+            const contentBadges = document.createElement('div');
+            contentBadges.className = 'content-badges';
+
+            stageContent.forEach(content => {
+                const badge = document.createElement('div');
+                badge.className = 'content-badge';
+                badge.dataset.contentId = content.id;
+                badge.draggable = true;
+                badge.title = `${content.name}\n${content.description}`;
+
+                badge.innerHTML = `
+                    <i class="${getContentIcon(content.type)}"></i>
+                    <span>${content.name.substring(0, 3)}</span>
+                `;
+
+                badge.addEventListener('dragstart', handleContentDragStart);
+                badge.addEventListener('click', () => openEditContentModal(content));
+
+                contentBadges.appendChild(badge);
             });
 
-            // Update stage counts
-            document.getElementById('awareness-count').textContent = leads.awareness.length;
-            document.getElementById('interest-count').textContent = leads.interest.length;
-            document.getElementById('consideration-count').textContent = 
-                leads.intent.length + leads.evaluation.length + leads.purchase.length;
-
-            updateLeadsTable();
-            updateConversionPercentages();
-            generateSmartAdvice();
-            updateAdvancedAnalytics();
+            container.appendChild(contentBadges);
         }
+
+        // Lead cards
+        if (leads[stage] && leads[stage].length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty';
+            emptyDiv.textContent = 'Drop leads here';
+            container.appendChild(emptyDiv);
+        } else if (leads[stage]) {
+            leads[stage].forEach(lead => {
+                container.appendChild(createLeadCard(lead));
+            });
+        }
+    });
+
+    // Update funnel stage stats
+    document.getElementById('awareness-count').textContent = leads.awareness.length;
+    document.getElementById('interest-count').textContent = leads.interest.length;
+    document.getElementById('consideration-count').textContent =
+        leads.intent.length + leads.evaluation.length + leads.purchase.length;
+
+    // Update leads table
+    const tableBody = document.getElementById('leads-table-body');
+    tableBody.innerHTML = '';
+
+    const allLeads = [];
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        stageLeads.forEach(lead => {
+            allLeads.push({ ...lead, stage });
+        });
+    }
+
+    if (allLeads.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="6" style="text-align: center;">No leads found</td>`;
+        tableBody.appendChild(row);
+    } else {
+        allLeads.forEach(lead => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${lead.company}</td>
+                <td>${lead.contact}</td>
+                <td>${capitalizeFirstLetter(lead.stage)}</td>
+                <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
+                <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
+                <td>
+                    <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                    <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // Add edit/delete button listeners
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const leadId = btn.dataset.leadId;
+                openEditModal(leadId);
+            });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const leadId = btn.dataset.leadId;
+                deleteLead(leadId);
+            });
+        });
+    }
+
+    updateConversionPercentages();
+    generateSmartAdvice();
+    updateAdvancedAnalytics();
+}
+
+function openEditModal(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || [];
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    // Populate the modal
+    document.getElementById('edit-lead-id').value = lead.id;
+    document.getElementById('edit-lead-company').value = lead.company || '';
+    document.getElementById('edit-lead-contact').value = lead.contact || '';
+    document.getElementById('edit-lead-email').value = lead.email || '';
+    document.getElementById('edit-lead-phone').value = lead.phone || '';
+    document.getElementById('edit-lead-stage').value = lead.stage || '';
+    document.getElementById('edit-lead-source').value = lead.source || '';
+    document.getElementById('edit-lead-industry').value = lead.industry || '';
+    document.getElementById('edit-lead-status').value = lead.status || '';
+    document.getElementById('edit-lead-notes').value = lead.notes || '';
+
+    $('#edit-lead-content').val(lead.contentStrategies || []).trigger('change');
+
+    document.getElementById('edit-lead-modal').classList.add('show');
+}
+
+
+        
 
         // Update advanced analytics metrics
         function updateAdvancedAnalytics() {
