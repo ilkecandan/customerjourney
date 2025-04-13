@@ -2733,12 +2733,12 @@ function openEditModal(leadId) {
         }
 
         // Create a lead card element for the funnel
-        function createLeadCard(lead) {
+function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
     leadCard.draggable = true;
     leadCard.dataset.leadId = lead.id;
-    leadCard.dataset.currentStage = lead.stage; // corrected key
+    leadCard.dataset.currentStage = lead.currentStage;
 
     const company = document.createElement('div');
     company.className = 'company';
@@ -2748,6 +2748,7 @@ function openEditModal(leadId) {
     contact.className = 'contact';
     contact.textContent = lead.contact || 'No contact';
 
+    // Tags container
     const tagsWrapper = document.createElement('div');
     tagsWrapper.className = 'tags-wrapper';
     tagsWrapper.style.display = 'flex';
@@ -2768,25 +2769,27 @@ function openEditModal(leadId) {
         tagsWrapper.appendChild(statusTag);
     }
 
+    // Build card
     leadCard.appendChild(company);
     leadCard.appendChild(contact);
     if (tagsWrapper.children.length > 0) {
         leadCard.appendChild(tagsWrapper);
     }
 
-    // 🔄 Drag logic
+    // Drag events
     leadCard.addEventListener('dragstart', handleDragStart);
 
-    // 🧠 Edit on click (NOW FIXED!)
+    // ✅ Edit on click
     leadCard.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openEditLeadModal(lead.id); // Pass the correct ID
+        if (!e.target.classList.contains('dragging')) {
+            openEditModal(lead.id); // <- Use correct function
+        }
     });
 
     return leadCard;
 }
 
-
+        
         // Update the leads table with all leads
       
 function updateLeadsTable() {
