@@ -2871,7 +2871,7 @@ function updateLeadsTable() {
             <td>${contentUsed.join(', ') || 'None'}</td>
             <td>${lastContactDate}</td>
             <td>
-                <button class="edit-btn" data-lead-id="${lead.id}" title="Edit Lead">
+                <button class="edit-btn" data-lead-id="${lead.id}" title="Edit Lead" style="display: none;">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="delete-btn" data-lead-id="${lead.id}" title="Delete Lead">
@@ -2882,17 +2882,17 @@ function updateLeadsTable() {
 
         row.insertBefore(companyCell, row.firstChild);
         tableBody.appendChild(row);
-    });
 
-    // 🧠 Attach event listeners
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const leadId = btn.dataset.leadId;
-            openEditLeadModal(leadId); // This is your modal-opening function
+        // ✅ Make the whole row clickable for editing
+        row.addEventListener('click', e => {
+            const isDeleteClick = e.target.closest('.delete-btn');
+            if (!isDeleteClick) {
+                openEditLeadModal(lead.id);
+            }
         });
     });
 
+    // 🔧 Keep delete working separately
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', e => {
             e.stopPropagation();
@@ -2903,6 +2903,7 @@ function updateLeadsTable() {
         });
     });
 }
+
 
         
         // Helper function to capitalize first letter
