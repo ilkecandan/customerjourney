@@ -3458,53 +3458,133 @@
     // --- Dynamic Advice Options ---
     const adviceOptions = {
         emptyFunnel: [
-            "Your funnel is empty. Add new leads to get started!",
-            "No leads yet. Time to hunt down some future customers!",
-            "The funnel’s feeling like a ghost town. Invite someone in!",
-            "Nothing here yet—this is your sign to populate your funnel!"
-        ],
+    "Your funnel is empty. Add new leads to get started!",
+    "No leads yet. Time to hunt down some future customers!",
+    "The funnel’s feeling like a ghost town. Invite someone in!",
+    "Nothing here yet—this is your sign to populate your funnel!",
+    "Imagine a party where no one shows up. That’s your funnel right now.",
+    "Even tumbleweeds are getting bored. Add some leads!",
+    "Your funnel is zen... but maybe too zen. Let’s stir some action.",
+    "This space is full of potential—but zero people. Let’s fix that.",
+    "Your funnel is a blank canvas. Time to paint with prospects.",
+    "Silence in the funnel doesn’t always mean peace—it means no data to optimize.",
+    "Not even a bot would convert here. Add. Some. Humans.",
+    "Leads won’t find you through telepathy. Make some noise!",
+    "Still waters run deep, but they also don’t pay your bills. Get some traffic in.",
+    "Zero leads = zero insights. Start feeding the system.",
+    "Your dashboard is lonely. Give it some leads to play with."
+],
         noAwareness: [
-            "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
-            "No Awareness leads. Top-of-funnel visibility is critical—let’s fix that.",
-            "No one knows you exist if Awareness is empty. Start there.",
-            "Lead the way—literally. Add leads to the Awareness stage."
-        ],
-        stuckInInterest: [
-            "Your leads are stuck in Interest. Try assigning content or follow-ups to keep them moving!",
-            "They’re interested... but frozen. Time for a nudge.",
-            "Interest is the waiting room—don’t let them stay too long.",
-            "They’ve knocked. Invite them further into the funnel."
-        ],
-        noPurchases: [
-            "You have leads in Consideration but no purchases. Review your final stage content and offers.",
-            "No deals closed yet. Consider tightening your pitch at the end.",
-            "They’re close—but not convinced. Your purchase stage might need love.",
-            "Stuck at the door of Purchase? Re-evaluate what’s stopping them."
-        ],
-        underperformingContent: [
-            "Some content may need improvement: {items}. Consider updating or replacing these assets.",
-            "Underperforming content: {items}. It might be time to upgrade your material.",
-            "Not all content converts. These aren’t pulling their weight: {items}.",
-            "Give these pieces a makeover: {items}. Your funnel deserves better."
-        ],
-        notContacted: [
-            "{count} leads haven't been contacted in over a week. Keep things warm by reaching out again.",
-            "You’re ghosting {count} leads. 👻 Maybe it’s time to reconnect?",
-            "{count} leads are cooling off. Ping them while there’s still a spark.",
-            "A little love goes a long way—contact those {count} leads again!"
-        ],
-        stalledLeads: [
-            "{count} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.",
-            "{count} leads are gathering dust. Shake things up!",
-            "Those {count} stagnant leads? Time to check if they’re still breathing.",
-            "Re-engagement alert: {count} leads are stuck. Rescue time!"
-        ],
-        hotLeads: [
-            "You have {count} hot leads. Prioritize these for quick follow-ups and personalized attention.",
-            "🔥 {count} hot leads await your charm. Don’t keep them waiting.",
-            "{count} hot leads. These are your low-hanging fruit—go pick!",
-            "Your {count} hot leads are ready. Move fast, close faster."
-        ]
+    "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
+    "No Awareness leads. Top-of-funnel visibility is critical—let’s fix that.",
+    "No one knows you exist if Awareness is empty. Start there.",
+    "Lead the way—literally. Add leads to the Awareness stage.",
+    "Your brand is whispering into the void. Make some noise.",
+    "If Awareness is empty, who’s supposed to care? Let them know you’re here.",
+    "This is like performing a concert to an empty stadium. Invite an audience.",
+    "You're trying to date without saying hello. Awareness is the hello.",
+    "Your funnel's top is missing, which makes it more of a... tube?",
+    "You can’t have Interest without Awareness. That’s not marketing—that’s magic.",
+    "Think of Awareness as lighting the signal fire. Yours is out. Strike the match.",
+    "The journey starts here. And right now, there’s no one at the starting line.",
+    "No awareness = no brand memory = no clicks = no life. Fix the top.",
+    "You're building a castle, but nobody knows the kingdom exists. Send out messengers.",
+    "If leads don’t know you exist, they can’t desire, evaluate, or convert. Visibility first."
+],
+
+    stuckInInterest: [
+    "Your leads are showing interest—that's a great sign. Give them the nudge they need to go further.",
+    "They're leaning in. Meet them with clarity, value, and a next step.",
+    "This is your moment to shine. A well-timed message or content piece could unlock real movement.",
+    "Interest means the door is open. You just need to walk through it with purpose.",
+    "They’re curious. Guide them toward consideration with something meaningful.",
+    "Don’t underestimate the power of one follow-up. Sometimes that’s all it takes.",
+    "Your leads are warm. Stoke the fire with value-packed content or a timely check-in.",
+    "They’ve paused, not vanished. Help them take the next step—gently, confidently.",
+    "Momentum lives here. A single spark could reignite the journey.",
+    "You’ve caught their attention. Now, help them imagine what’s possible with you.",
+    "This isn’t stagnation—it’s an invitation. Show up and inspire the next move.",
+    "They're interested for a reason. Help them remember why—and show what comes next.",
+    "You’re halfway there. Keep the energy up, and the conversions will follow."
+],
+
+       noPurchases: [
+    "You have leads in Consideration but no purchases. Your closing game is next—refine and shine.",
+    "They're almost ready. Strengthen the final touchpoint to guide the decision.",
+    "You're so close—help them take the last step with clarity and confidence.",
+    "No deals closed yet, but interest is alive. Bring precision to your offer.",
+    "Your leads are listening—now give them something undeniable to say yes to.",
+    "Consideration is a sign of potential. Make the purchase path feel obvious and safe.",
+    "Stuck at the door of Purchase? Sometimes, a stronger CTA or simplified checkout is all it takes.",
+    "They’re on the edge. A timely incentive or personalized outreach could tip the scale.",
+    "If they’re here, they’re interested. Reaffirm value and remove friction.",
+    "This is your closing act. Make it feel like a no-brainer, not a negotiation.",
+    "Don’t just sell—resolve. Show them your offer solves their exact problem, beautifully.",
+    "If they're hovering, help them land. Use clarity, urgency, and trust signals.",
+    "Purchases happen when confidence meets timing. Guide them gently but with purpose."
+],
+
+      underperformingContent: [
+    "Some content may need improvement: {items}. Consider updating or replacing these assets.",
+    "Underperforming content detected: {items}. Time to give them a second life—or a graceful exit.",
+    "Not all content converts. These aren’t pulling their weight: {items}. Let’s fix that.",
+    "Give these pieces a makeover: {items}. Your funnel deserves better.",
+    "These content assets aren’t keeping up: {items}. Refine, refresh, or retire.",
+    "Content is only as good as its results. These may need your magic touch: {items}.",
+    "These underperformers are costing you momentum: {items}. Time to reimagine.",
+    "Great content converts. These ones aren’t: {items}. Find out why.",
+    "Your audience deserves clarity—these might be missing the mark: {items}.",
+    "Weak links spotted in your content chain: {items}. Strengthen them.",
+    "If these pieces were employees, you'd be scheduling performance reviews: {items}.",
+    "The data has spoken—these aren’t working: {items}. Let’s do better.",
+    "Content is your silent salesperson. These are saying the wrong things: {items}. Rework the script."
+],
+
+notContacted: [
+    "{count} leads haven't been contacted in over a week. Keep things warm by reaching out again.",
+    "You’re ghosting {count} leads. 👻 Maybe it’s time to reconnect?",
+    "{count} leads are cooling off. Ping them while there’s still a spark.",
+    "A little love goes a long way—contact those {count} leads again!",
+    "These {count} leads haven’t heard from you in a while. Don’t let silence kill the momentum.",
+    "The trail’s going cold. Reignite connection with {count} leads before it’s too late.",
+    "{count} people are waiting for your follow-up. Don’t leave them in limbo.",
+    "Conversations go stale fast. Reach out and revive {count} leads.",
+    "Every lead ignored is a door closing. You’ve got {count} doors left ajar.",
+    "{count} leads are slipping into the void. A quick message could change everything.",
+    "They were interested once. Give {count} leads a reason to remember why.",
+    "It’s been a while for {count} leads. Send value, not just a ‘Hey.’",
+    "Re-engagement isn’t hard—just honest. Talk to those {count} leads again with purpose."
+],
+
+    stalledLeads: [
+    "{count} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.",
+    "{count} leads are gathering dust. Shake things up!",
+    "Those {count} stagnant leads? Time to check if they’re still breathing.",
+    "Re-engagement alert: {count} leads are stuck. Rescue time!",
+    "{count} leads have been sitting too long. Nudge them—or set them free.",
+    "Momentum is fading for {count} leads. Time to re-spark the journey.",
+    "{count} leads have lost their way in the funnel. Be the guide back to movement.",
+    "Stillness isn’t progress. {count} leads need a reason to move again.",
+    "Some leads stall because they’re unsure. Clarify the next step for these {count} wanderers.",
+    "You wouldn’t let a friend zone relationship go 2 weeks with silence—do the same for these {count} leads.",
+    "{count} leads paused their journey. Help them remember why they started.",
+    "Stalled leads = lost signals. Reach out, recalibrate, and reconnect with those {count}."
+],
+       hotLeads: [
+    "You have {count} hot leads. Prioritize these for quick follow-ups and personalized attention.",
+    "🔥 {count} hot leads await your charm. Don’t keep them waiting.",
+    "{count} hot leads. These are your low-hanging fruit—go pick!",
+    "Your {count} hot leads are ready. Move fast, close faster.",
+    "If you blink, these {count} hot leads might cool down. Take action now.",
+    "These {count} leads are fire. Fan the flames with smart follow-up.",
+    "{count} leads are on the edge of a yes. Help them leap.",
+    "Don’t let your hottest leads simmer down. Follow up while they’re warm.",
+    "{count} leads are already sold—they just need the final nudge.",
+    "You're top-of-mind for these {count} leads. Stay there, and close.",
+    "These {count} are your funnel’s VIP guests. Treat them like it.",
+    "Quick wins live here: {count} hot leads, primed and waiting."
+]
+
     };
 
     // Calculate conditions
