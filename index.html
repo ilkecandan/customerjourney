@@ -3013,7 +3013,56 @@ if (e.target.matches('.edit-btn, .edit-btn *')) {
     }
 }
 
-        
+      function openEditLeadModal(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    let foundLead = null;
+    let leadStage = null;
+
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const match = stageLeads.find(l => l.id === leadId);
+        if (match) {
+            foundLead = match;
+            leadStage = stage;
+            break;
+        }
+    }
+
+    if (!foundLead) {
+        showNotification('Lead not found', 'error');
+        return;
+    }
+
+    // Fill modal fields
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-stage').value = leadStage || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+
+    const contentSelect = document.getElementById('edit-lead-content');
+    const allContent = JSON.parse(localStorage.getItem('content')) || [];
+    contentSelect.innerHTML = '';
+
+    allContent.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = c.name;
+        if ((foundLead.contentStrategies || []).includes(c.id)) {
+            option.selected = true;
+        }
+        contentSelect.appendChild(option);
+    });
+
+    // Show modal
+    const modal = document.getElementById('edit-lead-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+}
+  
 
         // Export to Excel
         function exportToExcel() {
