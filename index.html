@@ -2557,8 +2557,10 @@
                 actions.className = 'content-actions';
 
                 const editBtn = document.createElement('button');
-                editBtn.className = 'edit-content';
-                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+editBtn.className = 'edit-btn';
+editBtn.dataset.leadId = lead.id;
+editBtn.innerHTML = `<i class="fas fa-edit" data-lead-id="${lead.id}"></i>`;
+
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditContentModal(content);
