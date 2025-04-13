@@ -2325,77 +2325,67 @@
         
 
         // Load leads with content badges
-
         function loadLeads() {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
+            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+            };
+            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
 
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-
-    document.querySelectorAll('.stage-body').forEach(container => {
-        container.innerHTML = '';
-        const stage = container.dataset.dropTarget;
-
-        // Add content badges for this stage
-        const stageContent = contentItems.filter(c => c.stage === stage);
-        if (stageContent.length > 0) {
-            const contentBadges = document.createElement('div');
-            contentBadges.className = 'content-badges';
-
-            stageContent.forEach(content => {
-                const badge = document.createElement('div');
-                badge.className = 'content-badge';
-                badge.dataset.contentId = content.id;
-                badge.draggable = true;
-                badge.title = `${content.name}\n${content.description}`;
-
-                badge.innerHTML = `
-                    <i class="${getContentIcon(content.type)}"></i>
-                    <span>${content.name.substring(0, 3)}</span>
-                `;
-
-                badge.addEventListener('dragstart', handleContentDragStart);
-                badge.addEventListener('click', () => openEditContentModal(content));
-
-                contentBadges.appendChild(badge);
-            });
-
-            container.appendChild(contentBadges);
-        }
-
-        // Add leads
-        if (leads[stage] && leads[stage].length === 0) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'empty';
-            emptyDiv.textContent = 'Drop leads here';
-            container.appendChild(emptyDiv);
-        } else if (leads[stage]) {
-            leads[stage].forEach(lead => {
-                const card = createLeadCard(lead);
-
-                // ✅ Fix: Add edit button functionality directly
-                const editBtn = card.querySelector('.edit-btn');
-                if (editBtn) {
-                    editBtn.addEventListener('click', () => openEditLeadModal(lead));
+            document.querySelectorAll('.stage-body').forEach(container => {
+                container.innerHTML = '';
+                const stage = container.dataset.dropTarget;
+                
+                // Add content badges for this stage
+                const stageContent = contentItems.filter(c => c.stage === stage);
+                if (stageContent.length > 0) {
+                    const contentBadges = document.createElement('div');
+                    contentBadges.className = 'content-badges';
+                    
+                    stageContent.forEach(content => {
+                        const badge = document.createElement('div');
+                        badge.className = 'content-badge';
+                        badge.dataset.contentId = content.id;
+                        badge.draggable = true;
+                        badge.title = `${content.name}\n${content.description}`;
+                        
+                        badge.innerHTML = `
+                            <i class="${getContentIcon(content.type)}"></i>
+                            <span>${content.name.substring(0, 3)}</span>
+                        `;
+                        
+                        badge.addEventListener('dragstart', handleContentDragStart);
+                        badge.addEventListener('click', () => openEditContentModal(content));
+                        
+                        contentBadges.appendChild(badge);
+                    });
+                    
+                    container.appendChild(contentBadges);
                 }
 
-                container.appendChild(card);
+                // Add leads
+                if (leads[stage] && leads[stage].length === 0) {
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'empty';
+                    emptyDiv.textContent = 'Drop leads here';
+                    container.appendChild(emptyDiv);
+                } else if (leads[stage]) {
+                    leads[stage].forEach(lead => {
+                        container.appendChild(createLeadCard(lead));
+                    });
+                }
             });
+
+            // Update stage counts
+            document.getElementById('awareness-count').textContent = leads.awareness.length;
+            document.getElementById('interest-count').textContent = leads.interest.length;
+            document.getElementById('consideration-count').textContent = 
+                leads.intent.length + leads.evaluation.length + leads.purchase.length;
+
+            updateLeadsTable();
+            updateConversionPercentages();
+            generateSmartAdvice();
+            updateAdvancedAnalytics();
         }
-    });
-
-    // Update stage counts
-    document.getElementById('awareness-count').textContent = leads.awareness.length;
-    document.getElementById('interest-count').textContent = leads.interest.length;
-    document.getElementById('consideration-count').textContent =
-        leads.intent.length + leads.evaluation.length + leads.purchase.length;
-
-    updateLeadsTable();
-    updateConversionPercentages();
-    generateSmartAdvice();
-    updateAdvancedAnalytics();
-}
 
         // Update advanced analytics metrics
         function updateAdvancedAnalytics() {
