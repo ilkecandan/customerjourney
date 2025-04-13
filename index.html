@@ -2733,12 +2733,12 @@ function openEditModal(leadId) {
         }
 
         // Create a lead card element for the funnel
-function createLeadCard(lead) {
+        function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
     leadCard.draggable = true;
     leadCard.dataset.leadId = lead.id;
-    leadCard.dataset.currentStage = lead.currentStage;
+    leadCard.dataset.currentStage = lead.stage; // corrected key
 
     const company = document.createElement('div');
     company.className = 'company';
@@ -2748,7 +2748,6 @@ function createLeadCard(lead) {
     contact.className = 'contact';
     contact.textContent = lead.contact || 'No contact';
 
-    // Tags container
     const tagsWrapper = document.createElement('div');
     tagsWrapper.className = 'tags-wrapper';
     tagsWrapper.style.display = 'flex';
@@ -2769,21 +2768,19 @@ function createLeadCard(lead) {
         tagsWrapper.appendChild(statusTag);
     }
 
-    // Build card content
     leadCard.appendChild(company);
     leadCard.appendChild(contact);
     if (tagsWrapper.children.length > 0) {
         leadCard.appendChild(tagsWrapper);
     }
 
-    // Enable drag
+    // 🔄 Drag logic
     leadCard.addEventListener('dragstart', handleDragStart);
 
-    // Make card editable on click
+    // 🧠 Edit on click (NOW FIXED!)
     leadCard.addEventListener('click', (e) => {
-        if (!e.target.closest('.delete-btn')) {
-            openEditLeadModal(lead.id); // Make sure this function accepts leadId
-        }
+        e.stopPropagation();
+        openEditLeadModal(lead.id); // Pass the correct ID
     });
 
     return leadCard;
@@ -3090,26 +3087,22 @@ function setupEventListeners() {
     }
 }
 
-
-    function openEditLeadModal(leadId) {
+function openEditLeadModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
     let foundLead = null;
-    let stage = null;
-
-    for (const [s, leadArray] of Object.entries(leads)) {
-        const match = leadArray.find(l => l.id === leadId);
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const match = stageLeads.find(l => l.id === leadId);
         if (match) {
-            foundLead = match;
-            stage = s;
+            foundLead = { ...match, stage };
             break;
         }
     }
 
     if (!foundLead) {
-        showNotification('Lead not found', 'error');
+        alert('Lead not found.');
         return;
     }
 
@@ -3117,26 +3110,17 @@ function setupEventListeners() {
     document.getElementById('edit-lead-company').value = foundLead.company || '';
     document.getElementById('edit-lead-contact').value = foundLead.contact || '';
     document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-stage').value = stage || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.stage || '';
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
     document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
 
-    const contentSelect = document.getElementById('edit-lead-content');
-    const allContent = JSON.parse(localStorage.getItem('content')) || [];
-    contentSelect.innerHTML = '';
-    allContent.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c.id;
-        option.textContent = c.name;
-        if ((foundLead.contentStrategies || []).includes(c.id)) {
-            option.selected = true;
-        }
-        contentSelect.appendChild(option);
-    });
-
-    const modal = document.getElementById('edit-lead-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('show');
+    document.getElementById('edit-lead-modal').classList.add('show');
 }
+
 
 
         // Export to Excel
