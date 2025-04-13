@@ -2918,30 +2918,34 @@ function setupEventListeners() {
         }
 
         // ✨ Edit lead button (Fixed!)
-        if (e.target.matches('.edit-btn, .edit-btn *')) {
-            const row = e.target.closest('tr');
-            const leadId = row?.dataset.leadId;
-            if (leadId) {
-                const leads = JSON.parse(localStorage.getItem('leads')) || {};
-                let foundLead = null;
 
-                for (const stageLeads of Object.values(leads)) {
-                    const lead = stageLeads.find(l => l.id === leadId);
-                    if (lead) {
-                        foundLead = lead;
-                        break;
-                    }
-                }
-
-                if (foundLead) {
-                    openEditLeadModal(foundLead); // ✅ Now passes the full lead object
-                } else {
-                    showNotification('Lead not found', 'error');
-                }
+// Edit lead button
+if (e.target.matches('.edit-btn, .edit-btn *')) {
+    const row = e.target.closest('tr');
+    const leadId = row?.dataset.leadId;
+    if (leadId) {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        let foundLead = null;
+        for (const stageLeads of Object.values(leads)) {
+            const lead = stageLeads.find(l => l.id === leadId);
+            if (lead) {
+                foundLead = lead;
+                break;
             }
-            return;
         }
+        if (foundLead) {
+            openEditLeadModal(foundLead);
+        } else {
+            console.error('Lead not found:', leadId);
+            showNotification('Lead not found', 'error');
+        }
+    }
+    return;
+}
 
+        
         // Expand funnel button
         if (e.target.matches('#expand-funnel, #expand-funnel *')) {
             const funnelContainer = document.querySelector('.funnel-container');
