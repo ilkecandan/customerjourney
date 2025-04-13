@@ -2305,10 +2305,11 @@
                 localStorage.setItem('content', JSON.stringify(defaultContent));
             }
 
-            document.getElementById('refresh-advice').addEventListener('click', () => {
-                generateSmartAdvice();
-                showNotification('Insights refreshed');
-            });
+      document.getElementById('refresh-advice').addEventListener('click', () => {
+    updateAnalytics(); // This recalculates metrics and regenerates advice
+    showNotification('Insights refreshed');
+});
+
 
             // Initialize Select2 for content selection
             $('.content-select').select2({
