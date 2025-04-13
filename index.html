@@ -2733,7 +2733,6 @@ function openEditModal(leadId) {
         }
 
         // Create a lead card element for the funnel
-
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
@@ -2770,21 +2769,20 @@ function createLeadCard(lead) {
         tagsWrapper.appendChild(statusTag);
     }
 
-    // Build card
+    // Build card content
     leadCard.appendChild(company);
     leadCard.appendChild(contact);
     if (tagsWrapper.children.length > 0) {
         leadCard.appendChild(tagsWrapper);
     }
 
-    // Drag events
+    // Enable drag
     leadCard.addEventListener('dragstart', handleDragStart);
 
-    // 🧠 Edit on click
+    // Make card editable on click
     leadCard.addEventListener('click', (e) => {
-        // Don't trigger edit while dragging
-        if (!e.target.classList.contains('dragging')) {
-            openEditLeadModal(lead.id); // <- Only pass the ID
+        if (!e.target.closest('.delete-btn')) {
+            openEditLeadModal(lead.id); // Make sure this function accepts leadId
         }
     });
 
@@ -2792,9 +2790,6 @@ function createLeadCard(lead) {
 }
 
 
-
-
-        
         // Update the leads table with all leads
       
 function updateLeadsTable() {
