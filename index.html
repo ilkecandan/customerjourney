@@ -2779,12 +2779,8 @@ function updateLeadsTable() {
             <td>${contentUsed.join(', ') || 'None'}</td>
             <td>${lastContactDate}</td>
             <td>
-                <button class="edit-btn" data-lead-id="${lead.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="delete-btn" data-lead-id="${lead.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
             </td>
         `;
 
@@ -2792,38 +2788,15 @@ function updateLeadsTable() {
         tableBody.appendChild(row);
     });
 
-    // Save fixed IDs back to localStorage
-    const updatedLeads = { awareness: [], interest: [], intent: [], evaluation: [], purchase: [] };
-    allLeads.forEach(lead => {
-        updatedLeads[lead.stage].push(lead);
-    });
-    localStorage.setItem('leads', JSON.stringify(updatedLeads));
-
-    // Reattach edit button click
+    // ✅ Hook up buttons
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const leadId = btn.dataset.leadId;
-            const leads = JSON.parse(localStorage.getItem('leads')) || {};
-            let foundLead = null;
-
-            for (const stageLeads of Object.values(leads)) {
-                const lead = stageLeads.find(l => l.id === leadId);
-                if (lead) {
-                    foundLead = lead;
-                    break;
-                }
-            }
-
-            if (foundLead) {
-                openEditLeadModal(foundLead);
-            } else {
-                showNotification('Lead not found', 'error');
-            }
+            openEditLeadModal(leadId); // <- 🧠 Just pass the ID
         });
     });
 
-    // Reattach delete button click
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -2834,6 +2807,7 @@ function updateLeadsTable() {
         });
     });
 }
+
 
         
         // Helper function to capitalize first letter
@@ -3024,19 +2998,19 @@ if (e.target.matches('.edit-btn, .edit-btn *')) {
     }
 }
 
-      function openEditLeadModal(leadId) {
+    function openEditLeadModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
     let foundLead = null;
-    let leadStage = null;
+    let stage = null;
 
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const match = stageLeads.find(l => l.id === leadId);
+    for (const [s, leadArray] of Object.entries(leads)) {
+        const match = leadArray.find(l => l.id === leadId);
         if (match) {
             foundLead = match;
-            leadStage = stage;
+            stage = s;
             break;
         }
     }
@@ -3046,18 +3020,16 @@ if (e.target.matches('.edit-btn, .edit-btn *')) {
         return;
     }
 
-    // Fill modal fields
     document.getElementById('edit-lead-id').value = foundLead.id;
     document.getElementById('edit-lead-company').value = foundLead.company || '';
     document.getElementById('edit-lead-contact').value = foundLead.contact || '';
     document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-stage').value = leadStage || '';
+    document.getElementById('edit-lead-stage').value = stage || '';
     document.getElementById('edit-lead-notes').value = foundLead.notes || '';
 
     const contentSelect = document.getElementById('edit-lead-content');
     const allContent = JSON.parse(localStorage.getItem('content')) || [];
     contentSelect.innerHTML = '';
-
     allContent.forEach(c => {
         const option = document.createElement('option');
         option.value = c.id;
@@ -3068,12 +3040,11 @@ if (e.target.matches('.edit-btn, .edit-btn *')) {
         contentSelect.appendChild(option);
     });
 
-    // Show modal
     const modal = document.getElementById('edit-lead-modal');
     modal.classList.remove('hidden');
     modal.classList.add('show');
 }
-  
+
 
         // Export to Excel
         function exportToExcel() {
