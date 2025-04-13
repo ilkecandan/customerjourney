@@ -2437,29 +2437,43 @@ function loadLeads() {
 }
 
 function openEditModal(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || [];
-    const lead = leads.find(l => l.id === leadId);
-    if (!lead) return;
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
 
-    // Populate the modal
-    document.getElementById('edit-lead-id').value = lead.id;
-    document.getElementById('edit-lead-company').value = lead.company || '';
-    document.getElementById('edit-lead-contact').value = lead.contact || '';
-    document.getElementById('edit-lead-email').value = lead.email || '';
-    document.getElementById('edit-lead-phone').value = lead.phone || '';
-    document.getElementById('edit-lead-stage').value = lead.stage || '';
-    document.getElementById('edit-lead-source').value = lead.source || '';
-    document.getElementById('edit-lead-industry').value = lead.industry || '';
-    document.getElementById('edit-lead-status').value = lead.status || '';
-    document.getElementById('edit-lead-notes').value = lead.notes || '';
+    let foundLead = null;
 
-    $('#edit-lead-content').val(lead.contentStrategies || []).trigger('change');
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const match = stageLeads.find(l => l.id === leadId);
+        if (match) {
+            foundLead = { ...match, stage };
+            break;
+        }
+    }
 
+    if (!foundLead) {
+        alert('Lead not found.');
+        return;
+    }
+
+    // Fill the modal with lead data
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.stage || '';
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+
+    // Show the modal
     document.getElementById('edit-lead-modal').classList.add('show');
 }
 
-
-        
 
         // Update advanced analytics metrics
         function updateAdvancedAnalytics() {
