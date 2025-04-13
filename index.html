@@ -2402,7 +2402,11 @@ function loadLeads() {
         row.innerHTML = `<td colspan="6" style="text-align: center;">No leads found</td>`;
         tableBody.appendChild(row);
     } else {
-        allLeads.forEach(lead => {
+const recentLeads = allLeads
+    .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+    .slice(0, 5);
+
+recentLeads.forEach(lead => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${lead.company}</td>
@@ -3536,13 +3540,13 @@ function openEditLeadModal(leadId) {
       
         // Delete lead from edit modal
         function deleteLead() {
-            const leadId = document.getElementById('edit-lead-id').value;
-            console.log('Deleting lead:', leadId); // Debug log
-            if (confirm('Are you sure you want to delete this lead?')) {
-                deleteLeadById(leadId);
-                document.getElementById('edit-lead-modal').classList.add('hidden');
-            }
-        }
+    const leadId = document.getElementById('edit-lead-id').value;
+    if (leadId && confirm('Are you sure you want to delete this lead?')) {
+        deleteLeadById(leadId);
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+    }
+}
+
 
         // Populate content options in select elements
         function populateContentOptions() {
@@ -3878,20 +3882,26 @@ notContacted: [
         }
 
         // Filter leads table by stage
-        function filterLeadsTable(stage) {
-            const rows = document.querySelectorAll('#leads-table-body tr');
-            
-            rows.forEach(row => {
-                if (row.dataset.leadId === undefined) return; // Skip the "no leads" row
-                
-                const rowStage = row.dataset.stage;
-                if (stage === 'all' || rowStage === stage) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
+    function filterLeadsTable(stage) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    let filtered = [];
+
+    if (stage === 'all') {
+        filtered = Object.values(leads).flat();
+    } else {
+        filtered = leads[stage] || [];
+    }
+
+    const sorted = filtered
+        .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+        .slice(0, 5);
+
+    renderLeadTable(sorted);
+}
+
 
         // Search leads
         function searchLeads(query) {
