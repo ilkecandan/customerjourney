@@ -2779,101 +2779,60 @@ function openEditModal(leadId) {
         }
 
         // Update the leads table with all leads
-      
-function updateLeadsTable() {
-    const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+
+        function updateLeadsTable() {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
-    const tableBody = document.getElementById('leads-table-body');
-    tableBody.innerHTML = '';
-
     const allLeads = [];
-    for (const [stage, stageLeads] of Object.entries(leadsData)) {
+    for (const [stage, stageLeads] of Object.entries(leads)) {
         stageLeads.forEach(lead => {
-            if (!lead.id) {
-                lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
-            }
             allLeads.push({ ...lead, stage });
         });
     }
 
+    const tableBody = document.getElementById('leads-table-body');
+    tableBody.innerHTML = '';
+
     if (allLeads.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
-        tableBody.appendChild(row);
+        tableBody.innerHTML = `<tr><td colspan="6">No leads found.</td></tr>`;
         return;
     }
 
-    allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
-
     allLeads.forEach(lead => {
         const row = document.createElement('tr');
-        row.dataset.leadId = lead.id;
-        row.dataset.stage = lead.stage;
-
-        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-        const contentUsed = lead.contentStrategies?.map(contentId => {
-            const content = contentItems.find(c => c.id === contentId);
-            return content ? content.name : '';
-        }).filter(Boolean) || [];
-
-        const lastContactDate = lead.lastContact
-            ? new Date(lead.lastContact).toLocaleDateString()
-            : 'Never';
-
-        const companyCell = document.createElement('td');
-        companyCell.className = 'company-cell';
-        companyCell.textContent = lead.company;
-
-        if (lead.industry || lead.status) {
-            const tags = document.createElement('div');
-            tags.style.display = 'flex';
-            tags.style.gap = '4px';
-            tags.style.marginTop = '4px';
-
-            if (lead.industry) {
-                const industryTag = document.createElement('span');
-                industryTag.style.background = 'var(--primary-color)';
-                industryTag.style.padding = '2px 6px';
-                industryTag.style.borderRadius = '4px';
-                industryTag.style.fontSize = '0.7rem';
-                industryTag.textContent = lead.industry;
-                tags.appendChild(industryTag);
-            }
-
-            if (lead.status) {
-                const statusTag = document.createElement('span');
-                statusTag.style.background =
-                    lead.status === 'hot'
-                        ? 'var(--error-color)'
-                        : lead.status === 'cold'
-                        ? 'var(--accent-color)'
-                        : 'var(--text-muted)';
-                statusTag.style.padding = '2px 6px';
-                statusTag.style.borderRadius = '4px';
-                statusTag.style.fontSize = '0.7rem';
-                statusTag.textContent = lead.status;
-                tags.appendChild(statusTag);
-            }
-
-            companyCell.appendChild(tags);
-        }
-
         row.innerHTML = `
-            <td class="contact-cell">${lead.contact || 'N/A'}</td>
-            <td>${capitalizeFirstLetter(lead.stage)}</td>
-            <td>${contentUsed.join(', ') || 'None'}</td>
-            <td>${lastContactDate}</td>
+            <td>${lead.company}</td>
+            <td>${lead.contact}</td>
+            <td>${lead.stage}</td>
+            <td>${(lead.contentStrategies || []).join(', ') || 'None'}</td>
+            <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
             <td>
                 <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
                 <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
             </td>
         `;
-
-        row.insertBefore(companyCell, row.firstChild);
         tableBody.appendChild(row);
     });
+
+    // ✨ Make edit button finally work
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const leadId = btn.dataset.leadId;
+            openEditModal(leadId);
+        });
+    });
+
+    // Optionally rebind delete here too
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const leadId = btn.dataset.leadId;
+            deleteLead(leadId);
+        });
+    });
+}
+
 
     // ✅ Hook up buttons
     document.querySelectorAll('.edit-btn').forEach(btn => {
