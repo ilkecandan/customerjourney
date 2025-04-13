@@ -3444,133 +3444,176 @@
         }
 
         // Generate smart advice based on funnel state
-        function generateSmartAdvice() {
-            const metrics = JSON.parse(localStorage.getItem('funnel_metrics')) || {};
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+      function generateSmartAdvice() {
+    const metrics = JSON.parse(localStorage.getItem('funnel_metrics')) || {};
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+    const allLeads = Object.values(leads).flat();
+    const today = new Date();
+
+    const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // --- Dynamic Advice Options ---
+    const adviceOptions = {
+        emptyFunnel: [
+            "Your funnel is empty. Add new leads to get started!",
+            "No leads yet. Time to hunt down some future customers!",
+            "The funnel’s feeling like a ghost town. Invite someone in!",
+            "Nothing here yet—this is your sign to populate your funnel!"
+        ],
+        noAwareness: [
+            "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
+            "No Awareness leads. Top-of-funnel visibility is critical—let’s fix that.",
+            "No one knows you exist if Awareness is empty. Start there.",
+            "Lead the way—literally. Add leads to the Awareness stage."
+        ],
+        stuckInInterest: [
+            "Your leads are stuck in Interest. Try assigning content or follow-ups to keep them moving!",
+            "They’re interested... but frozen. Time for a nudge.",
+            "Interest is the waiting room—don’t let them stay too long.",
+            "They’ve knocked. Invite them further into the funnel."
+        ],
+        noPurchases: [
+            "You have leads in Consideration but no purchases. Review your final stage content and offers.",
+            "No deals closed yet. Consider tightening your pitch at the end.",
+            "They’re close—but not convinced. Your purchase stage might need love.",
+            "Stuck at the door of Purchase? Re-evaluate what’s stopping them."
+        ],
+        underperformingContent: [
+            "Some content may need improvement: {items}. Consider updating or replacing these assets.",
+            "Underperforming content: {items}. It might be time to upgrade your material.",
+            "Not all content converts. These aren’t pulling their weight: {items}.",
+            "Give these pieces a makeover: {items}. Your funnel deserves better."
+        ],
+        notContacted: [
+            "{count} leads haven't been contacted in over a week. Keep things warm by reaching out again.",
+            "You’re ghosting {count} leads. 👻 Maybe it’s time to reconnect?",
+            "{count} leads are cooling off. Ping them while there’s still a spark.",
+            "A little love goes a long way—contact those {count} leads again!"
+        ],
+        stalledLeads: [
+            "{count} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.",
+            "{count} leads are gathering dust. Shake things up!",
+            "Those {count} stagnant leads? Time to check if they’re still breathing.",
+            "Re-engagement alert: {count} leads are stuck. Rescue time!"
+        ],
+        hotLeads: [
+            "You have {count} hot leads. Prioritize these for quick follow-ups and personalized attention.",
+            "🔥 {count} hot leads await your charm. Don’t keep them waiting.",
+            "{count} hot leads. These are your low-hanging fruit—go pick!",
+            "Your {count} hot leads are ready. Move fast, close faster."
+        ]
+    };
+
+    // Calculate conditions
+    const stalledLeads = allLeads.filter(lead => {
+        if (!lead.dateAdded) return false;
+        const addedDate = new Date(lead.dateAdded);
+        return (today - addedDate) / (1000 * 60 * 60 * 24) > 14;
+    }).length;
+
+    const leadsNotContactedRecently = allLeads.filter(lead => {
+        if (!lead.lastContact) return true;
+        const lastContactDate = new Date(lead.lastContact);
+        return (today - lastContactDate) / (1000 * 60 * 60 * 24) > 7;
+    }).length;
+
+    const contentEffectiveness = {};
+    contentItems.forEach(content => {
+        const leadsUsing = allLeads.filter(l => l.contentStrategies?.includes(content.id)).length;
+        if (leadsUsing > 0) {
+            const advanced = allLeads.filter(l => {
+                const stageIndex = ['awareness','interest','intent','evaluation','purchase'];
+                return stageIndex.indexOf(l.currentStage) > stageIndex.indexOf(content.stage) && l.contentStrategies?.includes(content.id);
+            }).length;
+            const rate = Math.round((advanced / leadsUsing) * 100);
+            contentEffectiveness[content.id] = {
+                name: content.name,
+                rate,
+                target: content.targetConversion || 0
             };
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            
-            const allLeads = Object.values(leads).flat();
-            const today = new Date();
-            
-            // Calculate stalled leads
-            const stalledLeads = allLeads.filter(lead => {
-                if (!lead.dateAdded) return false;
-                const addedDate = new Date(lead.dateAdded);
-                const daysInStage = Math.floor((today - addedDate) / (1000 * 60 * 60 * 24));
-                return daysInStage > 14;
-            }).length;
-            
-            // Calculate leads not contacted recently
-            const leadsNotContactedRecently = allLeads.filter(lead => {
-                if (!lead.lastContact) return true;
-                const lastContactDate = new Date(lead.lastContact);
-                const daysSinceContact = Math.floor((today - lastContactDate) / (1000 * 60 * 60 * 24));
-                return daysSinceContact > 7;
-            }).length;
-            
-            // Calculate content effectiveness
-            const contentEffectiveness = {};
-            contentItems.forEach(content => {
-                const leadsUsingContent = allLeads.filter(lead => 
-                    lead.contentStrategies && lead.contentStrategies.includes(content.id)
-                ).length;
-                
-                if (leadsUsingContent > 0) {
-                    const nextStageLeads = allLeads.filter(lead => {
-                        const currentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(lead.currentStage);
-                        const contentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(content.stage);
-                        return currentStageIndex > contentStageIndex && 
-                               lead.contentStrategies && 
-                               lead.contentStrategies.includes(content.id);
-                    }).length;
-                    
-                    const conversionRate = Math.round((nextStageLeads / leadsUsingContent) * 100);
-                    contentEffectiveness[content.id] = {
-                        name: content.name,
-                        rate: conversionRate,
-                        target: content.targetConversion || 0
-                    };
-                }
-            });
-            
-            // Find underperforming content
-            const underperformingContent = Object.entries(contentEffectiveness)
-                .filter(([_, stats]) => stats.rate < stats.target)
-                .map(([_, stats]) => stats.name);
-            
-            // Generate advice based on metrics
-            let advice = [];
-            let insights = [];
-            
-            // General funnel advice
-            if (metrics.totalLeads === 0) {
-                advice.push("Your funnel is empty. Add new leads to get started!");
-            } else if (leads.awareness.length === 0 && metrics.totalLeads > 0) {
-                advice.push("You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.");
-            } else if (leads.interest.length > 0 && (leads.intent.length + leads.evaluation.length) === 0) {
-                advice.push("Your leads are stuck in Interest. Try assigning content or follow-ups to keep them moving!");
-            } else if (leads.purchase.length === 0 && (leads.intent.length + leads.evaluation.length) > 0) {
-                advice.push("You have leads in Consideration but no purchases. Review your final stage content and offers.");
-            }
-            
-            // Content advice
-            if (underperformingContent.length > 0) {
-                advice.push(`Some content may need improvement: ${underperformingContent.join(', ')}. Consider updating or replacing these assets.`);
-            }
-            
-            // Contact recency advice
-            if (leadsNotContactedRecently > 0) {
-                advice.push(`${leadsNotContactedRecently} leads haven't been contacted in over a week. Keep things warm by reaching out again.`);
-            }
-            
-            // Stalled leads advice
-            if (stalledLeads > 0) {
-                advice.push(`${stalledLeads} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.`);
-            }
-            
-            // Hot leads advice
-            if (metrics.hotLeadCount > 0) {
-                advice.push(`You have ${metrics.hotLeadCount} hot leads. Prioritize these for quick follow-ups and personalized attention.`);
-            }
-            
-            // Conversion rate insights
-            insights.push(`Awareness → Interest conversion: ${metrics.awarenessToInterest || 0}%`);
-            insights.push(`Interest → Consideration conversion: ${metrics.interestToConsideration || 0}%`);
-            insights.push(`Overall conversion rate: ${metrics.totalConversion || 0}%`);
-            
-            // Update the advice box
-            const adviceBox = document.getElementById('funnel-advice');
-            adviceBox.innerHTML = '';
-            
-            if (advice.length > 0) {
-                const adviceList = document.createElement('ul');
-                advice.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    adviceList.appendChild(li);
-                });
-                adviceBox.appendChild(adviceList);
-            }
-            
-            if (insights.length > 0) {
-                const insightsHeader = document.createElement('h4');
-                insightsHeader.textContent = 'Key Metrics:';
-                insightsHeader.style.marginTop = '1rem';
-                insightsHeader.style.color = 'var(--accent-color)';
-                adviceBox.appendChild(insightsHeader);
-                
-                const insightsList = document.createElement('ul');
-                insightsList.style.marginTop = '0.5rem';
-                insights.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    insightsList.appendChild(li);
-                });
-                adviceBox.appendChild(insightsList);
-            }
         }
+    });
+
+    const underperformingContent = Object.entries(contentEffectiveness)
+        .filter(([_, stats]) => stats.rate < stats.target)
+        .map(([_, stats]) => stats.name);
+
+    // Build advice
+    const advice = [];
+    const insights = [];
+
+    if (metrics.totalLeads === 0) {
+        advice.push(getRandom(adviceOptions.emptyFunnel));
+    } else {
+        if (leads.awareness.length === 0) {
+            advice.push(getRandom(adviceOptions.noAwareness));
+        }
+        if (leads.interest.length > 0 && (leads.intent.length + leads.evaluation.length) === 0) {
+            advice.push(getRandom(adviceOptions.stuckInInterest));
+        }
+        if (leads.purchase.length === 0 && (leads.intent.length + leads.evaluation.length) > 0) {
+            advice.push(getRandom(adviceOptions.noPurchases));
+        }
+    }
+
+    if (underperformingContent.length > 0) {
+        let msg = getRandom(adviceOptions.underperformingContent);
+        advice.push(msg.replace('{items}', underperformingContent.join(', ')));
+    }
+
+    if (leadsNotContactedRecently > 0) {
+        let msg = getRandom(adviceOptions.notContacted);
+        advice.push(msg.replace('{count}', leadsNotContactedRecently));
+    }
+
+    if (stalledLeads > 0) {
+        let msg = getRandom(adviceOptions.stalledLeads);
+        advice.push(msg.replace('{count}', stalledLeads));
+    }
+
+    if (metrics.hotLeadCount > 0) {
+        let msg = getRandom(adviceOptions.hotLeads);
+        advice.push(msg.replace('{count}', metrics.hotLeadCount));
+    }
+
+    insights.push(`Awareness → Interest conversion: ${metrics.awarenessToInterest || 0}%`);
+    insights.push(`Interest → Consideration conversion: ${metrics.interestToConsideration || 0}%`);
+    insights.push(`Overall conversion rate: ${metrics.totalConversion || 0}%`);
+
+    // Display in DOM
+    const adviceBox = document.getElementById('funnel-advice');
+    adviceBox.innerHTML = '';
+
+    if (advice.length > 0) {
+        const ul = document.createElement('ul');
+        advice.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+        });
+        adviceBox.appendChild(ul);
+    }
+
+    if (insights.length > 0) {
+        const header = document.createElement('h4');
+        header.textContent = 'Key Metrics:';
+        header.style.marginTop = '1rem';
+        header.style.color = 'var(--accent-color)';
+        adviceBox.appendChild(header);
+
+        const ul = document.createElement('ul');
+        insights.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            ul.appendChild(li);
+        });
+        adviceBox.appendChild(ul);
+    }
+}
+
 
         // Update analytics charts and metrics
         function updateAnalytics() {
