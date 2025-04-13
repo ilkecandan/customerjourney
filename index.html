@@ -2557,10 +2557,8 @@
                 actions.className = 'content-actions';
 
                 const editBtn = document.createElement('button');
-editBtn.className = 'edit-btn';
-editBtn.dataset.leadId = lead.id;
-editBtn.innerHTML = `<i class="fas fa-edit" data-lead-id="${lead.id}"></i>`;
-
+                editBtn.className = 'edit-content';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditContentModal(content);
@@ -2764,29 +2762,31 @@ editBtn.innerHTML = `<i class="fas fa-edit" data-lead-id="${lead.id}"></i>`;
             });
 
             // Add event listeners to the action buttons
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const leadId = e.target.closest('.edit-btn').dataset.leadId;
-        const leads = JSON.parse(localStorage.getItem('leads'));
-        let foundLead = null;
-
-        for (const stageLeads of Object.values(leads)) {
-            const lead = stageLeads.find(l => l.id === leadId);
-            if (lead) {
-                foundLead = lead;
-                break;
-            }
-        }
-
-        if (foundLead) {
-            openEditLeadModal(foundLead);
-        } else {
-            showNotification('Lead not found', 'error');
-        }
-    });
-});
-
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const leadId = btn.dataset.leadId;
+                    const leads = JSON.parse(localStorage.getItem('leads'));
+                    let foundLead = null;
+                    
+                    // Search through all stages to find the lead
+                    for (const stageLeads of Object.values(leads)) {
+                        const lead = stageLeads.find(l => l.id === leadId);
+                        if (lead) {
+                            foundLead = lead;
+                            break;
+                        }
+                    }
+                    
+                    if (foundLead) {
+                        console.log('Opening edit modal for lead:', leadId); // Debug log
+                        openEditLeadModal(foundLead);
+                    } else {
+                        console.error('Lead not found:', leadId);
+                        showNotification('Lead not found', 'error');
+                    }
+                });
+            });
 
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
