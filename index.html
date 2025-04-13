@@ -2781,9 +2781,8 @@ function createLeadCard(lead) {
 
     // ✅ Edit on click
     leadCard.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('dragging')) {
-            openEditModal(lead.id); // <- Use correct function
-        }
+      e.stopPropagation(); // prevent bubbling issues
+    openEditLeadModal(lead.id); // ✅ This is the working modal trigger
     });
 
     return leadCard;
@@ -2815,6 +2814,10 @@ function updateLeadsTable() {
         const row = document.createElement('tr');
         row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
         tableBody.appendChild(row);
+        row.addEventListener('click', () => {
+    openEditLeadModal(lead.id);
+});
+
         return;
     }
 
