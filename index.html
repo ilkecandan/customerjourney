@@ -2557,11 +2557,6 @@ function saveLeadChanges() {
     const contentSelect = document.getElementById('edit-lead-content');
     const contentStrategies = $(contentSelect).val() || [];
 
-    if (!company || !contact || !email) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-
     // Update lead in storage
     const leads = JSON.parse(localStorage.getItem('leads'));
     let leadFound = false;
