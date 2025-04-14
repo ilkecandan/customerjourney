@@ -2192,6 +2192,23 @@
 
             showStep(0);
         }
+function loadContent() {
+    // Example placeholder logic to load content
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+    const container = document.getElementById('content-items-container');
+    container.innerHTML = '';
+
+    contentItems.forEach(content => {
+        const contentElement = document.createElement('div');
+        contentElement.className = 'content-item';
+        contentElement.innerHTML = `
+            <h4>${content.name}</h4>
+            <p class="content-description">${content.description || 'No description'}</p>
+        `;
+        container.appendChild(contentElement);
+    });
+}
 
         // Main application initialization
         function initializeApp() {
