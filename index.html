@@ -2048,8 +2048,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // First hide the app container
+document.addEventListener('DOMContentLoaded', function () {
+  const editFromDetailBtn = document.getElementById('edit-lead-btn-from-detail');
+  if (editFromDetailBtn) {
+    editFromDetailBtn.addEventListener('click', () => {
+      const leadId = editFromDetailBtn.dataset.leadId;
+      if (leadId) {
+        openEditLeadModal(leadId); // your working edit modal logic
+        closeLeadDetailsModal();   // hide the side panel
+      }
+    });
+  }
+});            // First hide the app container
             document.getElementById('app-container').classList.add('hidden');
 
 
@@ -4263,6 +4273,33 @@ function saveNewLead(lead) {
     loadLeads();
 }
 
+function showLeadDetailsModal(lead) {
+  const panel = document.getElementById('lead-side-panel');
+  const content = document.getElementById('lead-history-content');
+  const editBtn = document.getElementById('edit-lead-btn-from-detail');
+
+  // Insert whatever fields you want shown inside the panel
+  content.innerHTML = `
+    <p><strong>Company:</strong> ${lead.company}</p>
+    <p><strong>Contact:</strong> ${lead.contact || 'N/A'}</p>
+    <p><strong>Email:</strong> ${lead.email || 'N/A'}</p>
+    <p><strong>Stage:</strong> ${lead.currentStage || lead.stage || 'N/A'}</p>
+    <p><strong>Notes:</strong> ${lead.notes || 'None'}</p>
+  `;
+
+  // Set leadId to edit button for later reference
+  editBtn.dataset.leadId = lead.id;
+
+  // Show the panel
+  panel.classList.remove('hidden');
+}
+
+        function closeLeadDetailsModal() {
+  document.getElementById('lead-side-panel').classList.add('hidden');
+}
+
+
+        
         
         // Install button functionality
         function setupInstallButton() {
@@ -4385,12 +4422,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 
     </script>
-    <div id="lead-side-panel" class="modal hidden">
+ <div id="lead-side-panel" class="modal hidden">
   <div class="modal-content">
     <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
     <h2>Lead Details</h2>
     <div id="lead-history-content"></div>
+    <button id="edit-lead-btn-from-detail" class="action-btn" style="margin-top: 1rem;">
+      <i class="fas fa-edit"></i> Edit This Lead
+    </button>
   </div>
 </div>
+
 </body>
 </html>
