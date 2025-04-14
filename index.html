@@ -2482,21 +2482,15 @@ function loadLeads() {
 function refreshFunnelInsights() {
     const loader = document.getElementById('insight-loader');
     const text = document.getElementById('insight-text');
+    
+    if (loader) loader.classList.remove('hidden');
+    if (text) text.textContent = 'Reanalyzing your funnel data...';
 
-    if (loader && text) {
-        loader.classList.remove('hidden');
-        text.textContent = 'Refreshing insights...';
-
-        setTimeout(() => {
-            loader.classList.add('hidden');
-            text.textContent = generateSmartInsight(); // your custom function
-        }, 2000); // simulate loading
-    } else {
-        console.warn('Insight loader or text not found!');
-    }
+    setTimeout(() => {
+        if (loader) loader.classList.add('hidden');
+        if (text) text.textContent = getRandomInsight(); // or however you're generating it
+    }, 100000); // Simulate 3 second "thinking time"
 }
-
-
 
         
 // ✅ Edit modal logic
@@ -2592,6 +2586,17 @@ if (editLeadForm) {
         updateAnalytics();
         showNotification('Lead updated successfully');
     });
+}
+
+        function setupAutoInsightRefresh(intervalInMinutes = 15) {
+    const intervalMs = intervalInMinutes * 60 * 1000;
+
+    setInterval(() => {
+        const refreshBtn = document.getElementById('refresh-advice');
+        if (refreshBtn) {
+            refreshBtn.click(); // trigger funnel insight refresh
+        }
+    }, intervalMs);
 }
 
 
