@@ -1697,7 +1697,7 @@
                     <div class="form-columns">
                         <div class="form-group">
                             <label for="lead-company">Company Name *</label>
-                            <input type="text" id="lead-company">
+                            <input type="text" id="lead-company" required>
                         </div>
                         <div class="form-group">
                             <label for="lead-contact">Contact Person *</label>
@@ -1713,7 +1713,7 @@
                         </div>
                         <div class="form-group">
                             <label for="lead-stage">Initial Stage *</label>
-                            <select id="lead-stage">
+                            <select id="lead-stage" required>
                                 <option value="awareness">Awareness</option>
                                 <option value="interest">Interest</option>
                                 <option value="intent">Intent</option>
@@ -2192,23 +2192,6 @@
 
             showStep(0);
         }
-function loadContent() {
-    // Example placeholder logic to load content
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-
-    const container = document.getElementById('content-items-container');
-    container.innerHTML = '';
-
-    contentItems.forEach(content => {
-        const contentElement = document.createElement('div');
-        contentElement.className = 'content-item';
-        contentElement.innerHTML = `
-            <h4>${content.name}</h4>
-            <p class="content-description">${content.description || 'No description'}</p>
-        `;
-        container.appendChild(contentElement);
-    });
-}
 
         // Main application initialization
         function initializeApp() {
@@ -2556,6 +2539,11 @@ function saveLeadChanges() {
     // Get selected content strategies
     const contentSelect = document.getElementById('edit-lead-content');
     const contentStrategies = $(contentSelect).val() || [];
+
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
     // Update lead in storage
     const leads = JSON.parse(localStorage.getItem('leads'));
@@ -3167,6 +3155,11 @@ function addLead() {
     const contentSelect = document.getElementById('lead-content');
     const contentStrategies = $(contentSelect).val() || [];
 
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
     const newLead = {
         id: 'lead-' + Date.now(),
         company,
@@ -3208,6 +3201,10 @@ function addContent() {
     const link = document.getElementById('content-link').value;
     const targetConversion = document.getElementById('content-target-conversion').value || 0;
 
+    if (!name || !stage) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
     const newContent = {
         id: 'content-' + Date.now(),
@@ -3272,6 +3269,11 @@ function saveLeadChanges() {
     // Get selected content strategies
     const contentSelect = document.getElementById('edit-lead-content');
     const contentStrategies = $(contentSelect).val() || [];
+
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
     // Update lead in storage
     const leads = JSON.parse(localStorage.getItem('leads'));
@@ -3362,6 +3364,10 @@ function saveContentChanges() {
 
     console.log('Saving content changes for:', contentId); // Debug log
 
+    if (!name || !stage) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
     // Update content in storage
     const contentItems = JSON.parse(localStorage.getItem('content')) || [];
