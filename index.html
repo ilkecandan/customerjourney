@@ -2329,11 +2329,27 @@
         
 
         // Load leads with content badges
+
 function loadLeads() {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
+    let leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
     const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+    // Ensure all leads have an ID
+    let updated = false;
+    for (const stage of Object.keys(leads)) {
+        leads[stage] = leads[stage].map(lead => {
+            if (!lead.id) {
+                lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
+                updated = true;
+            }
+            return lead;
+        });
+    }
+    if (updated) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+    }
 
     // Clear and populate each stage body
     document.querySelectorAll('.stage-body').forEach(container => {
@@ -2402,11 +2418,11 @@ function loadLeads() {
         row.innerHTML = `<td colspan="6" style="text-align: center;">No leads found</td>`;
         tableBody.appendChild(row);
     } else {
-const recentLeads = allLeads
-    .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
-    .slice(0, 5);
+        const recentLeads = allLeads
+            .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+            .slice(0, 5);
 
-recentLeads.forEach(lead => {
+        recentLeads.forEach(lead => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${lead.company}</td>
@@ -2433,7 +2449,7 @@ recentLeads.forEach(lead => {
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const leadId = btn.dataset.leadId;
-                deleteLead(leadId);
+                deleteLeadById(leadId);
             });
         });
     }
@@ -2442,6 +2458,9 @@ recentLeads.forEach(lead => {
     generateSmartAdvice();
     updateAdvancedAnalytics();
 }
+
+
+        
 
 function openEditModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
@@ -2926,7 +2945,6 @@ function updateLeadsTable() {
 
         // Delete lead by ID
 
-
 function deleteLeadById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
@@ -2951,6 +2969,7 @@ function deleteLeadById(leadId) {
     }
 }
 
+
         
         // Fix #3: Event delegation for delete buttons (call this after rendering leads)
 function attachDeleteListeners() {
@@ -2965,6 +2984,22 @@ function attachDeleteListeners() {
     });
 }
 
+        function ensureLeadIds(leads) {
+    let updated = false;
+    for (const stage of Object.keys(leads)) {
+        leads[stage] = leads[stage].map(lead => {
+            if (!lead.id) {
+                lead.id = generateUniqueId();
+                updated = true;
+            }
+            return lead;
+        });
+    }
+    if (updated) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+    }
+    return leads;
+}
 
         // Get appropriate icon for content type
         function getContentIcon(type) {
@@ -4048,8 +4083,8 @@ notContacted: [
         }
 
 
-        function generateUniqueId() {
-    return 'lead-' + Math.random().toString(36).substr(2, 9);
+function generateUniqueId() {
+  return 'lead-' + Math.random().toString(36).substr(2, 9);
 }
 
 
