@@ -2813,6 +2813,7 @@ if (editLeadForm) {
 
         // Create a lead card element for the funnel
 
+
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
@@ -2845,23 +2846,43 @@ function createLeadCard(lead) {
     leadCard.appendChild(contact);
     leadCard.appendChild(tagsWrapper);
 
-    // New click event to show insights
+    // Updated click event to fetch latest data
     leadCard.addEventListener('click', () => {
-        const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
+        const allLeads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [],
+            interest: [],
+            intent: [],
+            evaluation: [],
+            purchase: []
+        };
+
+        const stage = lead.currentStage;
+        const leadId = lead.id;
+        let matchedLead = null;
+
+        if (allLeads[stage]) {
+            matchedLead = allLeads[stage].find(l => l.id === leadId);
+        }
+
+        if (!matchedLead) return;
+
+        const insight = `Lead has moved ${matchedLead.moves || 0} stages in ${matchedLead.days || 0} days = 🔥HOT!`;
         const contentHTML = `
-            <p><strong>Company:</strong> ${lead.company}</p>
-            <p><strong>Stage:</strong> ${lead.currentStage}</p>
+            <p><strong>Company:</strong> ${matchedLead.company}</p>
+            <p><strong>Stage:</strong> ${matchedLead.currentStage}</p>
             <p><strong>Insight:</strong> ${insight}</p>
-            <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
+            <p><strong>Notes:</strong> ${matchedLead.notes || 'No notes'}</p>
         `;
         toggleLeadPanel(true, contentHTML);
     });
 
     return leadCard;
 }
+
+
+
         
-        // Update the leads table with all leads
-      
+
 function updateLeadsTable() {
     const leadsData = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
