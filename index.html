@@ -2818,7 +2818,7 @@ function createLeadCard(lead) {
     leadCard.className = 'lead-card interactive-element';
     leadCard.draggable = true;
     leadCard.dataset.leadId = lead.id;
-    leadCard.dataset.currentStage = lead.currentStage || lead.stage || '';
+    leadCard.dataset.currentStage = lead.currentStage;
 
     const company = document.createElement('div');
     company.className = 'company';
@@ -2841,33 +2841,24 @@ function createLeadCard(lead) {
         tagsWrapper.appendChild(industryTag);
     }
 
-    if (lead.status) {
-        const statusTag = document.createElement('span');
-        statusTag.className = 'tag';
-        statusTag.textContent = lead.status;
-        tagsWrapper.appendChild(statusTag);
-    }
-
     leadCard.appendChild(company);
     leadCard.appendChild(contact);
-    if (tagsWrapper.children.length > 0) {
-        leadCard.appendChild(tagsWrapper);
-    }
+    leadCard.appendChild(tagsWrapper);
 
-    leadCard.addEventListener('dragstart', handleDragStart);
-
-    leadCard.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('dragging')) {
-            openEditModal(lead.id);
-        }
+    // New click event to show insights
+    leadCard.addEventListener('click', () => {
+        const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
+        const contentHTML = `
+            <p><strong>Company:</strong> ${lead.company}</p>
+            <p><strong>Stage:</strong> ${lead.currentStage}</p>
+            <p><strong>Insight:</strong> ${insight}</p>
+            <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
+        `;
+        toggleLeadPanel(true, contentHTML);
     });
 
     return leadCard;
 }
-
-
-        
-
         
         // Update the leads table with all leads
       
@@ -4210,6 +4201,19 @@ function saveNewLead(lead) {
             }
         }
 
+
+function toggleLeadPanel(show, contentHTML = "") {
+    const panel = document.getElementById("lead-side-panel");
+    if (show) {
+        document.getElementById("lead-history-content").innerHTML = contentHTML;
+        panel.classList.add("show");
+        panel.classList.remove("hidden");
+    } else {
+        panel.classList.remove("show");
+        panel.classList.add("hidden");
+    }
+}
+        
         // Show notification
         function showNotification(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -4268,5 +4272,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 
     </script>
+    <div id="lead-side-panel" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
+    <h2>Lead Details</h2>
+    <div id="lead-history-content"></div>
+  </div>
+</div>
 </body>
 </html>
