@@ -2442,21 +2442,28 @@ function loadLeads() {
             .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
             .slice(0, 5);
 
-        recentLeads.forEach(lead => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${lead.company}</td>
-                <td>${lead.contact}</td>
-                <td>${capitalizeFirstLetter(lead.stage)}</td>
-                <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
-                <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
-                <td>
-                    <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
-                    <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
+recentLeads.forEach(lead => {
+    const row = document.createElement('tr');
+    row.dataset.leadId = lead.id; // Attach lead ID for click-to-edit
+    row.innerHTML = `
+        <td>${lead.company}</td>
+        <td>${lead.contact}</td>
+        <td>${capitalizeFirstLetter(lead.stage)}</td>
+        <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
+        <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
+        <td>
+            <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+            <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+        </td>
+    `;
+
+    // ✅ Enable row click to open edit modal
+    row.addEventListener('click', () => {
+        openEditLeadModalById(lead.id); // assumes this function is defined
+    });
+
+    tableBody.appendChild(row);
+});
 
         // Add edit/delete button listeners
         document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -2479,6 +2486,43 @@ function loadLeads() {
     updateAdvancedAnalytics();
 }
 
+ function openEditLeadModalById(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    let foundLead = null;
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const match = stageLeads.find(l => l.id === leadId);
+        if (match) {
+            foundLead = { ...match, currentStage: stage };
+            break;
+        }
+    }
+
+    if (!foundLead) {
+        showNotification('Lead not found', 'error');
+        return;
+    }
+
+    // Fill the edit modal fields
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.currentStage;
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
+}
+       
+
 function refreshFunnelInsights() {
     const loader = document.getElementById('insight-loader');
     const text = document.getElementById('insight-text');
@@ -2492,9 +2536,8 @@ function refreshFunnelInsights() {
     }, 100000); // Simulate 3 second "thinking time"
 }
 
-        
 // ✅ Edit modal logic
-function openEditModal(leadId) {
+function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
@@ -2583,10 +2626,11 @@ if (editLeadForm) {
 
         document.getElementById('edit-lead-modal').classList.add('hidden');
         loadLeads();
-        updateAnalytics();
+        updateAnalytics?.();
         showNotification('Lead updated successfully');
     });
 }
+
 
         function setupAutoInsightRefresh(intervalInMinutes = 15) {
     const intervalMs = intervalInMinutes * 60 * 1000;
