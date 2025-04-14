@@ -2654,8 +2654,12 @@ if (editLeadForm) {
             document.getElementById('revenue-potential').textContent = `$${revenuePotential.toLocaleString()}`;
         }
         document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
+    btn.addEventListener('click', () => {
+        const leadId = btn.dataset.leadId;
+        openEditModal(leadId);
+    });
+});
+
         const leadId = btn.dataset.leadId;
         const leads = JSON.parse(localStorage.getItem('leads'));
         let foundLead = null;
