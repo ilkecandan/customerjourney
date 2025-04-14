@@ -2461,7 +2461,8 @@ function loadLeads() {
 
 // ✅ Edit modal logic
 
-        function openEditModal(leadId) {
+// ✅ Edit modal logic
+function openEditModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
@@ -2501,6 +2502,7 @@ function loadLeads() {
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
+// ✅ Save changes on form submit
 const editLeadForm = document.getElementById('edit-lead-form');
 if (editLeadForm) {
     editLeadForm.addEventListener('submit', function (e) {
@@ -2511,8 +2513,8 @@ if (editLeadForm) {
             awareness: [], interest: [], intent: [], evaluation: [], purchase: []
         };
 
-        let currentStage = '';
         let leadToUpdate = null;
+        let currentStage = '';
 
         for (const stage in leads) {
             const index = leads[stage].findIndex(lead => lead.id === leadId);
@@ -2530,7 +2532,7 @@ if (editLeadForm) {
         }
 
         const updatedLead = {
-            id: leadId,
+            ...leadToUpdate,
             company: document.getElementById('edit-lead-company').value,
             contact: document.getElementById('edit-lead-contact').value,
             email: document.getElementById('edit-lead-email').value,
@@ -2540,11 +2542,11 @@ if (editLeadForm) {
             status: document.getElementById('edit-lead-status').value,
             notes: document.getElementById('edit-lead-notes').value,
             contentStrategies: $('#edit-lead-content').val() || [],
-            lastContact: leadToUpdate.lastContact || null
+            currentStage: document.getElementById('edit-lead-stage').value,
+            lastContact: new Date().toISOString()
         };
 
-        const newStage = document.getElementById('edit-lead-stage').value;
-        leads[newStage].push(updatedLead);
+        leads[updatedLead.currentStage].push(updatedLead);
         localStorage.setItem('leads', JSON.stringify(leads));
 
         document.getElementById('edit-lead-modal').classList.add('hidden');
