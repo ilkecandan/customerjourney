@@ -2214,142 +2214,139 @@
         }
 
         // Main application initialization
-        
         function initializeApp() {
-  console.log('Initializing app...');
+            console.log('Initializing app...');
+            
+            // Initialize metadata if none exists
+            if (!localStorage.getItem('funnel_metadata')) {
+                localStorage.setItem('funnel_metadata', JSON.stringify({
+                    created: new Date().toISOString(),
+                    version: '1.1',
+                    last_updated: new Date().toISOString()
+                }));
+            }
+            
+            // Initialize default leads if none exist
+            if (!localStorage.getItem('leads')) {
+                const defaultLeads = {
+                    awareness: [
+                        {
+                            id: 'lead-' + Date.now(),
+                            company: 'Example Corp',
+                            contact: 'John Smith',
+                            email: 'john@example.com',
+                            phone: '555-1234',
+                            currentStage: 'awareness',
+                            notes: 'Interested in our blog content',
+                            contentStrategies: ['content-1'],
+                            dateAdded: new Date().toISOString(),
+                            lastContact: new Date().toISOString(),
+                            industry: 'saas',
+                            status: 'new',
+                            value: 5000,
+                            source: 'website'
+                        }
+                    ],
+                    interest: [
+                        {
+                            id: 'lead-' + Date.now(),
+                            company: 'Sample Inc',
+                            contact: 'Sarah Johnson',
+                            email: 'sarah@sample.com',
+                            phone: '555-5678',
+                            currentStage: 'interest',
+                            notes: 'Downloaded our whitepaper',
+                            contentStrategies: ['content-2'],
+                            dateAdded: new Date().toISOString(),
+                            lastContact: new Date().toISOString(),
+                            industry: 'ecommerce',
+                            status: 'hot',
+                            value: 10000,
+                            source: 'social'
+                        }
+                    ],
+                    intent: [],
+                    evaluation: [],
+                    purchase: []
+                };
+                localStorage.setItem('leads', JSON.stringify(defaultLeads));
+            }
 
-  // Initialize metadata if none exists
-  if (!localStorage.getItem('funnel_metadata')) {
-    localStorage.setItem('funnel_metadata', JSON.stringify({
-      created: new Date().toISOString(),
-      version: '1.1',
-      last_updated: new Date().toISOString()
-    }));
-  }
+            // Initialize default content if none exists
+            if (!localStorage.getItem('content')) {
+                const defaultContent = [
+                    {
+                        id: 'content-1',
+                        name: 'Example Blog Post',
+                        description: 'Basic introduction to our product',
+                        stage: 'awareness',
+                        type: 'blog',
+                        link: 'https://example.com/blog/intro',
+                        targetConversion: 5,
+                        dateCreated: new Date().toISOString()
+                    },
+                    {
+                        id: 'content-2',
+                        name: 'Sample Demo Video',
+                        description: 'Detailed product demonstration',
+                        stage: 'interest',
+                        type: 'video',
+                        link: 'https://example.com/demo',
+                        targetConversion: 15,
+                        dateCreated: new Date().toISOString()
+                    },
+                    {
+                        id: 'content-3',
+                        name: 'Example Case Study',
+                        description: 'Success story from existing customer',
+                        stage: 'intent',
+                        type: 'casestudy',
+                        link: 'https://example.com/case-study',
+                        targetConversion: 25,
+                        dateCreated: new Date().toISOString()
+                    },
+                    {
+                        id: 'content-4',
+                        name: 'Sample Pricing Guide',
+                        description: 'Detailed pricing information',
+                        stage: 'evaluation',
+                        type: 'ebook',
+                        link: 'https://example.com/pricing',
+                        targetConversion: 20,
+                        dateCreated: new Date().toISOString()
+                    },
+                    {
+                        id: 'content-5',
+                        name: 'Example Testimonials',
+                        description: 'Video testimonials from happy customers',
+                        stage: 'purchase',
+                        type: 'video',
+                        link: 'https://example.com/testimonials',
+                        targetConversion: 30,
+                        dateCreated: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('content', JSON.stringify(defaultContent));
+            }
 
-  // Initialize default leads if none exist
-  if (!localStorage.getItem('leads')) {
-    const defaultLeads = {
-      awareness: [
-        {
-          id: 'lead-' + Date.now(),
-          company: 'Example Corp',
-          contact: 'John Smith',
-          email: 'john@example.com',
-          phone: '555-1234',
-          currentStage: 'awareness',
-          notes: 'Interested in our blog content',
-          contentStrategies: ['content-1'],
-          dateAdded: new Date().toISOString(),
-          lastContact: new Date().toISOString(),
-          industry: 'saas',
-          status: 'new',
-          value: 5000,
-          source: 'website'
+            // Initialize Select2 for content selection
+            $('.content-select').select2({
+                placeholder: 'Select content strategies',
+                width: '100%'
+            });
+
+            // Populate content options
+            populateContentOptions();
+
+            // Load data and setup UI
+            loadLeads();
+            loadContent();
+            setupEventListeners();
+            updateAnalytics();
+            setupDragAndDrop();
+            setupInstallButton();
         }
-      ],
-      interest: [
-        {
-          id: 'lead-' + (Date.now() + 1),
-          company: 'Sample Inc',
-          contact: 'Sarah Johnson',
-          email: 'sarah@sample.com',
-          phone: '555-5678',
-          currentStage: 'interest',
-          notes: 'Downloaded our whitepaper',
-          contentStrategies: ['content-2'],
-          dateAdded: new Date().toISOString(),
-          lastContact: new Date().toISOString(),
-          industry: 'ecommerce',
-          status: 'hot',
-          value: 10000,
-          source: 'social'
-        }
-      ],
-      intent: [],
-      evaluation: [],
-      purchase: []
-    };
-    localStorage.setItem('leads', JSON.stringify(defaultLeads));
-  }
-
-  // Initialize default content if none exists
-  if (!localStorage.getItem('content')) {
-    const defaultContent = [
-      {
-        id: 'content-1',
-        name: 'Example Blog Post',
-        description: 'Basic introduction to our product',
-        stage: 'awareness',
-        type: 'blog',
-        link: 'https://example.com/blog/intro',
-        targetConversion: 5,
-        dateCreated: new Date().toISOString()
-      },
-      {
-        id: 'content-2',
-        name: 'Sample Demo Video',
-        description: 'Detailed product demonstration',
-        stage: 'interest',
-        type: 'video',
-        link: 'https://example.com/demo',
-        targetConversion: 15,
-        dateCreated: new Date().toISOString()
-      },
-      {
-        id: 'content-3',
-        name: 'Example Case Study',
-        description: 'Success story from existing customer',
-        stage: 'intent',
-        type: 'casestudy',
-        link: 'https://example.com/case-study',
-        targetConversion: 25,
-        dateCreated: new Date().toISOString()
-      },
-      {
-        id: 'content-4',
-        name: 'Sample Pricing Guide',
-        description: 'Detailed pricing information',
-        stage: 'evaluation',
-        type: 'ebook',
-        link: 'https://example.com/pricing',
-        targetConversion: 20,
-        dateCreated: new Date().toISOString()
-      },
-      {
-        id: 'content-5',
-        name: 'Example Testimonials',
-        description: 'Video testimonials from happy customers',
-        stage: 'purchase',
-        type: 'video',
-        link: 'https://example.com/testimonials',
-        targetConversion: 30,
-        dateCreated: new Date().toISOString()
-      }
-    ];
-    localStorage.setItem('content', JSON.stringify(defaultContent));
-  }
-
-  // Initialize Select2 for content selection
-  $('.content-select').select2({
-    placeholder: 'Select content strategies',
-    width: '100%'
-  });
-
-  // Populate content options
-  populateContentOptions();
-
-  // Load data and setup UI
-  loadLeads();
-  loadContent();
-  setupEventListeners();
-  updateAnalytics();
-  setupDragAndDrop();
-  setupInstallButton();
-  enableLeadRowEditing(); // ✅ Add edit functionality to table rows
-  setupAutoInsightRefresh(); // ✅ Optional: auto-refresh insights every 15 minutes
-}
-
+        
         
         // Load leads with content badges
 
@@ -2488,120 +2485,6 @@ recentLeads.forEach(lead => {
     generateSmartAdvice();
     updateAdvancedAnalytics();
 }
-
-        // ✅ Edit modal logic
-function openEditModal(leadId) {
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-  let selectedLead = null;
-  let stageFound = '';
-
-  for (const stage in leads) {
-    const match = leads[stage].find(lead => lead.id === leadId);
-    if (match) {
-      selectedLead = match;
-      stageFound = stage;
-      break;
-    }
-  }
-
-  if (!selectedLead) {
-    showNotification('Lead not found for editing', 'error');
-    return;
-  }
-
-  document.getElementById('edit-lead-id').value = leadId;
-  document.getElementById('edit-lead-company').value = selectedLead.company || '';
-  document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
-  document.getElementById('edit-lead-email').value = selectedLead.email || '';
-  document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
-  document.getElementById('edit-lead-stage').value = stageFound;
-  document.getElementById('edit-lead-source').value = selectedLead.source || '';
-  document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
-  document.getElementById('edit-lead-status').value = selectedLead.status || '';
-  document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
-
-  const contentSelect = $('#edit-lead-content');
-  if (contentSelect.length) {
-    contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
-  }
-
-  document.getElementById('edit-lead-modal').classList.remove('hidden');
-  document.getElementById('edit-lead-modal').classList.add('show');
-}
-
-// ✅ Save lead form submit handler
-const editLeadForm = document.getElementById('edit-lead-form');
-if (editLeadForm) {
-  editLeadForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const leadId = document.getElementById('edit-lead-id').value;
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let leadToUpdate = null;
-    let currentStage = '';
-
-    for (const stage in leads) {
-      const index = leads[stage].findIndex(lead => lead.id === leadId);
-      if (index !== -1) {
-        leadToUpdate = leads[stage][index];
-        leads[stage].splice(index, 1);
-        currentStage = stage;
-        break;
-      }
-    }
-
-    if (!leadToUpdate) {
-      showNotification('Error: Could not update lead', 'error');
-      return;
-    }
-
-    const updatedLead = {
-      ...leadToUpdate,
-      company: document.getElementById('edit-lead-company').value,
-      contact: document.getElementById('edit-lead-contact').value,
-      email: document.getElementById('edit-lead-email').value,
-      phone: document.getElementById('edit-lead-phone').value,
-      source: document.getElementById('edit-lead-source').value,
-      industry: document.getElementById('edit-lead-industry').value,
-      status: document.getElementById('edit-lead-status').value,
-      notes: document.getElementById('edit-lead-notes').value,
-      contentStrategies: $('#edit-lead-content').val() || [],
-      currentStage: document.getElementById('edit-lead-stage').value,
-      lastContact: new Date().toISOString()
-    };
-
-    leads[updatedLead.currentStage].push(updatedLead);
-    localStorage.setItem('leads', JSON.stringify(leads));
-
-    document.getElementById('edit-lead-modal').classList.add('hidden');
-    loadLeads();
-    enableLeadRowEditing();
-    updateAnalytics();
-    showNotification('Lead updated successfully');
-  });
-}
-
-
-// ✅ Add click-to-edit logic to lead table rows
-function enableLeadRowEditing() {
-  const rows = document.querySelectorAll('#leads-table-body tr');
-  rows.forEach(row => {
-    const editBtn = row.querySelector('.edit-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        const leadId = editBtn.dataset.leadId;
-        if (leadId) {
-          openEditModal(leadId);
-        }
-      });
-    }
-  });
-}
-        
 
  function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
