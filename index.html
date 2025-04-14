@@ -579,6 +579,26 @@
         .content-badge i {
             font-size: 0.8rem;
         }
+ .modal.hidden {
+    display: none;
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9999;
+}
+.modal .modal-content {
+    background: white;
+    padding: 20px;
+    margin: 50px auto;
+    max-width: 600px;
+    border-radius: 8px;
+}
+
         
         /* Leads table */
         .leads-table-container {
@@ -1601,7 +1621,44 @@
                         </div>
                     </div>
                 </div>
-                
+                <!-- Edit Lead Modal -->
+<div id="edit-lead-modal" class="modal hidden" style="display: none;">
+  <div class="modal-content">
+    <button class="close-modal" onclick="document.getElementById('edit-lead-modal').classList.add('hidden'); document.getElementById('edit-lead-modal').style.display = 'none';">×</button>
+    <h2>Edit Lead</h2>
+    <form id="edit-lead-form">
+      <input type="hidden" id="edit-lead-id" />
+      <label>Company</label>
+      <input type="text" id="edit-lead-company">
+      <label>Contact</label>
+      <input type="text" id="edit-lead-contact">
+      <label>Email</label>
+      <input type="email" id="edit-lead-email">
+      <label>Phone</label>
+      <input type="text" id="edit-lead-phone">
+      <label>Source</label>
+      <input type="text" id="edit-lead-source">
+      <label>Industry</label>
+      <input type="text" id="edit-lead-industry">
+      <label>Status</label>
+      <input type="text" id="edit-lead-status">
+      <label>Notes</label>
+      <textarea id="edit-lead-notes"></textarea>
+      <label>Stage</label>
+      <select id="edit-lead-stage">
+        <option value="awareness">Awareness</option>
+        <option value="interest">Interest</option>
+        <option value="intent">Intent</option>
+        <option value="evaluation">Evaluation</option>
+        <option value="purchase">Purchase</option>
+      </select>
+      <label>Content Strategies</label>
+      <select id="edit-lead-content" multiple></select>
+      <button type="submit">Save</button>
+    </form>
+  </div>
+</div>
+
                 <!-- Lead Management Guide -->
                 <div class="lead-management-guide">
                     <h3>Lead Management Guide</h3>
@@ -2461,11 +2518,11 @@ function loadLeads() {
 
 // ✅ Edit modal logic
 
-// ✅ Edit modal logic
 function openEditModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
+
     let selectedLead = null;
     let stageFound = '';
 
@@ -2483,26 +2540,28 @@ function openEditModal(leadId) {
         return;
     }
 
+    // Fill the form
     document.getElementById('edit-lead-id').value = leadId;
     document.getElementById('edit-lead-company').value = selectedLead.company || '';
     document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
     document.getElementById('edit-lead-email').value = selectedLead.email || '';
     document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
-    document.getElementById('edit-lead-stage').value = stageFound;
     document.getElementById('edit-lead-source').value = selectedLead.source || '';
     document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
     document.getElementById('edit-lead-status').value = selectedLead.status || '';
     document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
+    document.getElementById('edit-lead-stage').value = stageFound;
 
     const contentSelect = $('#edit-lead-content');
     if (contentSelect.length) {
         contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
     }
 
+    // Show modal (check this CSS logic!)
     document.getElementById('edit-lead-modal').classList.remove('hidden');
+    document.getElementById('edit-lead-modal').style.display = 'block';
 }
 
-// ✅ Save changes on form submit
 const editLeadForm = document.getElementById('edit-lead-form');
 if (editLeadForm) {
     editLeadForm.addEventListener('submit', function (e) {
@@ -2513,8 +2572,8 @@ if (editLeadForm) {
             awareness: [], interest: [], intent: [], evaluation: [], purchase: []
         };
 
-        let leadToUpdate = null;
         let currentStage = '';
+        let leadToUpdate = null;
 
         for (const stage in leads) {
             const index = leads[stage].findIndex(lead => lead.id === leadId);
@@ -2532,7 +2591,7 @@ if (editLeadForm) {
         }
 
         const updatedLead = {
-            ...leadToUpdate,
+            id: leadId,
             company: document.getElementById('edit-lead-company').value,
             contact: document.getElementById('edit-lead-contact').value,
             email: document.getElementById('edit-lead-email').value,
@@ -2542,19 +2601,22 @@ if (editLeadForm) {
             status: document.getElementById('edit-lead-status').value,
             notes: document.getElementById('edit-lead-notes').value,
             contentStrategies: $('#edit-lead-content').val() || [],
-            currentStage: document.getElementById('edit-lead-stage').value,
-            lastContact: new Date().toISOString()
+            lastContact: leadToUpdate.lastContact || null
         };
 
-        leads[updatedLead.currentStage].push(updatedLead);
+        const newStage = document.getElementById('edit-lead-stage').value;
+        leads[newStage].push(updatedLead);
+
         localStorage.setItem('leads', JSON.stringify(leads));
 
         document.getElementById('edit-lead-modal').classList.add('hidden');
+        document.getElementById('edit-lead-modal').style.display = 'none';
         loadLeads();
         updateAnalytics();
         showNotification('Lead updated successfully');
     });
 }
+
 
 
         // Update advanced analytics metrics
