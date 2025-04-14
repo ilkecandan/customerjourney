@@ -2459,46 +2459,101 @@ function loadLeads() {
     updateAdvancedAnalytics();
 }
 
-
-        
-
+// ✅ Edit modal logic
 function openEditModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
+    let selectedLead = null;
+    let stageFound = '';
 
-    let foundLead = null;
-
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const match = stageLeads.find(l => l.id === leadId);
+    for (const stage in leads) {
+        const match = leads[stage].find(lead => lead.id === leadId);
         if (match) {
-            foundLead = { ...match, stage };
+            selectedLead = match;
+            stageFound = stage;
             break;
         }
     }
 
-    if (!foundLead) {
-        alert('Lead not found.');
+    if (!selectedLead) {
+        showNotification('Lead not found for editing', 'error');
         return;
     }
 
-    // Fill the modal with lead data
-    document.getElementById('edit-lead-id').value = foundLead.id;
-    document.getElementById('edit-lead-company').value = foundLead.company || '';
-    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-    document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-    document.getElementById('edit-lead-stage').value = foundLead.stage || '';
-    document.getElementById('edit-lead-source').value = foundLead.source || '';
-    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-    document.getElementById('edit-lead-status').value = foundLead.status || '';
-    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+    // Populate edit form fields
+    document.getElementById('edit-lead-id').value = leadId;
+    document.getElementById('edit-lead-company').value = selectedLead.company || '';
+    document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
+    document.getElementById('edit-lead-email').value = selectedLead.email || '';
+    document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
+    document.getElementById('edit-lead-stage').value = stageFound;
+    document.getElementById('edit-lead-source').value = selectedLead.source || '';
+    document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
+    document.getElementById('edit-lead-status').value = selectedLead.status || '';
+    document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
 
-    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+    const contentSelect = $('#edit-lead-content');
+    contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
 
-    // Show the modal
-    document.getElementById('edit-lead-modal').classList.add('show');
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
+
+// ✅ Save changes on form submit
+const editLeadForm = document.getElementById('edit-lead-form');
+if (editLeadForm) {
+    editLeadForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const leadId = document.getElementById('edit-lead-id').value;
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        let currentStage = '';
+        let leadToUpdate = null;
+
+        for (const stage in leads) {
+            const index = leads[stage].findIndex(lead => lead.id === leadId);
+            if (index !== -1) {
+                leadToUpdate = leads[stage][index];
+                leads[stage].splice(index, 1);
+                currentStage = stage;
+                break;
+            }
+        }
+
+        if (!leadToUpdate) {
+            showNotification('Error: Could not update lead', 'error');
+            return;
+        }
+
+        const updatedLead = {
+            id: leadId,
+            company: document.getElementById('edit-lead-company').value,
+            contact: document.getElementById('edit-lead-contact').value,
+            email: document.getElementById('edit-lead-email').value,
+            phone: document.getElementById('edit-lead-phone').value,
+            source: document.getElementById('edit-lead-source').value,
+            industry: document.getElementById('edit-lead-industry').value,
+            status: document.getElementById('edit-lead-status').value,
+            notes: document.getElementById('edit-lead-notes').value,
+            contentStrategies: $('#edit-lead-content').val() || [],
+            lastContact: leadToUpdate.lastContact || null
+        };
+
+        const newStage = document.getElementById('edit-lead-stage').value;
+        leads[newStage].push(updatedLead);
+        localStorage.setItem('leads', JSON.stringify(leads));
+
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+    });
+}
+
+
 
 
         // Update advanced analytics metrics
@@ -2756,22 +2811,25 @@ function openEditModal(leadId) {
         }
 
         // Create a lead card element for the funnel
+
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
     leadCard.draggable = true;
     leadCard.dataset.leadId = lead.id;
-    leadCard.dataset.currentStage = lead.currentStage;
+    leadCard.dataset.currentStage = lead.currentStage || lead.stage || ''; // fallback
 
+    // Company name
     const company = document.createElement('div');
     company.className = 'company';
     company.textContent = lead.company;
 
+    // Contact name
     const contact = document.createElement('div');
     contact.className = 'contact';
     contact.textContent = lead.contact || 'No contact';
 
-    // Tags container
+    // Tag container (industry + status)
     const tagsWrapper = document.createElement('div');
     tagsWrapper.className = 'tags-wrapper';
     tagsWrapper.style.display = 'flex';
@@ -2792,25 +2850,28 @@ function createLeadCard(lead) {
         tagsWrapper.appendChild(statusTag);
     }
 
-    // Build card
+    // Append elements to card
     leadCard.appendChild(company);
     leadCard.appendChild(contact);
     if (tagsWrapper.children.length > 0) {
         leadCard.appendChild(tagsWrapper);
     }
 
-    // Drag events
+    // Drag start event
     leadCard.addEventListener('dragstart', handleDragStart);
 
-    // ✅ Edit on click
+    // ✨ Click-to-edit behavior
     leadCard.addEventListener('click', (e) => {
         if (!e.target.classList.contains('dragging')) {
-            openEditModal(lead.id); // <- Use correct function
+            openEditModal(lead.id); // triggers modal with form
         }
     });
 
     return leadCard;
 }
+
+
+        
 
         
         // Update the leads table with all leads
