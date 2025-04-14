@@ -3055,6 +3055,20 @@ function updateLeadsTable() {
 }
 
 
+// ✅ Enable row click to open edit modal
+function enableLeadRowEditing() {
+    const tableRows = document.querySelectorAll('#leads-table-body tr');
+    tableRows.forEach(row => {
+        row.addEventListener('click', () => {
+            const leadId = row.dataset.leadId;
+            if (leadId) {
+                openEditModal(leadId);
+            }
+        });
+    });
+}
+
+        
         
         // Helper function to capitalize first letter
         function capitalizeFirstLetter(string) {
@@ -3172,6 +3186,7 @@ function setupEventListeners() {
         // 🌀 Refresh Insights
         if (e.target.matches('#refresh-advice, #refresh-advice *')) {
             updateAnalytics();
+            enableLeadRowEditing()
             showNotification('Insights refreshed');
             return;
         }
@@ -3426,6 +3441,7 @@ function openEditLeadModal(leadId) {
             // Update UI
             loadLeads();
             updateAnalytics();
+            enableLeadRowEditing();
             
             // Show notification
             showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
@@ -3504,6 +3520,7 @@ function openEditLeadModal(leadId) {
             // Update UI
             loadLeads();
             updateAnalytics();
+            enableLeadRowEditing();
             showNotification('Lead added successfully');
         }
 
