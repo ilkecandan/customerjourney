@@ -2845,32 +2845,14 @@ function createLeadCard(lead) {
     leadCard.appendChild(contact);
     leadCard.appendChild(tagsWrapper);
 
-    // Updated click event to fetch latest data
+    // Show Insight Panel on Click
     leadCard.addEventListener('click', () => {
-        const allLeads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [],
-            interest: [],
-            intent: [],
-            evaluation: [],
-            purchase: []
-        };
-
-        const stage = lead.currentStage;
-        const leadId = lead.id;
-        let matchedLead = null;
-
-        if (allLeads[stage]) {
-            matchedLead = allLeads[stage].find(l => l.id === leadId);
-        }
-
-        if (!matchedLead) return;
-
-        const insight = `Lead has moved ${matchedLead.moves || 0} stages in ${matchedLead.days || 0} days = 🔥HOT!`;
+        const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
         const contentHTML = `
-            <p><strong>Company:</strong> ${matchedLead.company}</p>
-            <p><strong>Stage:</strong> ${matchedLead.currentStage}</p>
+            <p><strong>Company:</strong> ${lead.company}</p>
+            <p><strong>Stage:</strong> ${lead.currentStage}</p>
             <p><strong>Insight:</strong> ${insight}</p>
-            <p><strong>Notes:</strong> ${matchedLead.notes || 'No notes'}</p>
+            <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
         `;
         toggleLeadPanel(true, contentHTML);
     });
@@ -2879,7 +2861,57 @@ function createLeadCard(lead) {
 }
 
 
-        
+function toggleLeadPanel(show, html = '') {
+    let panel = document.getElementById('lead-insight-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'lead-insight-panel';
+        panel.style.position = 'fixed';
+        panel.style.top = '0';
+        panel.style.right = show ? '0' : '-400px';
+        panel.style.width = '360px';
+        panel.style.height = '100%';
+        panel.style.background = '#0E4954';
+        panel.style.color = '#fff';
+        panel.style.padding = '20px';
+        panel.style.zIndex = '9999';
+        panel.style.transition = 'right 0.3s ease-in-out';
+        panel.style.overflowY = 'auto';
+        document.body.appendChild(panel);
+    }
+    panel.innerHTML = `<h3>Lead Insight</h3>${html}`;
+    panel.style.right = show ? '0' : '-400px';
+}
+
+        function saveLeadToLocalStorage(lead) {
+    // Initialize lead fields
+    if (!lead.id) lead.id = 'lead_' + Date.now();
+    if (!lead.createdAt) lead.createdAt = new Date().toISOString();
+    if (!lead.moves) lead.moves = 0;
+    if (!lead.days) lead.days = 0;
+
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [],
+        interest: [],
+        intent: [],
+        evaluation: [],
+        purchase: []
+    };
+
+    const stage = lead.currentStage || 'awareness';
+
+    // Remove duplicate if it already exists in any stage
+    for (let key in leads) {
+        leads[key] = leads[key].filter(l => l.id !== lead.id);
+    }
+
+    // Push lead to the correct stage
+    leads[stage].push(lead);
+
+    // Save back
+    localStorage.setItem('leads', JSON.stringify(leads));
+}
+
 
 function updateLeadsTable() {
     const leadsData = JSON.parse(localStorage.getItem('leads')) || {
@@ -3303,50 +3335,69 @@ function openEditLeadModal(leadId) {
         }
 
         // Setup drag and drop functionality
-        function setupDragAndDrop() {
-            setTimeout(() => {
-                const containers = Array.from(document.querySelectorAll('.stage-body'));
-                const contentContainer = document.getElementById('content-items-container');
-                
-                // Add content container to draggable containers
-                if (contentContainer) {
-                    containers.push(contentContainer);
-                }
-                
-                if (containers.length > 0) {
-                    const drake = dragula(containers, {
-                        moves: function(el, source, handle, sibling) {
-                            return el.classList.contains('lead-card') || 
-                                   el.classList.contains('content-badge') || 
-                                   el.classList.contains('content-item');
-                        }
-                    });
 
-                    drake.on('drop', function(el, target, source, sibling) {
-                        const fromStage = source.dataset.dropTarget || 'content-container';
-                        const toStage = target.dataset.dropTarget || 'content-container';
-                        
-                        if (el.classList.contains('lead-card')) {
-                            // Handle lead movement
-                            const leadId = el.dataset.leadId;
-                            if (fromStage && toStage && fromStage !== toStage) {
-                                moveLead(leadId, fromStage, toStage);
-                            }
-                        } else if (el.classList.contains('content-badge') || el.classList.contains('content-item')) {
-                            // Handle content movement between stages
-                            const contentId = el.dataset.contentId;
-                            if (fromStage !== toStage) {
-                                moveContentToStage(contentId, toStage);
-                            }
-                        }
-                    });
+function setupDragAndDrop() {
+    setTimeout(() => {
+        const containers = Array.from(document.querySelectorAll('.stage-body'));
+        const contentContainer = document.getElementById('content-items-container');
 
-                    drake.on('dragend', function(el) {
-                        el.classList.remove('dragging-content');
-                    });
+        if (contentContainer) containers.push(contentContainer);
+
+        if (containers.length > 0) {
+            const drake = dragula(containers, {
+                moves: function (el, source, handle, sibling) {
+                    return el.classList.contains('lead-card') ||
+                        el.classList.contains('content-badge') ||
+                        el.classList.contains('content-item');
                 }
-            }, 100);
+            });
+
+            drake.on('drop', function (el, target, source, sibling) {
+                const fromStage = source.dataset.dropTarget || 'content-container';
+                const toStage = target.dataset.dropTarget || 'content-container';
+
+                if (el.classList.contains('lead-card')) {
+                    const leadId = el.dataset.leadId;
+                    if (fromStage && toStage && fromStage !== toStage) {
+                        const leads = JSON.parse(localStorage.getItem('leads')) || {
+                            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+                        };
+                        let lead = leads[fromStage].find(l => l.id === leadId);
+                        if (lead) {
+                            leads[fromStage] = leads[fromStage].filter(l => l.id !== leadId);
+                            updateLeadMovement(lead, toStage);
+                            leads[toStage].push(lead);
+                            localStorage.setItem('leads', JSON.stringify(leads));
+                            loadLeads();
+                        }
+                    }
+                } else if (el.classList.contains('content-badge') || el.classList.contains('content-item')) {
+                    const contentId = el.dataset.contentId;
+                    if (fromStage !== toStage) {
+                        moveContentToStage(contentId, toStage);
+                    }
+                }
+            });
+
+            drake.on('dragend', function (el) {
+                el.classList.remove('dragging-content');
+            });
         }
+    }, 100);
+}
+function updateLeadMovement(lead, newStage) {
+    if (!lead.createdAt) {
+        lead.createdAt = new Date().toISOString();
+    }
+    if (!lead.moves) lead.moves = 0;
+    if (lead.currentStage !== newStage) {
+        lead.moves += 1;
+        lead.currentStage = newStage;
+    }
+    const daysPassed = Math.floor((new Date() - new Date(lead.createdAt)) / (1000 * 60 * 60 * 24));
+    lead.days = daysPassed;
+}
+        
 
         // Move lead between stages
         function moveLead(leadId, fromStage, toStage) {
