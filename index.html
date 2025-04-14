@@ -2460,7 +2460,8 @@ function loadLeads() {
 }
 
 // ✅ Edit modal logic
-function openEditModal(leadId) {
+
+        function openEditModal(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
@@ -2481,7 +2482,6 @@ function openEditModal(leadId) {
         return;
     }
 
-    // Populate edit form fields
     document.getElementById('edit-lead-id').value = leadId;
     document.getElementById('edit-lead-company').value = selectedLead.company || '';
     document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
@@ -2494,12 +2494,13 @@ function openEditModal(leadId) {
     document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
 
     const contentSelect = $('#edit-lead-content');
-    contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
+    if (contentSelect.length) {
+        contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
+    }
 
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
-// ✅ Save changes on form submit
 const editLeadForm = document.getElementById('edit-lead-form');
 if (editLeadForm) {
     editLeadForm.addEventListener('submit', function (e) {
@@ -2552,8 +2553,6 @@ if (editLeadForm) {
         showNotification('Lead updated successfully');
     });
 }
-
-
 
 
         // Update advanced analytics metrics
