@@ -2925,27 +2925,46 @@ function updateLeadsTable() {
         }
 
         // Delete lead by ID
-        function deleteLeadById(leadId) {
-            const leads = JSON.parse(localStorage.getItem('leads'));
-            let leadFound = false;
 
-            // Search through all stages to find the lead
-            for (const stage of Object.keys(leads)) {
-                const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
-                if (leadIndex !== -1) {
-                    leads[stage].splice(leadIndex, 1);
-                    leadFound = true;
-                    break;
-                }
-            }
 
-            if (leadFound) {
-        localStorage.setItem('leads', JSON.stringify(leads));
-                loadLeads();
-                updateAnalytics();
-                showNotification('Lead deleted successfully');
-            }
+function deleteLeadById(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    let leadFound = false;
+
+    for (const stage of Object.keys(leads)) {
+        const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
+        if (leadIndex !== -1) {
+            leads[stage].splice(leadIndex, 1);
+            leadFound = true;
+            break;
         }
+    }
+
+    if (leadFound) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+        loadLeads();
+        showNotification('Lead deleted successfully');
+    } else {
+        showNotification('Error: Lead could not be deleted', 'error');
+    }
+}
+
+        
+        // Fix #3: Event delegation for delete buttons (call this after rendering leads)
+function attachDeleteListeners() {
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const leadId = btn.dataset.leadId;
+            if (confirm('Are you sure you want to delete this lead?')) {
+                deleteLeadById(leadId);
+            }
+        });
+    });
+}
+
 
         // Get appropriate icon for content type
         function getContentIcon(type) {
@@ -4028,6 +4047,28 @@ notContacted: [
             showNotification('PDF exported successfully');
         }
 
+
+        function generateUniqueId() {
+    return 'lead-' + Math.random().toString(36).substr(2, 9);
+}
+
+
+// When adding a new lead (replace your existing lead-adding logic)
+function saveNewLead(lead) {
+    if (!lead.id) {
+        lead.id = generateUniqueId();
+    }
+
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    leads[lead.stage].push(lead);
+    localStorage.setItem('leads', JSON.stringify(leads));
+    loadLeads();
+}
+
+        
         // Install button functionality
         function setupInstallButton() {
   let deferredPrompt;
