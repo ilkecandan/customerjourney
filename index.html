@@ -2479,29 +2479,22 @@ function loadLeads() {
     updateAdvancedAnalytics();
 }
 
-
 function refreshFunnelInsights() {
-    const orb = document.getElementById('insight-loader');
+    const loader = document.getElementById('insight-loader');
     const text = document.getElementById('insight-text');
-    
-    orb.classList.remove('hidden');
-    text.textContent = "Analyzing your funnel data...";
 
-    // Simulate loading delay for demo
-    setTimeout(() => {
-        orb.classList.add('hidden');
-        text.textContent = "You're building a castle, but nobody knows the kingdom exists. Send out messengers.";
-    }, 2500); // Adjust time based on your actual processing duration
+    if (loader && text) {
+        loader.classList.remove('hidden');
+        text.textContent = 'Refreshing insights...';
+
+        setTimeout(() => {
+            loader.classList.add('hidden');
+            text.textContent = generateSmartInsight(); // your custom function
+        }, 2000); // simulate loading
+    } else {
+        console.warn('Insight loader or text not found!');
+    }
 }
-
-// Manual refresh
-document.getElementById('refresh-advice').addEventListener('click', refreshFunnelInsights);
-
-// Auto-refresh every 15 minutes
-setInterval(refreshFunnelInsights, 15 * 60 * 1000);
-
-// Initial trigger
-refreshFunnelInsights();
 
 
 
