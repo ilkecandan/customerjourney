@@ -3167,11 +3167,6 @@ function addLead() {
     const contentSelect = document.getElementById('lead-content');
     const contentStrategies = $(contentSelect).val() || [];
 
-    if (!company || !contact || !email) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-
     const newLead = {
         id: 'lead-' + Date.now(),
         company,
@@ -3213,10 +3208,6 @@ function addContent() {
     const link = document.getElementById('content-link').value;
     const targetConversion = document.getElementById('content-target-conversion').value || 0;
 
-    if (!name || !stage) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
 
     const newContent = {
         id: 'content-' + Date.now(),
@@ -3281,11 +3272,6 @@ function saveLeadChanges() {
     // Get selected content strategies
     const contentSelect = document.getElementById('edit-lead-content');
     const contentStrategies = $(contentSelect).val() || [];
-
-    if (!company || !contact || !email) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
 
     // Update lead in storage
     const leads = JSON.parse(localStorage.getItem('leads'));
@@ -3376,10 +3362,6 @@ function saveContentChanges() {
 
     console.log('Saving content changes for:', contentId); // Debug log
 
-    if (!name || !stage) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
 
     // Update content in storage
     const contentItems = JSON.parse(localStorage.getItem('content')) || [];
