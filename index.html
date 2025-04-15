@@ -2315,148 +2315,213 @@
         }
 
         // Main application initialization
-        function initializeApp() {
-            console.log('Initializing app...');
-            
-            // Initialize metadata if none exists
-            if (!localStorage.getItem('funnel_metadata')) {
-                localStorage.setItem('funnel_metadata', JSON.stringify({
-                    created: new Date().toISOString(),
-                    version: '1.1',
-                    last_updated: new Date().toISOString()
-                }));
+
+function initializeApp() {
+    console.log('Initializing app...');
+    
+    // Initialize metadata if none exists
+    if (!localStorage.getItem('funnel_metadata')) {
+        localStorage.setItem('funnel_metadata', JSON.stringify({
+            created: new Date().toISOString(),
+            version: '1.1',
+            last_updated: new Date().toISOString()
+        }));
+    }
+    
+    // Initialize default leads if none exist
+    if (!localStorage.getItem('leads')) {
+        const defaultLeads = {
+            awareness: [
+                {
+                    id: 'lead-' + Date.now(),
+                    company: 'Example Corp',
+                    contact: 'John Smith',
+                    email: 'john@example.com',
+                    phone: '555-1234',
+                    currentStage: 'awareness',
+                    notes: 'Interested in our blog content',
+                    contentStrategies: ['content-1'],
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString(),
+                    industry: 'saas',
+                    status: 'new',
+                    value: 5000,
+                    source: 'website'
+                }
+            ],
+            interest: [
+                {
+                    id: 'lead-' + Date.now(),
+                    company: 'Sample Inc',
+                    contact: 'Sarah Johnson',
+                    email: 'sarah@sample.com',
+                    phone: '555-5678',
+                    currentStage: 'interest',
+                    notes: 'Downloaded our whitepaper',
+                    contentStrategies: ['content-2'],
+                    dateAdded: new Date().toISOString(),
+                    lastContact: new Date().toISOString(),
+                    industry: 'ecommerce',
+                    status: 'hot',
+                    value: 10000,
+                    source: 'social'
+                }
+            ],
+            intent: [],
+            evaluation: [],
+            purchase: []
+        };
+        localStorage.setItem('leads', JSON.stringify(defaultLeads));
+    }
+
+    // Initialize default content if none exists
+    if (!localStorage.getItem('content')) {
+        const defaultContent = [
+            {
+                id: 'content-1',
+                name: 'Example Blog Post',
+                description: 'Basic introduction to our product',
+                stage: 'awareness',
+                type: 'blog',
+                link: 'https://example.com/blog/intro',
+                targetConversion: 5,
+                dateCreated: new Date().toISOString()
+            },
+            {
+                id: 'content-2',
+                name: 'Sample Demo Video',
+                description: 'Detailed product demonstration',
+                stage: 'interest',
+                type: 'video',
+                link: 'https://example.com/demo',
+                targetConversion: 15,
+                dateCreated: new Date().toISOString()
+            },
+            {
+                id: 'content-3',
+                name: 'Example Case Study',
+                description: 'Success story from existing customer',
+                stage: 'intent',
+                type: 'casestudy',
+                link: 'https://example.com/case-study',
+                targetConversion: 25,
+                dateCreated: new Date().toISOString()
+            },
+            {
+                id: 'content-4',
+                name: 'Sample Pricing Guide',
+                description: 'Detailed pricing information',
+                stage: 'evaluation',
+                type: 'ebook',
+                link: 'https://example.com/pricing',
+                targetConversion: 20,
+                dateCreated: new Date().toISOString()
+            },
+            {
+                id: 'content-5',
+                name: 'Example Testimonials',
+                description: 'Video testimonials from happy customers',
+                stage: 'purchase',
+                type: 'video',
+                link: 'https://example.com/testimonials',
+                targetConversion: 30,
+                dateCreated: new Date().toISOString()
             }
-            
-            // Initialize default leads if none exist
-            if (!localStorage.getItem('leads')) {
-                const defaultLeads = {
-                    awareness: [
-                        {
-                            id: 'lead-' + Date.now(),
-                            company: 'Example Corp',
-                            contact: 'John Smith',
-                            email: 'john@example.com',
-                            phone: '555-1234',
-                            currentStage: 'awareness',
-                            notes: 'Interested in our blog content',
-                            contentStrategies: ['content-1'],
-                            dateAdded: new Date().toISOString(),
-                            lastContact: new Date().toISOString(),
-                            industry: 'saas',
-                            status: 'new',
-                            value: 5000,
-                            source: 'website'
-                        }
-                    ],
-                    interest: [
-                        {
-                            id: 'lead-' + Date.now(),
-                            company: 'Sample Inc',
-                            contact: 'Sarah Johnson',
-                            email: 'sarah@sample.com',
-                            phone: '555-5678',
-                            currentStage: 'interest',
-                            notes: 'Downloaded our whitepaper',
-                            contentStrategies: ['content-2'],
-                            dateAdded: new Date().toISOString(),
-                            lastContact: new Date().toISOString(),
-                            industry: 'ecommerce',
-                            status: 'hot',
-                            value: 10000,
-                            source: 'social'
-                        }
-                    ],
-                    intent: [],
-                    evaluation: [],
-                    purchase: []
-                };
-                localStorage.setItem('leads', JSON.stringify(defaultLeads));
-            }
+        ];
+        localStorage.setItem('content', JSON.stringify(defaultContent));
+    }
 
-            // Initialize default content if none exists
-            if (!localStorage.getItem('content')) {
-                const defaultContent = [
-                    {
-                        id: 'content-1',
-                        name: 'Example Blog Post',
-                        description: 'Basic introduction to our product',
-                        stage: 'awareness',
-                        type: 'blog',
-                        link: 'https://example.com/blog/intro',
-                        targetConversion: 5,
-                        dateCreated: new Date().toISOString()
-                    },
-                    {
-                        id: 'content-2',
-                        name: 'Sample Demo Video',
-                        description: 'Detailed product demonstration',
-                        stage: 'interest',
-                        type: 'video',
-                        link: 'https://example.com/demo',
-                        targetConversion: 15,
-                        dateCreated: new Date().toISOString()
-                    },
-                    {
-                        id: 'content-3',
-                        name: 'Example Case Study',
-                        description: 'Success story from existing customer',
-                        stage: 'intent',
-                        type: 'casestudy',
-                        link: 'https://example.com/case-study',
-                        targetConversion: 25,
-                        dateCreated: new Date().toISOString()
-                    },
-                    {
-                        id: 'content-4',
-                        name: 'Sample Pricing Guide',
-                        description: 'Detailed pricing information',
-                        stage: 'evaluation',
-                        type: 'ebook',
-                        link: 'https://example.com/pricing',
-                        targetConversion: 20,
-                        dateCreated: new Date().toISOString()
-                    },
-                    {
-                        id: 'content-5',
-                        name: 'Example Testimonials',
-                        description: 'Video testimonials from happy customers',
-                        stage: 'purchase',
-                        type: 'video',
-                        link: 'https://example.com/testimonials',
-                        targetConversion: 30,
-                        dateCreated: new Date().toISOString()
-                    }
-                ];
-                localStorage.setItem('content', JSON.stringify(defaultContent));
-            }
+    // Initialize Select2 for content selection
+    $('.content-select').select2({
+        placeholder: 'Select content strategies',
+        width: '100%'
+    });
 
-            // Initialize Select2 for content selection
-            $('.content-select').select2({
-                placeholder: 'Select content strategies',
-                width: '100%'
-            });
+    // Populate content options
+    populateContentOptions();
 
-            // Populate content options
-            populateContentOptions();
+    // Load data and setup UI
+    loadLeads();
+    loadContent();
+    setupEventListeners();
+    updateAnalytics();
+    setupDragAndDrop();
+    setupInstallButton();
+}
 
-            // Load data and setup UI
-            loadLeads();
-            loadContent();
-            setupEventListeners();
-            updateAnalytics();
-            setupDragAndDrop();
-            setupInstallButton();
+function setupEventListeners() {
+    // Handle edit button clicks
+    document.addEventListener('click', function(e) {
+        const editBtn = e.target.closest('.edit-btn');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const leadId = editBtn.dataset.leadId;
+            if (leadId) openEditLeadModalById(leadId);
         }
-        
-        document.addEventListener('click', function (e) {
-  if (e.target.classList.contains('edit-insight-btn')) {
-    const leadId = e.target.dataset.leadId;
-    openEditLeadModalById(leadId);
-document.getElementById('edit-lead-modal').classList.add('hidden');
-  }
-});
+    });
 
-        // Load leads with content badges
+    // Handle edit form submission
+    document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const leadId = document.getElementById('edit-lead-id').value;
+        const newStage = document.getElementById('edit-lead-stage').value;
+        
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        let foundLead = null;
+        let originalStage = '';
+
+        // Find and remove the lead from its original stage
+        for (const [stage, stageLeads] of Object.entries(leads)) {
+            const index = stageLeads.findIndex(l => l.id === leadId);
+            if (index !== -1) {
+                foundLead = stageLeads[index];
+                stageLeads.splice(index, 1);
+                originalStage = stage;
+                break;
+            }
+        }
+
+        if (!foundLead) {
+            showNotification('Lead not found while saving', 'error');
+            return;
+        }
+
+        // Update the lead with new values
+        const updatedLead = {
+            ...foundLead,
+            company: document.getElementById('edit-lead-company').value,
+            contact: document.getElementById('edit-lead-contact').value,
+            email: document.getElementById('edit-lead-email').value,
+            phone: document.getElementById('edit-lead-phone').value,
+            currentStage: newStage,
+            source: document.getElementById('edit-lead-source').value,
+            industry: document.getElementById('edit-lead-industry').value,
+            status: document.getElementById('edit-lead-status').value,
+            notes: document.getElementById('edit-lead-notes').value,
+            contentStrategies: $('#edit-lead-content').val() || [],
+            lastContact: new Date().toISOString()
+        };
+
+        // Add to the new stage
+        leads[newStage].push(updatedLead);
+        
+        // Save back to localStorage
+        localStorage.setItem('leads', JSON.stringify(leads));
+        
+        // Close modal and update UI
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+    });
+
+    // Other existing event listeners...
+}
 
 function loadLeads() {
     let leads = JSON.parse(localStorage.getItem('leads')) || {
@@ -2545,51 +2610,46 @@ function loadLeads() {
         const row = document.createElement('tr');
         row.innerHTML = `<td colspan="6" style="text-align: center;">No leads found</td>`;
         tableBody.appendChild(row);
-        attachEditButtonListeners();
-
     } else {
         const recentLeads = allLeads
             .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
             .slice(0, 5);
 
-recentLeads.forEach(lead => {
-    const row = document.createElement('tr');
-    row.dataset.leadId = lead.id; // Attach lead ID for click-to-edit
-    row.innerHTML = `
-        <td>${lead.company}</td>
-        <td>${lead.contact}</td>
-        <td>${capitalizeFirstLetter(lead.stage)}</td>
-        <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
-        <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
-        <td>
-            <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
-            <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
-        </td>
-    `;
+        recentLeads.forEach(lead => {
+            const row = document.createElement('tr');
+            row.dataset.leadId = lead.id;
+            
+            row.innerHTML = `
+                <td>${lead.company}</td>
+                <td>${lead.contact}</td>
+                <td>${capitalizeFirstLetter(lead.stage)}</td>
+                <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
+                <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
+                <td>
+                    <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+                    <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
+                </td>
+            `;
 
-    // ✅ Enable row click to open edit modal
-    row.addEventListener('click', () => {
-        openEditLeadModalById(lead.id); // assumes this function is defined
-    });
+            // Add click handler for the row
+            row.addEventListener('click', function(e) {
+                // Only open edit modal if clicking on the row itself, not buttons
+                if (!e.target.closest('button')) {
+                    openEditLeadModalById(lead.id);
+                }
+            });
 
-    tableBody.appendChild(row);
-    attachEditButtonListeners();
+            tableBody.appendChild(row);
+        });
 
-});
-
-        // Add edit/delete button listeners
-document.querySelectorAll('.edit-btn').forEach(btn => {
-  btn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    const leadId = this.dataset.leadId;
-    if (leadId) openEditLeadModalById(leadId);
-  });
-});
-
+        // Add delete button handlers
         document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const leadId = btn.dataset.leadId;
-                deleteLeadById(leadId);
+                if (confirm('Are you sure you want to delete this lead?')) {
+                    deleteLeadById(leadId);
+                }
             });
         });
     }
@@ -2598,54 +2658,50 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
     generateSmartAdvice();
     updateAdvancedAnalytics();
 }
-document.addEventListener('DOMContentLoaded', function () {
-  const form = document.getElementById('side-panel-lead-form');
-  if (!form) return;
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const leadId = document.getElementById('side-lead-id').value;
-    const updatedStage = document.getElementById('side-lead-stage').value;
+function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
-      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
     let foundLead = null;
     let originalStage = '';
-    for (const stage in leads) {
-      const index = leads[stage].findIndex(l => l.id === leadId);
-      if (index !== -1) {
-        foundLead = leads[stage][index];
-        leads[stage].splice(index, 1);
-        originalStage = stage;
-        break;
-      }
+
+    // Search through all stages for the lead
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const lead = stageLeads.find(l => l.id === leadId);
+        if (lead) {
+            foundLead = lead;
+            originalStage = stage;
+            break;
+        }
     }
 
     if (!foundLead) {
-      alert('Lead not found.');
-      return;
+        showNotification('Lead not found', 'error');
+        return;
     }
 
-    const updatedLead = {
-      ...foundLead,
-      company: document.getElementById('side-lead-company').value,
-      contact: document.getElementById('side-lead-contact').value,
-      stage: updatedStage,
-      lastContact: new Date().toISOString()
-    };
+    // Populate the edit form
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+    
+    // Set content strategies
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
 
-    leads[updatedStage].push(updatedLead);
-    localStorage.setItem('leads', JSON.stringify(leads));
-document.getElementById('edit-lead-modal').classList.add('hidden');
-    loadLeads?.();
-    updateAnalytics?.();
-    showNotification?.('Lead updated successfully');
-  });
-});
+    // Show the modal
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
+}
 
-
+        
 
 // ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
 function refreshFunnelInsights() {
@@ -2781,30 +2837,6 @@ document.addEventListener('click', function (e) {
             
             document.getElementById('revenue-potential').textContent = `$${revenuePotential.toLocaleString()}`;
         }
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const leadId = btn.dataset.leadId;
-        const leads = JSON.parse(localStorage.getItem('leads'));
-        let foundLead = null;
-
-        for (const stageLeads of Object.values(leads)) {
-            const lead = stageLeads.find(l => l.id === leadId);
-            if (lead) {
-                foundLead = lead;
-                break;
-            }
-        }
-
-        if (foundLead) {
-            console.log('Opening edit modal for lead:', leadId); // Debug
-    openEditLeadModalById(foundLead.id);
-        } else {
-            showNotification('Lead not found', 'error');
-        }
-    });
-});
-
 
         // Handle content drag start
         function handleContentDragStart(e) {
@@ -3430,105 +3462,48 @@ document.getElementById('lead-form')?.addEventListener('submit', e => {
     }
 }
 // ✅ OPEN the modal with correct data
-function openEditLeadModalById(leadId) {
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
 
-  let found = null;
-  let stage = '';
+        function openEditLeadModalById(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
 
-  for (const [s, arr] of Object.entries(leads)) {
-    const match = arr.find(l => l.id === leadId);
-    if (match) {
-      found = match;
-      stage = s;
-      break;
+    let foundLead = null;
+    let originalStage = '';
+
+    // Search through all stages for the lead
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const lead = stageLeads.find(l => l.id === leadId);
+        if (lead) {
+            foundLead = lead;
+            originalStage = stage;
+            break;
+        }
     }
-  }
 
-  if (!found) {
-    alert('Lead not found!');
-    return;
-  }
+    if (!foundLead) {
+        showNotification('Lead not found', 'error');
+        return;
+    }
 
-  // Populate modal fields
-  document.getElementById('edit-lead-id').value = found.id;
-  document.getElementById('edit-lead-company').value = found.company || '';
-  document.getElementById('edit-lead-contact').value = found.contact || '';
-  document.getElementById('edit-lead-email').value = found.email || '';
-  document.getElementById('edit-lead-phone').value = found.phone || '';
-  document.getElementById('edit-lead-stage').value = found.stage || stage;
-  document.getElementById('edit-lead-source').value = found.source || '';
-  document.getElementById('edit-lead-industry').value = found.industry || '';
-  document.getElementById('edit-lead-status').value = found.status || '';
-  document.getElementById('edit-lead-notes').value = found.notes || '';
-  $('#edit-lead-content').val(found.contentStrategies || []).trigger('change');
+    // Populate the edit form
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+    
+    // Set content strategies
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
 
-  // Show modal
-  document.getElementById('edit-lead-modal').classList.remove('hidden');
+    // Show the modal
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
-
-// ✅ Save Changes Handler
-document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const id = document.getElementById('edit-lead-id').value;
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-
-  let oldStage = null;
-  let existingLead = null;
-
-  for (const [stage, list] of Object.entries(leads)) {
-    const index = list.findIndex(l => l.id === id);
-    if (index !== -1) {
-      existingLead = list[index];
-      list.splice(index, 1); // remove
-      oldStage = stage;
-      break;
-    }
-  }
-
-  if (!existingLead) {
-    showNotification?.('Lead not found while saving', 'error');
-    return;
-  }
-
-  const updated = {
-    ...existingLead,
-    company: document.getElementById('edit-lead-company').value,
-    contact: document.getElementById('edit-lead-contact').value,
-    email: document.getElementById('edit-lead-email').value,
-    phone: document.getElementById('edit-lead-phone').value,
-    stage: document.getElementById('edit-lead-stage').value,
-    source: document.getElementById('edit-lead-source').value,
-    industry: document.getElementById('edit-lead-industry').value,
-    status: document.getElementById('edit-lead-status').value,
-    notes: document.getElementById('edit-lead-notes').value,
-    contentStrategies: $('#edit-lead-content').val() || [],
-    lastContact: new Date().toISOString()
-  };
-
-  leads[updated.stage].push(updated);
-  localStorage.setItem('leads', JSON.stringify(leads));
-
-  document.getElementById('edit-lead-modal').classList.add('hidden');
-  loadLeads?.();
-  updateAnalytics?.();
-  showNotification?.('Lead updated successfully');
-});
-
-// ✅ Hook up edit buttons
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn?.dataset?.leadId) {
-    openEditLeadModalById(btn.dataset.leadId);
-  }
-});
-
-
 
         // Export to Excel
         function exportToExcel() {
@@ -4679,56 +4654,64 @@ function openSidePanelLeadEditor(leadId) {
   document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
-document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
-  e.preventDefault();
+document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const leadId = document.getElementById('edit-lead-id').value;
+    const newStage = document.getElementById('edit-lead-stage').value;
+    
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
 
-  const id = document.getElementById('edit-lead-id').value;
-  const stage = document.getElementById('edit-lead-stage').value;
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
+    let foundLead = null;
+    let originalStage = '';
 
-  let foundLead = null;
-  let oldStage = null;
-
-  for (const [key, list] of Object.entries(leads)) {
-    const index = list.findIndex(l => l.id === id);
-    if (index !== -1) {
-      foundLead = list[index];
-      list.splice(index, 1);
-      oldStage = key;
-      break;
+    // Find and remove the lead from its original stage
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const index = stageLeads.findIndex(l => l.id === leadId);
+        if (index !== -1) {
+            foundLead = stageLeads[index];
+            stageLeads.splice(index, 1);
+            originalStage = stage;
+            break;
+        }
     }
-  }
 
-  if (!foundLead) {
-    alert('Lead not found.');
-    return;
-  }
+    if (!foundLead) {
+        showNotification('Lead not found while saving', 'error');
+        return;
+    }
 
-  const updatedLead = {
-    ...foundLead,
-    company: document.getElementById('edit-lead-company').value,
-    contact: document.getElementById('edit-lead-contact').value,
-    email: document.getElementById('edit-lead-email').value,
-    phone: document.getElementById('edit-lead-phone').value,
-    stage: stage,
-    source: document.getElementById('edit-lead-source').value,
-    industry: document.getElementById('edit-lead-industry').value,
-    status: document.getElementById('edit-lead-status').value,
-    notes: document.getElementById('edit-lead-notes').value,
-    contentStrategies: $('#edit-lead-content').val() || [],
-    lastContact: new Date().toISOString()
-  };
+    // Update the lead with new values
+    const updatedLead = {
+        ...foundLead,
+        company: document.getElementById('edit-lead-company').value,
+        contact: document.getElementById('edit-lead-contact').value,
+        email: document.getElementById('edit-lead-email').value,
+        phone: document.getElementById('edit-lead-phone').value,
+        currentStage: newStage,
+        source: document.getElementById('edit-lead-source').value,
+        industry: document.getElementById('edit-lead-industry').value,
+        status: document.getElementById('edit-lead-status').value,
+        notes: document.getElementById('edit-lead-notes').value,
+        contentStrategies: $('#edit-lead-content').val() || [],
+        lastContact: new Date().toISOString()
+    };
 
-  leads[stage].push(updatedLead);
-  localStorage.setItem('leads', JSON.stringify(leads));
-
-  document.getElementById('edit-lead-modal').classList.add('hidden');
-  loadLeads();
-  updateAnalytics();
-  showNotification('Lead updated successfully');
+    // Add to the new stage
+    leads[newStage].push(updatedLead);
+    
+    // Save back to localStorage
+    localStorage.setItem('leads', JSON.stringify(leads));
+    
+    // Close modal and update UI
+    document.getElementById('edit-lead-modal').classList.add('hidden');
+    loadLeads();
+    updateAnalytics();
+    showNotification('Lead updated successfully');
 });
+        
 
 document.addEventListener('click', function (e) {
   const btn = e.target.closest('.edit-insight-btn');
