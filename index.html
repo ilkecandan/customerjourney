@@ -4568,85 +4568,106 @@ function saveNewLead(lead) {
     }
   });
 
-  // 📝 LEAD EDIT PANEL LOGIC
-  let selectedLead = null;
+function openLeadSidePanel(lead) {
+      selectedLead = lead;
 
-  function openLeadSidePanel(lead) {
-    selectedLead = lead;
+      document.getElementById('side-lead-id').value = lead.id;
+      document.getElementById('side-lead-company').value = lead.company || '';
+      document.getElementById('side-lead-contact').value = lead.contact || '';
+      document.getElementById('side-lead-stage').value = lead.stage || 'awareness';
 
-    document.getElementById('side-lead-id').value = lead.id;
-    document.getElementById('side-lead-company').value = lead.company || '';
-    document.getElementById('side-lead-contact').value = lead.contact || '';
-    document.getElementById('side-lead-stage').value = lead.stage || 'awareness';
-
-    toggleLeadPanel(true);
-  }
-
-  document.getElementById('side-panel-lead-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const id = document.getElementById('side-lead-id').value;
-    const updatedCompany = document.getElementById('side-lead-company').value;
-    const updatedContact = document.getElementById('side-lead-contact').value;
-    const updatedStage = document.getElementById('side-lead-stage').value;
-
-    selectedLead.company = updatedCompany;
-    selectedLead.contact = updatedContact;
-    selectedLead.stage = updatedStage;
-
-    // Save to localStorage
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    // Remove from all stages
-    for (const stage of Object.keys(leads)) {
-      leads[stage] = leads[stage].filter(lead => lead.id !== selectedLead.id);
+      toggleLeadPanel(true);
     }
 
-    // Add to correct stage
-    leads[updatedStage].push(selectedLead);
-    localStorage.setItem('leads', JSON.stringify(leads));
+    function toggleLeadPanel(show) {
+      const panel = document.getElementById('lead-side-panel');
+      if (show) {
+        panel.classList.remove('hidden');
+        panel.classList.add('show');
+      } else {
+        panel.classList.add('hidden');
+        panel.classList.remove('show');
+      }
+    }
 
-    toggleLeadPanel(false);
-    showNotification('Lead updated successfully!');
-    loadLeads(); // If you have this function, it will refresh the UI
-  });
-</script>
+    document.getElementById('side-panel-lead-form').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-<!-- ✅ Lead Side Panel for Editing -->
-<div id="lead-side-panel" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
-    <h2>Edit Lead</h2>
-    <form id="side-panel-lead-form">
-      <input type="hidden" id="side-lead-id">
-      <div class="form-group">
-        <label for="side-lead-company">Company</label>
-        <input type="text" id="side-lead-company" required>
-      </div>
-      <div class="form-group">
-        <label for="side-lead-contact">Contact</label>
-        <input type="text" id="side-lead-contact" required>
-      </div>
-      <div class="form-group">
-        <label for="side-lead-stage">Stage</label>
-        <select id="side-lead-stage">
-          <option value="awareness">Awareness</option>
-          <option value="interest">Interest</option>
-          <option value="intent">Intent</option>
-          <option value="evaluation">Evaluation</option>
-          <option value="purchase">Purchase</option>
-        </select>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="cancel-btn" onclick="toggleLeadPanel(false)">Cancel</button>
-        <button type="submit" class="submit-btn">Save Changes</button>
-      </div>
-    </form>
-    <div id="lead-history-content" style="margin-top: 1rem;"></div>
+      const id = document.getElementById('side-lead-id').value;
+      const updatedCompany = document.getElementById('side-lead-company').value;
+      const updatedContact = document.getElementById('side-lead-contact').value;
+      const updatedStage = document.getElementById('side-lead-stage').value;
+
+      // Get leads from localStorage
+      const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+      };
+
+      let foundLead = null;
+
+      // Remove the lead from all stages
+      for (const stage in leads) {
+        const index = leads[stage].findIndex(lead => lead.id === id);
+        if (index !== -1) {
+          foundLead = leads[stage][index];
+          leads[stage].splice(index, 1);
+          break;
+        }
+      }
+
+      if (foundLead) {
+        foundLead.company = updatedCompany;
+        foundLead.contact = updatedContact;
+        foundLead.stage = updatedStage;
+
+        leads[updatedStage].push(foundLead);
+
+        localStorage.setItem('leads', JSON.stringify(leads));
+
+        toggleLeadPanel(false);
+        showNotification('Lead updated successfully!');
+        if (typeof loadLeads === 'function') {
+          loadLeads();
+        }
+      } else {
+        showNotification('Failed to update: lead not found.', 'error');
+      }
+    });
+  </script>
+
+  <!-- ✅ Lead Side Panel for Editing -->
+  <div id="lead-side-panel" class="modal hidden">
+    <div class="modal-content">
+      <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
+      <h2>Edit Lead</h2>
+      <form id="side-panel-lead-form">
+        <input type="hidden" id="side-lead-id">
+        <div class="form-group">
+          <label for="side-lead-company">Company</label>
+          <input type="text" id="side-lead-company" required>
+        </div>
+        <div class="form-group">
+          <label for="side-lead-contact">Contact</label>
+          <input type="text" id="side-lead-contact" required>
+        </div>
+        <div class="form-group">
+          <label for="side-lead-stage">Stage</label>
+          <select id="side-lead-stage">
+            <option value="awareness">Awareness</option>
+            <option value="interest">Interest</option>
+            <option value="intent">Intent</option>
+            <option value="evaluation">Evaluation</option>
+            <option value="purchase">Purchase</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" onclick="toggleLeadPanel(false)">Cancel</button>
+          <button type="submit" class="submit-btn">Save Changes</button>
+        </div>
+      </form>
+      <div id="lead-history-content" style="margin-top: 1rem;"></div>
+    </div>
   </div>
-</div>
 
 </body>
 </html>
