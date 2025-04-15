@@ -2135,6 +2135,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script>
+        let currentSelectedLeadId = null;
+
         document.addEventListener('DOMContentLoaded', function () {
             // First hide the app container
             document.getElementById('app-container').classList.add('hidden');
@@ -4551,15 +4553,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
     });
 });
 document.addEventListener('click', function (e) {
-  const editBtn = e.target.closest('.edit-insight-btn');
-  if (editBtn) {
-    const leadId = editBtn.dataset.leadId;
-    if (leadId) {
-      openEditLeadModalById(leadId); // ✅ this function is already defined in your code
-    }
+  const editInsightBtn = e.target.closest('.edit-insight-btn');
+  if (!editInsightBtn) return;
+
+  const leadId = editInsightBtn.dataset.leadId;
+  if (leadId) {
+    openEditLeadModalById(leadId);
+  } else {
+    console.warn('No lead ID found in edit-insight-btn');
   }
 });
-
 
 
     </script>
