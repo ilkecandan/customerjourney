@@ -2587,150 +2587,127 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
     updateAdvancedAnalytics();
 }
 
+
 function openEditLeadModalById(leadId) {
   const leads = JSON.parse(localStorage.getItem('leads')) || {
     awareness: [], interest: [], intent: [], evaluation: [], purchase: []
   };
 
-  let foundLead = null;
-  for (const [stage, stageLeads] of Object.entries(leads)) {
-    const match = stageLeads.find(l => l.id === leadId);
+  let selectedLead = null;
+  let stageFound = '';
+
+  for (const stage in leads) {
+    const match = leads[stage].find(lead => lead.id === leadId);
     if (match) {
-      foundLead = { ...match, currentStage: stage };
+      selectedLead = match;
+      stageFound = stage;
       break;
     }
   }
 
-  if (!foundLead) {
-    showNotification('Lead not found', 'error');
+  if (!selectedLead) {
+    showNotification('Lead not found for editing', 'error');
     return;
   }
 
-  // 🟨 Fill the side panel form fields
-  document.getElementById('side-lead-id').value = foundLead.id;
-  document.getElementById('side-lead-company').value = foundLead.company || '';
-  document.getElementById('side-lead-contact').value = foundLead.contact || '';
-  document.getElementById('side-lead-stage').value = foundLead.currentStage || 'awareness';
+  document.getElementById('edit-lead-id').value = leadId;
+  document.getElementById('edit-lead-company').value = selectedLead.company || '';
+  document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
+  document.getElementById('edit-lead-email').value = selectedLead.email || '';
+  document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
+  document.getElementById('edit-lead-stage').value = stageFound;
+  document.getElementById('edit-lead-source').value = selectedLead.source || '';
+  document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
+  document.getElementById('edit-lead-status').value = selectedLead.status || '';
+  document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
 
-  // 🟨 Show the side panel
-  toggleLeadPanel(true);
+  const contentSelect = $('#edit-lead-content');
+  if (contentSelect.length) {
+    contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
+  }
 
-  // Store for editing
-  window.selectedLead = foundLead;
+  document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
+// ✅ SAVE CHANGES ON SUBMIT
+const editLeadForm = document.getElementById('edit-lead-form');
+if (editLeadForm) {
+  editLeadForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const leadId = document.getElementById('edit-lead-id').value;
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    let leadToUpdate = null;
+    let currentStage = '';
+
+    for (const stage in leads) {
+      const index = leads[stage].findIndex(lead => lead.id === leadId);
+      if (index !== -1) {
+        leadToUpdate = leads[stage][index];
+        leads[stage].splice(index, 1); // remove from old stage
+        currentStage = stage;
+        break;
+      }
+    }
+
+    if (!leadToUpdate) {
+      showNotification('Error: Could not update lead', 'error');
+      return;
+    }
+
+    const updatedLead = {
+      ...leadToUpdate,
+      company: document.getElementById('edit-lead-company').value,
+      contact: document.getElementById('edit-lead-contact').value,
+      email: document.getElementById('edit-lead-email').value,
+      phone: document.getElementById('edit-lead-phone').value,
+      source: document.getElementById('edit-lead-source').value,
+      industry: document.getElementById('edit-lead-industry').value,
+      status: document.getElementById('edit-lead-status').value,
+      notes: document.getElementById('edit-lead-notes').value,
+      contentStrategies: $('#edit-lead-content').val() || [],
+      currentStage: document.getElementById('edit-lead-stage').value,
+      lastContact: new Date().toISOString()
+    };
+
+    leads[updatedLead.currentStage].push(updatedLead);
+    localStorage.setItem('leads', JSON.stringify(leads));
+
+    document.getElementById('edit-lead-modal').classList.add('hidden');
+    loadLeads();
+    updateAnalytics?.();
+    refreshFunnelInsights?.();
+    showNotification('Lead updated successfully!');
+  });
+}
+
+// ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
+function refreshFunnelInsights() {
+  const loader = document.getElementById('insight-loader');
+  const text = document.getElementById('insight-text');
+
+  if (loader) loader.classList.remove('hidden');
+  if (text) text.textContent = 'Reanalyzing your funnel data...';
+
+  setTimeout(() => {
+    if (loader) loader.classList.add('hidden');
+    if (text) text.textContent = getRandomInsight(); // If you have a function generating insights
+  }, 3000); // Simulated delay
+}
+
+// ✅ CONNECT EDIT BUTTONS TO MODAL
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.edit-insight-btn');
+  if (btn && btn.dataset.leadId) {
+    openEditLeadModalById(btn.dataset.leadId);
+  }
+});
 
 
         
-
-function refreshFunnelInsights() {
-    const loader = document.getElementById('insight-loader');
-    const text = document.getElementById('insight-text');
-    
-    if (loader) loader.classList.remove('hidden');
-    if (text) text.textContent = 'Reanalyzing your funnel data...';
-
-    setTimeout(() => {
-        if (loader) loader.classList.add('hidden');
-        if (text) text.textContent = getRandomInsight(); // or however you're generating it
-    }, 100000); // Simulate 3 second "thinking time"
-}
-
-// ✅ Edit modal logic
-function openEditLeadModalById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-    let selectedLead = null;
-    let stageFound = '';
-
-    for (const stage in leads) {
-        const match = leads[stage].find(lead => lead.id === leadId);
-        if (match) {
-            selectedLead = match;
-            stageFound = stage;
-            break;
-        }
-    }
-
-    if (!selectedLead) {
-        showNotification('Lead not found for editing', 'error');
-        return;
-    }
-
-    document.getElementById('edit-lead-id').value = leadId;
-    document.getElementById('edit-lead-company').value = selectedLead.company || '';
-    document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
-    document.getElementById('edit-lead-email').value = selectedLead.email || '';
-    document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
-    document.getElementById('edit-lead-stage').value = stageFound;
-    document.getElementById('edit-lead-source').value = selectedLead.source || '';
-    document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
-    document.getElementById('edit-lead-status').value = selectedLead.status || '';
-    document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
-
-    const contentSelect = $('#edit-lead-content');
-    if (contentSelect.length) {
-        contentSelect.val(selectedLead.contentStrategies || []).trigger('change');
-    }
-
-    document.getElementById('edit-lead-modal').classList.remove('hidden');
-}
-
-// ✅ Save changes on form submit
-const editLeadForm = document.getElementById('edit-lead-form');
-if (editLeadForm) {
-    editLeadForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const leadId = document.getElementById('edit-lead-id').value;
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
-
-        let leadToUpdate = null;
-        let currentStage = '';
-
-        for (const stage in leads) {
-            const index = leads[stage].findIndex(lead => lead.id === leadId);
-            if (index !== -1) {
-                leadToUpdate = leads[stage][index];
-                leads[stage].splice(index, 1);
-                currentStage = stage;
-                break;
-            }
-        }
-
-        if (!leadToUpdate) {
-            showNotification('Error: Could not update lead', 'error');
-            return;
-        }
-
-        const updatedLead = {
-            ...leadToUpdate,
-            company: document.getElementById('edit-lead-company').value,
-            contact: document.getElementById('edit-lead-contact').value,
-            email: document.getElementById('edit-lead-email').value,
-            phone: document.getElementById('edit-lead-phone').value,
-            source: document.getElementById('edit-lead-source').value,
-            industry: document.getElementById('edit-lead-industry').value,
-            status: document.getElementById('edit-lead-status').value,
-            notes: document.getElementById('edit-lead-notes').value,
-            contentStrategies: $('#edit-lead-content').val() || [],
-            currentStage: document.getElementById('edit-lead-stage').value,
-            lastContact: new Date().toISOString()
-        };
-
-        leads[updatedLead.currentStage].push(updatedLead);
-        localStorage.setItem('leads', JSON.stringify(leads));
-
-        document.getElementById('edit-lead-modal').classList.add('hidden');
-        loadLeads();
-        updateAnalytics?.();
-        showNotification('Lead updated successfully');
-    });
-}
-
 
         function setupAutoInsightRefresh(intervalInMinutes = 15) {
     const intervalMs = intervalInMinutes * 60 * 1000;
