@@ -2910,7 +2910,6 @@ document.addEventListener('click', function (e) {
 
         // Create a lead card element for the funnel
 
-
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
@@ -2932,26 +2931,21 @@ function createLeadCard(lead) {
     contact.className = 'contact';
     contact.textContent = lead.contact || 'No contact';
 
-    const tagsWrapper = document.createElement('div');
-    tagsWrapper.className = 'tags-wrapper';
-    tagsWrapper.style.display = 'flex';
-    tagsWrapper.style.gap = '4px';
-    tagsWrapper.style.marginTop = '4px';
-
-    if (lead.industry) {
-        const industryTag = document.createElement('span');
-        industryTag.className = 'tag';
-        industryTag.textContent = lead.industry;
-        tagsWrapper.appendChild(industryTag);
-    }
+    // Add click event to open edit modal
+    leadCard.addEventListener('click', function(e) {
+        // Don't open modal if clicking on a drag handle or other element
+        if (e.target !== leadCard && !e.target.classList.contains('company') && !e.target.classList.contains('contact')) {
+            return;
+        }
+        e.stopPropagation();
+        openEditLeadModalById(lead.id);
+    });
 
     leadCard.appendChild(company);
     leadCard.appendChild(contact);
-    leadCard.appendChild(tagsWrapper);
 
     return leadCard;
 }
-
 
 function toggleLeadPanel(show, html = '') {
     let panel = document.getElementById('lead-insight-panel');
@@ -3377,6 +3371,28 @@ document.getElementById('lead-form')?.addEventListener('submit', e => {
         });
     }
 }
+
+        // Handle lead card clicks for editing (both in funnel and table)
+document.addEventListener('click', function(e) {
+    // Check if clicked on a lead card in the funnel
+    const leadCard = e.target.closest('.lead-card');
+    if (leadCard) {
+        const leadId = leadCard.dataset.leadId;
+        if (leadId) {
+            openEditLeadModalById(leadId);
+        }
+        return;
+    }
+    
+    // Check if clicked on a lead row in the table (but not on action buttons)
+    const tableRow = e.target.closest('#leads-table-body tr');
+    if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+        const leadId = tableRow.dataset.leadId;
+        if (leadId) {
+            openEditLeadModalById(leadId);
+        }
+    }
+});
 // ✅ OPEN the modal with correct data
 
         function openEditLeadModalById(leadId) {
@@ -3420,6 +3436,10 @@ document.getElementById('lead-form')?.addEventListener('submit', e => {
     // Show the modal
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
+        document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveLeadChanges();
+});
 
         // Export to Excel
         function exportToExcel() {
@@ -3706,85 +3726,87 @@ function addLead() {
         }
 
         // Save lead changes
-        function saveLeadChanges() {
-            const leadId = document.getElementById('edit-lead-id').value;
-            const company = document.getElementById('edit-lead-company').value;
-            const contact = document.getElementById('edit-lead-contact').value;
-            const email = document.getElementById('edit-lead-email').value;
-            const phone = document.getElementById('edit-lead-phone').value;
-            const stage = document.getElementById('edit-lead-stage').value;
-            const source = document.getElementById('edit-lead-source').value;
-            const industry = document.getElementById('edit-lead-industry').value;
-            const status = document.getElementById('edit-lead-status').value;
-            const notes = document.getElementById('edit-lead-notes').value;
 
-            // Get selected content strategies
-            const contentSelect = document.getElementById('edit-lead-content');
-            const contentStrategies = $(contentSelect).val() || [];
+function saveLeadChanges() {
+    const leadId = document.getElementById('edit-lead-id').value;
+    const company = document.getElementById('edit-lead-company').value;
+    const contact = document.getElementById('edit-lead-contact').value;
+    const email = document.getElementById('edit-lead-email').value;
+    const phone = document.getElementById('edit-lead-phone').value;
+    const stage = document.getElementById('edit-lead-stage').value;
+    const source = document.getElementById('edit-lead-source').value;
+    const industry = document.getElementById('edit-lead-industry').value;
+    const status = document.getElementById('edit-lead-status').value;
+    const notes = document.getElementById('edit-lead-notes').value;
 
-            if (!company || !contact || !email) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
+    // Get selected content strategies
+    const contentSelect = document.getElementById('edit-lead-content');
+    const contentStrategies = $(contentSelect).val() || [];
 
-            // Update lead in storage
-            const leads = JSON.parse(localStorage.getItem('leads'));
-            let leadFound = false;
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
 
-            // Search through all stages to find the lead
-            for (const [stageKey, stageLeads] of Object.entries(leads)) {
-                const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+    // Update lead in storage
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    let leadFound = false;
+
+    // Search through all stages to find the lead
+    for (const [stageKey, stageLeads] of Object.entries(leads)) {
+        const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+        
+        if (leadIndex !== -1) {
+            // If stage changed, move the lead
+            if (stageKey !== stage) {
+                const lead = stageLeads[leadIndex];
+                stageLeads.splice(leadIndex, 1);
                 
-                if (leadIndex !== -1) {
-                    // If stage changed, move the lead
-                    if (stageKey !== stage) {
-                        const lead = stageLeads[leadIndex];
-                        stageLeads.splice(leadIndex, 1);
-                        
-                        // Update lead properties
-                        lead.company = company;
-                        lead.contact = contact;
-                        lead.email = email;
-                        lead.phone = phone;
-                        lead.source = source;
-                        lead.industry = industry;
-                        lead.status = status;
-                        lead.stage = stage;
-                        lead.notes = notes;
-                        lead.contentStrategies = contentStrategies;
-                        lead.lastContact = new Date().toISOString();
-                        
-                        // Add to new stage
-                        leads[stage].push(lead);
-                    } else {
-                        // Just update the lead
-                        const lead = stageLeads[leadIndex];
-                        lead.company = company;
-                        lead.contact = contact;
-                        lead.email = email;
-                        lead.phone = phone;
-                        lead.source = source;
-                        lead.industry = industry;
-                        lead.status = status;
-                        lead.notes = notes;
-                        lead.contentStrategies = contentStrategies;
-                        lead.lastContact = new Date().toISOString();
-                    }
-                    
-                    leadFound = true;
-                    break;
-                }
+                // Update lead properties
+                lead.company = company;
+                lead.contact = contact;
+                lead.email = email;
+                lead.phone = phone;
+                lead.source = source;
+                lead.industry = industry;
+                lead.status = status;
+                lead.currentStage = stage;
+                lead.notes = notes;
+                lead.contentStrategies = contentStrategies;
+                lead.lastContact = new Date().toISOString();
+                
+                // Add to new stage
+                leads[stage].push(lead);
+            } else {
+                // Just update the lead
+                const lead = stageLeads[leadIndex];
+                lead.company = company;
+                lead.contact = contact;
+                lead.email = email;
+                lead.phone = phone;
+                lead.source = source;
+                lead.industry = industry;
+                lead.status = status;
+                lead.notes = notes;
+                lead.contentStrategies = contentStrategies;
+                lead.lastContact = new Date().toISOString();
             }
-
-            if (leadFound) {
-                localStorage.setItem('leads', JSON.stringify(leads));
-                document.getElementById('edit-lead-modal').classList.add('hidden');
-                loadLeads();
-                updateAnalytics();
-                showNotification('Lead updated successfully');
-            }
+            
+            leadFound = true;
+            break;
         }
+    }
 
+    if (leadFound) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+    }
+}
+
+        
         // Open edit content modal
         function openEditContentModal(content) {
             if (!content) return;
