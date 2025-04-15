@@ -2600,20 +2600,22 @@ document.addEventListener('click', function (e) {
   }
 });
 
+// ✅ FULLY FIXED EDIT LEAD FUNCTIONALITY
 
-        function openEditLeadModalById(leadId) {
+// 1. Open Edit Modal and Load Lead Data
+function openEditLeadModalById(leadId) {
   const leads = JSON.parse(localStorage.getItem('leads')) || {
     awareness: [], interest: [], intent: [], evaluation: [], purchase: []
   };
 
   let selectedLead = null;
-  let foundStage = '';
+  let stageFound = '';
 
   for (const stage in leads) {
     const match = leads[stage].find(lead => lead.id === leadId);
     if (match) {
       selectedLead = match;
-      foundStage = stage;
+      stageFound = stage;
       break;
     }
   }
@@ -2623,12 +2625,13 @@ document.addEventListener('click', function (e) {
     return;
   }
 
+  // Fill modal inputs
   document.getElementById('edit-lead-id').value = leadId;
   document.getElementById('edit-lead-company').value = selectedLead.company || '';
   document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
   document.getElementById('edit-lead-email').value = selectedLead.email || '';
   document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
-  document.getElementById('edit-lead-stage').value = foundStage;
+  document.getElementById('edit-lead-stage').value = stageFound;
   document.getElementById('edit-lead-source').value = selectedLead.source || '';
   document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
   document.getElementById('edit-lead-status').value = selectedLead.status || '';
@@ -2642,7 +2645,7 @@ document.addEventListener('click', function (e) {
   document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
-// 2. Save edited lead on form submit
+// 2. Save Changes to Lead
 const editLeadForm = document.getElementById('edit-lead-form');
 if (editLeadForm) {
   editLeadForm.addEventListener('submit', function (e) {
@@ -2654,20 +2657,20 @@ if (editLeadForm) {
     };
 
     let leadToUpdate = null;
-    let oldStage = '';
+    let originalStage = '';
 
     for (const stage in leads) {
       const index = leads[stage].findIndex(lead => lead.id === leadId);
       if (index !== -1) {
         leadToUpdate = leads[stage][index];
         leads[stage].splice(index, 1);
-        oldStage = stage;
+        originalStage = stage;
         break;
       }
     }
 
     if (!leadToUpdate) {
-      showNotification('Error: Lead not found for update', 'error');
+      showNotification('Error: Could not update lead', 'error');
       return;
     }
 
@@ -2690,22 +2693,20 @@ if (editLeadForm) {
     localStorage.setItem('leads', JSON.stringify(leads));
 
     document.getElementById('edit-lead-modal').classList.add('hidden');
+    showNotification('Lead updated successfully!');
     loadLeads();
     updateAnalytics?.();
-    showNotification('Lead updated successfully!');
   });
 }
 
-// 3. Trigger edit modal from any edit button
-// Button must have: <button class="edit-insight-btn" data-lead-id="...">
+// 3. Hook All Edit Buttons
+// Make sure edit buttons look like this: <button class="edit-insight-btn" data-lead-id="123">Edit</button>
 document.addEventListener('click', function (e) {
   const btn = e.target.closest('.edit-insight-btn');
   if (btn && btn.dataset.leadId) {
     openEditLeadModalById(btn.dataset.leadId);
   }
 });
-
-
 
         
 
