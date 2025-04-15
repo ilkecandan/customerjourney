@@ -572,24 +572,26 @@
 }
 
 .lead-card.saas {
-  background-color: rgba(91, 206, 250, 0.15); /* light blue */
+  background-color: rgba(91, 206, 250, 0.1);
   border: 1px solid #5bcefa;
 }
-
 .lead-card.healthcare {
-  background-color: rgba(255, 148, 148, 0.15); /* soft red */
+  background-color: rgba(255, 148, 148, 0.1);
   border: 1px solid #ff9494;
 }
-
 .lead-card.education {
-  background-color: rgba(255, 224, 102, 0.15); /* mellow yellow */
+  background-color: rgba(255, 224, 102, 0.1);
   border: 1px solid #ffe066;
 }
-
 .lead-card.realestate {
-  background-color: rgba(174, 214, 103, 0.15); /* minty green */
+  background-color: rgba(174, 214, 103, 0.1);
   border: 1px solid #aed667;
 }
+.lead-card.consulting {
+  background-color: rgba(200, 120, 255, 0.1);
+  border: 1px solid #c878ff;
+}
+
         
 [data-drop-target="awareness"] .lead-card { background-color: rgba(255, 255, 255, 0.06); }
 [data-drop-target="interest"] .lead-card { background-color: rgba(91, 206, 250, 0.07); }
@@ -2931,6 +2933,12 @@ if (editLeadForm) {
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
+
+    // ✅ Add color class based on industry
+    if (lead.industry) {
+        leadCard.classList.add(lead.industry.toLowerCase()); // makes .saas, .healthcare, etc.
+    }
+
     leadCard.draggable = true;
     leadCard.dataset.leadId = lead.id;
     leadCard.dataset.currentStage = lead.currentStage;
@@ -2974,6 +2982,7 @@ function createLeadCard(lead) {
 
     return leadCard;
 }
+
 
 
 function toggleLeadPanel(show, html = '') {
