@@ -2091,7 +2091,28 @@
                 setupAuth();
             }
         });
- 
+
+        // Handle lead card clicks for editing (both in funnel and table)
+document.addEventListener('click', function(e) {
+    // Check if clicked on a lead card in the funnel
+    const leadCard = e.target.closest('.lead-card');
+    if (leadCard) {
+        const leadId = leadCard.dataset.leadId;
+        if (leadId) {
+            openEditLeadModalById(leadId);
+        }
+        return;
+    }
+    
+    // Check if clicked on a lead row in the table (but not on action buttons)
+    const tableRow = e.target.closest('#leads-table-body tr');
+    if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+        const leadId = tableRow.dataset.leadId;
+        if (leadId) {
+            openEditLeadModalById(leadId);
+        }
+    }
+});
 
         // Authentication setup
         function setupAuth() {
@@ -2620,9 +2641,6 @@ function openEditLeadModalById(leadId) {
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
         
-
-
-        
 // ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
 function refreshFunnelInsights() {
   const loader = document.getElementById('insight-loader');
@@ -2892,13 +2910,14 @@ document.addEventListener('click', function (e) {
 
         // Create a lead card element for the funnel
 
+
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
-
-    // ✅ Add color class based on industry
+    
+    // Add color class based on industry
     if (lead.industry) {
-        leadCard.classList.add(lead.industry.toLowerCase()); // makes .saas, .healthcare, etc.
+        leadCard.classList.add(lead.industry.toLowerCase());
     }
 
     leadCard.draggable = true;
@@ -2930,31 +2949,8 @@ function createLeadCard(lead) {
     leadCard.appendChild(contact);
     leadCard.appendChild(tagsWrapper);
 
-    // Show Insight Panel on Click
-leadCard.addEventListener('click', () => {
-  const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
-  const contentHTML = `
-    <p><strong>Company:</strong> ${lead.company}</p>
-    <p><strong>Stage:</strong> ${lead.currentStage}</p>
-    <p><strong>Insight:</strong> ${insight}</p>
-    <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
-<button class="edit-insight-btn" data-lead-id="LEAD_ID">Edit</button>
-  `;
-  toggleLeadPanel(true, contentHTML);
-});
-
-
-    
-
     return leadCard;
 }
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn && btn.dataset.leadId) {
-    openEditLeadModalById(btn.dataset.leadId);
-  }
-});
-
 
 
 function toggleLeadPanel(show, html = '') {
@@ -4522,107 +4518,7 @@ function toggleEditModal(show) {
         modal.classList.toggle('show', show);
     }
 
-    function openEditLeadModalById(leadId) {
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
-
-        let foundLead = null;
-        let originalStage = '';
-
-        // Search through all stages for the lead
-        for (const [stage, stageLeads] of Object.entries(leads)) {
-            const lead = stageLeads.find(l => l.id === leadId);
-            if (lead) {
-                foundLead = lead;
-                originalStage = stage;
-                break;
-            }
-        }
-
-        if (!foundLead) {
-            showNotification('Lead not found', 'error');
-            return;
-        }
-
-        // Populate the edit form
-        document.getElementById('edit-lead-id').value = foundLead.id;
-        document.getElementById('edit-lead-company').value = foundLead.company || '';
-        document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-        document.getElementById('edit-lead-email').value = foundLead.email || '';
-        document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-        document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
-        document.getElementById('edit-lead-source').value = foundLead.source || '';
-        document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-        document.getElementById('edit-lead-status').value = foundLead.status || '';
-        document.getElementById('edit-lead-notes').value = foundLead.notes || '';
-        
-        // Set content strategies
-        $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
-
-        // Show the modal
-        document.getElementById('edit-lead-modal').classList.remove('hidden');
-    }
-
-    // Updated form submission handler
-
-        document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
-    e.preventDefault();
     
-    const leadId = document.getElementById('edit-lead-id').value;
-    const newStage = document.getElementById('edit-lead-stage').value;
-    
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let foundLead = null;
-    let originalStage = '';
-
-    // Find and remove the lead from its original stage
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const index = stageLeads.findIndex(l => l.id === leadId);
-        if (index !== -1) {
-            foundLead = stageLeads[index];
-            stageLeads.splice(index, 1);
-            originalStage = stage;
-            break;
-        }
-    }
-
-    if (!foundLead) {
-        showNotification('Lead not found while saving', 'error');
-        return;
-    }
-
-    // Update the lead with new values
-    const updatedLead = {
-        ...foundLead,
-        company: document.getElementById('edit-lead-company').value,
-        contact: document.getElementById('edit-lead-contact').value,
-        email: document.getElementById('edit-lead-email').value,
-        phone: document.getElementById('edit-lead-phone').value,
-        currentStage: newStage,
-        source: document.getElementById('edit-lead-source').value,
-        industry: document.getElementById('edit-lead-industry').value,
-        status: document.getElementById('edit-lead-status').value,
-        notes: document.getElementById('edit-lead-notes').value,
-        contentStrategies: $('#edit-lead-content').val() || [],
-        lastContact: new Date().toISOString()
-    };
-
-    // Add to the new stage
-    leads[newStage].push(updatedLead);
-    
-    // Save back to localStorage
-    localStorage.setItem('leads', JSON.stringify(leads));
-    
-    // Close modal and update UI
-    document.getElementById('edit-lead-modal').classList.add('hidden');
-    loadLeads();
-    updateAnalytics();
-    showNotification('Lead updated successfully');
-});
 
 </script>
 
