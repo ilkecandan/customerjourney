@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css">
     <link rel="manifest" href="manifest.json" type="application/manifest+json">
     <style>
@@ -2115,6 +2116,95 @@
         setupEventListeners();
     });
 
+function setupGlobalEventListeners() {
+    // Handle all button clicks via event delegation
+    document.addEventListener('click', function(e) {
+        // Add Lead button
+        if (e.target.closest('#add-lead-btn')) {
+            document.getElementById('lead-form').reset();
+            document.getElementById('add-lead-modal').classList.remove('hidden');
+        }
+        
+        // Add Content button
+        else if (e.target.closest('#add-content-btn')) {
+            document.getElementById('content-form').reset();
+            document.getElementById('add-content-modal').classList.remove('hidden');
+        }
+        
+        // Refresh Advice button
+        else if (e.target.closest('#refresh-advice')) {
+            refreshFunnelInsights();
+        }
+        
+        // Export PDF button
+        else if (e.target.closest('#export-pdf')) {
+            exportToPDF();
+        }
+        
+        // Export Excel button
+        else if (e.target.closest('#export-excel')) {
+            exportToExcel();
+        }
+        
+        // Close modal buttons
+        else if (e.target.closest('.close-modal')) {
+            e.target.closest('.modal').classList.add('hidden');
+        }
+        
+        // Edit buttons in table
+        else if (e.target.closest('.edit-btn')) {
+            const leadId = e.target.closest('.edit-btn').dataset.leadId;
+            openEditLeadModalById(leadId);
+        }
+        
+        // Delete buttons in table
+        else if (e.target.closest('.delete-btn') && !e.target.closest('#delete-lead-btn')) {
+            e.stopPropagation();
+            const leadId = e.target.closest('.delete-btn').dataset.leadId;
+            if (confirm('Are you sure you want to delete this lead?')) {
+                deleteLeadById(leadId);
+            }
+        }
+    });
+
+    // Form submissions
+    document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addLead();
+    });
+
+    document.getElementById('content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addContent();
+    });
+
+    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveLeadChanges();
+    });
+
+    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveContentChanges();
+    });
+
+    // Lead stage filter
+    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+        filterLeadsTable(this.value);
+    });
+
+    // Lead search
+    const leadSearch = document.getElementById('lead-search');
+    if (leadSearch) {
+        leadSearch.addEventListener('input', function() {
+            clearTimeout(searchLeads.debounce);
+            searchLeads.debounce = setTimeout(() => {
+                searchLeads(this.value);
+            }, 300);
+        });
+    }
+}
+    
     function setupEventListeners() {
         // Handle edit form submission
         const editForm = document.getElementById('edit-lead-form');
@@ -3127,66 +3217,74 @@
         return icons[type] || icons.other;
     }
 
-    function toggleModal(modalId, show = true) {
-        const modal = document.getElementById(modalId);
-        if (show) {
-            modal.classList.remove('hidden');
-            modal.classList.add('show');
-        } else {
-            modal.classList.remove('show');
-            modal.classList.add('hidden');
-        }
+   function toggleModal(modalId, show = true) {
+    const modal = document.getElementById(modalId);
+    if (show) {
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+    function toggleEditModal(show = true) {
+    toggleModal('edit-lead-modal', show);
+}
+    
+// Add this near your other event listener setups
+document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    addLead();
+});
+
+// Update your existing addLead function to ensure it's properly defined
+function addLead() {
+    const company = document.getElementById('lead-company').value;
+    const contact = document.getElementById('lead-contact').value;
+    const email = document.getElementById('lead-email').value;
+    const phone = document.getElementById('lead-phone').value;
+    const stage = document.getElementById('lead-stage').value;
+    const source = document.getElementById('lead-source').value;
+    const industry = document.getElementById('lead-industry').value;
+    const status = document.getElementById('lead-status').value;
+    const notes = document.getElementById('lead-notes').value;
+    const contentSelect = document.getElementById('lead-content');
+    const contentStrategies = $(contentSelect).val() || [];
+
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
     }
 
-    // Add a new lead
-    function addLead() {
-        const company = document.getElementById('lead-company').value;
-        const contact = document.getElementById('lead-contact').value;
-        const email = document.getElementById('lead-email').value;
-        const phone = document.getElementById('lead-phone').value;
-        const stage = document.getElementById('lead-stage').value;
-        const source = document.getElementById('lead-source').value;
-        const industry = document.getElementById('lead-industry').value;
-        const status = document.getElementById('lead-status').value;
-        const notes = document.getElementById('lead-notes').value;
-        const contentSelect = document.getElementById('lead-content');
-        const contentStrategies = $(contentSelect).val() || [];
+    const newLead = {
+        id: 'lead-' + Date.now(),
+        company,
+        contact,
+        email,
+        phone,
+        source,
+        currentStage: stage,
+        industry,
+        status,
+        notes,
+        contentStrategies,
+        dateAdded: new Date().toISOString(),
+        lastContact: new Date().toISOString(),
+        value: Math.floor(Math.random() * 10000) + 1000
+    };
 
-        if (!company || !contact || !email) {
-            showNotification('Please fill in all required fields', 'error');
-            return;
-        }
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
 
-        const newLead = {
-            id: 'lead-' + Date.now(),
-            company,
-            contact,
-            email,
-            phone,
-            source,
-            stage,
-            industry,
-            status,
-            notes,
-            contentStrategies,
-            dateAdded: new Date().toISOString(),
-            lastContact: new Date().toISOString(),
-            value: Math.floor(Math.random() * 10000) + 1000
-        };
+    leads[stage].push(newLead);
+    localStorage.setItem('leads', JSON.stringify(leads));
 
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
-
-        leads[stage].push(newLead);
-        localStorage.setItem('leads', JSON.stringify(leads));
-
-        document.getElementById('add-lead-modal').classList.add('hidden');
-        document.getElementById('lead-form').reset();
-        loadLeads();
-        updateAnalytics();
-        showNotification('Lead added successfully');
-    }
+    document.getElementById('add-lead-modal').classList.add('hidden');
+    document.getElementById('lead-form').reset();
+    loadLeads();
+    updateAnalytics();
+    showNotification('Lead added successfully');
+}
     
     // Add new content strategy
     function addContent() {
@@ -4115,7 +4213,7 @@
 <!-- Edit Lead Modal -->
 <div id="edit-lead-modal" class="modal hidden">
   <div class="modal-content">
-    <button class="close-modal" type="button">&times;</button>
+    <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
     <h2>Edit Lead</h2>
     <form id="edit-lead-form">
       <input type="hidden" id="edit-lead-id">
@@ -4200,14 +4298,13 @@
         <textarea id="edit-lead-notes" rows="3"></textarea>
       </div>
       
-      <div class="form-actions">
+<div class="form-actions">
         <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
         <button type="submit" class="submit-btn">Save Changes</button>
       </div>
     </form>
   </div>
 </div>
-
 
 </body>
 </html>
