@@ -2587,6 +2587,90 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
     updateAdvancedAnalytics();
 }
 
+        document.addEventListener('DOMContentLoaded', function () {
+  const editForm = document.getElementById('edit-lead-form');
+  if (!editForm) return;
+
+  editForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const leadId = document.getElementById('edit-lead-id').value;
+    const updatedStage = document.getElementById('edit-lead-stage').value;
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    let foundLead = null;
+    let originalStage = '';
+    for (const stage in leads) {
+      const index = leads[stage].findIndex(l => l.id === leadId);
+      if (index !== -1) {
+        foundLead = leads[stage][index];
+        leads[stage].splice(index, 1);
+        originalStage = stage;
+        break;
+      }
+    }
+
+    if (!foundLead) {
+      alert('Lead not found.');
+      return;
+    }
+
+    const updatedLead = {
+      ...foundLead,
+      company: document.getElementById('edit-lead-company').value,
+      contact: document.getElementById('edit-lead-contact').value,
+      email: document.getElementById('edit-lead-email').value,
+      phone: document.getElementById('edit-lead-phone').value,
+      source: document.getElementById('edit-lead-source').value,
+      industry: document.getElementById('edit-lead-industry').value,
+      status: document.getElementById('edit-lead-status').value,
+      notes: document.getElementById('edit-lead-notes').value,
+      contentStrategies: $('#edit-lead-content').val() || [],
+      lastContact: new Date().toISOString()
+    };
+
+    leads[updatedStage].push(updatedLead);
+    localStorage.setItem('leads', JSON.stringify(leads));
+    document.getElementById('edit-lead-modal').classList.add('hidden');
+    if (typeof loadLeads === 'function') loadLeads();
+    if (typeof updateAnalytics === 'function') updateAnalytics();
+    if (typeof showNotification === 'function') showNotification('Lead updated successfully!');
+  });
+
+  document.addEventListener('click', function (e) {
+    const editBtn = e.target.closest('.edit-insight-btn');
+    if (!editBtn) return;
+    const leadId = editBtn.dataset.leadId;
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+    let lead = null;
+    let stage = '';
+    for (const s in leads) {
+      const match = leads[s].find(l => l.id === leadId);
+      if (match) {
+        lead = match;
+        stage = s;
+        break;
+      }
+    }
+    if (!lead) return;
+    document.getElementById('edit-lead-id').value = lead.id;
+    document.getElementById('edit-lead-company').value = lead.company;
+    document.getElementById('edit-lead-contact').value = lead.contact;
+    document.getElementById('edit-lead-email').value = lead.email;
+    document.getElementById('edit-lead-phone').value = lead.phone;
+    document.getElementById('edit-lead-stage').value = stage;
+    document.getElementById('edit-lead-source').value = lead.source || '';
+    document.getElementById('edit-lead-industry').value = lead.industry || '';
+    document.getElementById('edit-lead-status').value = lead.status || '';
+    document.getElementById('edit-lead-notes').value = lead.notes || '';
+    $('#edit-lead-content').val(lead.contentStrategies || []).trigger('change');
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
+  });
+});
 
 function openEditLeadModalById(leadId) {
   const leads = JSON.parse(localStorage.getItem('leads')) || {
