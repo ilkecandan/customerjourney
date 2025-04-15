@@ -2318,6 +2318,16 @@
 
 function initializeApp() {
     console.log('Initializing app...');
+// Handle edit button clicks (delegated to document)
+document.addEventListener('click', function(e) {
+    const editBtn = e.target.closest('.edit-btn');
+    if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const leadId = editBtn.dataset.leadId;
+        if (leadId) openEditLeadModalById(leadId);
+    }
+});
     
     // Initialize metadata if none exists
     if (!localStorage.getItem('funnel_metadata')) {
@@ -2450,16 +2460,7 @@ function initializeApp() {
 }
 
 function setupEventListeners() {
-    // Handle edit button clicks
-    document.addEventListener('click', function(e) {
-        const editBtn = e.target.closest('.edit-btn');
-        if (editBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const leadId = editBtn.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-        }
-    });
+
 
     // Handle edit form submission
     document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
@@ -2660,116 +2661,47 @@ function loadLeads() {
 }
 
 function openEditLeadModalById(leadId) {
-    try {
-        // Validate leadId
-        if (!leadId || typeof leadId !== 'string') {
-            console.error('Invalid lead ID:', leadId);
-            showNotification('Invalid lead identifier', 'error');
-            return;
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    let foundLead = null;
+    let originalStage = '';
+
+    // Search through all stages for the lead
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const lead = stageLeads.find(l => l.id === leadId);
+        if (lead) {
+            foundLead = lead;
+            originalStage = stage;
+            break;
         }
-
-        // Get leads from localStorage with fallback
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], 
-            interest: [], 
-            intent: [], 
-            evaluation: [], 
-            purchase: []
-        };
-
-        let foundLead = null;
-        let originalStage = '';
-
-        // Search through all stages for the lead
-        for (const [stage, stageLeads] of Object.entries(leads)) {
-            if (!Array.isArray(stageLeads)) {
-                console.warn(`Stage ${stage} is not an array`, stageLeads);
-                continue;
-            }
-
-            const lead = stageLeads.find(l => {
-                try {
-                    return l.id === leadId;
-                } catch (e) {
-                    console.error('Error checking lead:', e);
-                    return false;
-                }
-            });
-
-            if (lead) {
-                foundLead = lead;
-                originalStage = stage;
-                break;
-            }
-        }
-
-        if (!foundLead) {
-            showNotification('Lead not found in any stage', 'error');
-            return;
-        }
-
-        // Get all form fields
-        const formFields = {
-            id: document.getElementById('edit-lead-id'),
-            company: document.getElementById('edit-lead-company'),
-            contact: document.getElementById('edit-lead-contact'),
-            email: document.getElementById('edit-lead-email'),
-            phone: document.getElementById('edit-lead-phone'),
-            stage: document.getElementById('edit-lead-stage'),
-            source: document.getElementById('edit-lead-source'),
-            industry: document.getElementById('edit-lead-industry'),
-            status: document.getElementById('edit-lead-status'),
-            notes: document.getElementById('edit-lead-notes')
-        };
-
-        // Validate all form fields exist
-        for (const [fieldName, fieldElement] of Object.entries(formFields)) {
-            if (!fieldElement) {
-                console.error(`Form field not found: edit-lead-${fieldName}`);
-                showNotification('Form configuration error', 'error');
-                return;
-            }
-        }
-
-        // Populate the edit form
-        formFields.id.value = foundLead.id || '';
-        formFields.company.value = foundLead.company || '';
-        formFields.contact.value = foundLead.contact || '';
-        formFields.email.value = foundLead.email || '';
-        formFields.phone.value = foundLead.phone || '';
-        formFields.stage.value = foundLead.currentStage || originalStage;
-        formFields.source.value = foundLead.source || 'website';
-        formFields.industry.value = foundLead.industry || 'other';
-        formFields.status.value = foundLead.status || 'new';
-        formFields.notes.value = foundLead.notes || '';
-        
-        // Initialize Select2 for content strategies if it exists
-        const contentSelect = $('#edit-lead-content');
-        if (contentSelect.length) {
-            contentSelect.val(foundLead.contentStrategies || []).trigger('change');
-        } else {
-            console.warn('Content select element (#edit-lead-content) not found');
-        }
-
-        // Show the modal
-        const editModal = document.getElementById('edit-lead-modal');
-        if (editModal) {
-            editModal.classList.remove('hidden');
-            
-            // Focus on first field for better UX
-            setTimeout(() => {
-                formFields.company.focus();
-            }, 100);
-        } else {
-            console.error('Edit modal (#edit-lead-modal) not found');
-            showNotification('Cannot open edit form', 'error');
-        }
-
-    } catch (error) {
-        console.error('Error opening edit modal:', error);
-        showNotification('Failed to open lead editor', 'error');
     }
+
+    if (!foundLead) {
+        showNotification('Lead not found', 'error');
+        return;
+    }
+
+    // Populate the edit form
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+    
+    // Set content strategies
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+
+    // Show the modal
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
+        
 
 
         
@@ -4002,7 +3934,16 @@ function addLead() {
         }
       
         // Delete lead from edit modal
-        function deleteLead() {
+        function deleteLead() 
+        document.getElementById('delete-lead-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    const leadId = document.getElementById('edit-lead-id').value;
+    if (leadId && confirm('Are you sure you want to delete this lead?')) {
+        deleteLeadById(leadId);
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+    }
+});
+    {
     const leadId = document.getElementById('edit-lead-id').value;
     if (leadId && confirm('Are you sure you want to delete this lead?')) {
         deleteLeadById(leadId);
@@ -4710,94 +4651,64 @@ function toggleEditModal(show) {
     }
 
     // Updated form submission handler
-    document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const leadId = document.getElementById('edit-lead-id').value;
-        const newStage = document.getElementById('edit-lead-stage').value;
-        
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
 
-        let foundLead = null;
-        let originalStage = '';
+        document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const leadId = document.getElementById('edit-lead-id').value;
+    const newStage = document.getElementById('edit-lead-stage').value;
+    
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
 
-        // Find and remove the lead from its original stage
-        for (const [stage, stageLeads] of Object.entries(leads)) {
-            const index = stageLeads.findIndex(l => l.id === leadId);
-            if (index !== -1) {
-                foundLead = stageLeads[index];
-                stageLeads.splice(index, 1);
-                originalStage = stage;
-                break;
-            }
+    let foundLead = null;
+    let originalStage = '';
+
+    // Find and remove the lead from its original stage
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const index = stageLeads.findIndex(l => l.id === leadId);
+        if (index !== -1) {
+            foundLead = stageLeads[index];
+            stageLeads.splice(index, 1);
+            originalStage = stage;
+            break;
         }
+    }
 
-        if (!foundLead) {
-            showNotification('Lead not found while saving', 'error');
-            return;
-        }
+    if (!foundLead) {
+        showNotification('Lead not found while saving', 'error');
+        return;
+    }
 
-        // Update the lead with new values
-        const updatedLead = {
-            ...foundLead,
-            company: document.getElementById('edit-lead-company').value,
-            contact: document.getElementById('edit-lead-contact').value,
-            email: document.getElementById('edit-lead-email').value,
-            phone: document.getElementById('edit-lead-phone').value,
-            currentStage: newStage,
-            source: document.getElementById('edit-lead-source').value,
-            industry: document.getElementById('edit-lead-industry').value,
-            status: document.getElementById('edit-lead-status').value,
-            notes: document.getElementById('edit-lead-notes').value,
-            contentStrategies: $('#edit-lead-content').val() || [],
-            lastContact: new Date().toISOString()
-        };
+    // Update the lead with new values
+    const updatedLead = {
+        ...foundLead,
+        company: document.getElementById('edit-lead-company').value,
+        contact: document.getElementById('edit-lead-contact').value,
+        email: document.getElementById('edit-lead-email').value,
+        phone: document.getElementById('edit-lead-phone').value,
+        currentStage: newStage,
+        source: document.getElementById('edit-lead-source').value,
+        industry: document.getElementById('edit-lead-industry').value,
+        status: document.getElementById('edit-lead-status').value,
+        notes: document.getElementById('edit-lead-notes').value,
+        contentStrategies: $('#edit-lead-content').val() || [],
+        lastContact: new Date().toISOString()
+    };
 
-        // Add to the new stage
-        leads[newStage].push(updatedLead);
-        
-        // Save back to localStorage
-        localStorage.setItem('leads', JSON.stringify(leads));
-        
-        // Close modal and update UI
-        document.getElementById('edit-lead-modal').classList.add('hidden');
-        loadLeads();
-        updateAnalytics();
-        showNotification('Lead updated successfully');
-    });
-
-    // Updated edit button click handler
-    document.addEventListener('click', function(e) {
-        // Handle edit buttons in table
-        const editBtn = e.target.closest('.edit-btn');
-        if (editBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const leadId = editBtn.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-        }
-        
-        // Handle edit buttons in insight panels
-        const insightBtn = e.target.closest('.edit-insight-btn');
-        if (insightBtn && insightBtn.dataset.leadId) {
-            e.preventDefault();
-            e.stopPropagation();
-            openEditLeadModalById(insightBtn.dataset.leadId);
-        }
-    });
-
-    // Initialize Select2 for content dropdown
-    document.addEventListener('DOMContentLoaded', () => {
-        $('#edit-lead-content').select2({
-            width: '100%',
-            placeholder: 'Select content strategies'
-        });
-    });
-
-    // [Rest of your existing JavaScript code remains the same]
-    // ... all other functions like loadLeads, updateAnalytics, etc ...
+    // Add to the new stage
+    leads[newStage].push(updatedLead);
+    
+    // Save back to localStorage
+    localStorage.setItem('leads', JSON.stringify(leads));
+    
+    // Close modal and update UI
+    document.getElementById('edit-lead-modal').classList.add('hidden');
+    loadLeads();
+    updateAnalytics();
+    showNotification('Lead updated successfully');
+});
 
 </script>
 
