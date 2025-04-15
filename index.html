@@ -2588,6 +2588,10 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
 }
 
 
+
+// ✅ Lead Edit Side Panel Integration
+
+// 1. Open the Edit Modal with Existing Lead Values
 function openEditLeadModalById(leadId) {
   const leads = JSON.parse(localStorage.getItem('leads')) || {
     awareness: [], interest: [], intent: [], evaluation: [], purchase: []
@@ -2629,7 +2633,7 @@ function openEditLeadModalById(leadId) {
   document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
-// ✅ SAVE CHANGES ON SUBMIT
+// 2. Save the Edited Lead
 const editLeadForm = document.getElementById('edit-lead-form');
 if (editLeadForm) {
   editLeadForm.addEventListener('submit', function (e) {
@@ -2641,14 +2645,14 @@ if (editLeadForm) {
     };
 
     let leadToUpdate = null;
-    let currentStage = '';
+    let oldStage = '';
 
     for (const stage in leads) {
       const index = leads[stage].findIndex(lead => lead.id === leadId);
       if (index !== -1) {
         leadToUpdate = leads[stage][index];
         leads[stage].splice(index, 1); // remove from old stage
-        currentStage = stage;
+        oldStage = stage;
         break;
       }
     }
@@ -2669,20 +2673,31 @@ if (editLeadForm) {
       status: document.getElementById('edit-lead-status').value,
       notes: document.getElementById('edit-lead-notes').value,
       contentStrategies: $('#edit-lead-content').val() || [],
-      currentStage: document.getElementById('edit-lead-stage').value,
       lastContact: new Date().toISOString()
     };
 
-    leads[updatedLead.currentStage].push(updatedLead);
+    const newStage = document.getElementById('edit-lead-stage').value;
+    leads[newStage].push(updatedLead);
     localStorage.setItem('leads', JSON.stringify(leads));
 
     document.getElementById('edit-lead-modal').classList.add('hidden');
     loadLeads();
     updateAnalytics?.();
-    refreshFunnelInsights?.();
     showNotification('Lead updated successfully!');
   });
 }
+
+// 3. Hook Edit Buttons to Open Modal
+// Edit buttons must have: class="edit-insight-btn" data-lead-id="LEAD_ID"
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.edit-insight-btn');
+  if (btn && btn.dataset.leadId) {
+    openEditLeadModalById(btn.dataset.leadId);
+  }
+});
+
+
+        
 
 // ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
 function refreshFunnelInsights() {
@@ -3023,7 +3038,7 @@ leadCard.addEventListener('click', () => {
     <p><strong>Stage:</strong> ${lead.currentStage}</p>
     <p><strong>Insight:</strong> ${insight}</p>
     <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
-    <button class="edit-insight-btn" data-lead-id="${lead.id}">✏️ Edit Lead</button>
+<button class="edit-insight-btn" data-lead-id="LEAD_ID">Edit</button>
   `;
   toggleLeadPanel(true, contentHTML);
 });
