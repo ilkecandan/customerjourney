@@ -3641,7 +3641,6 @@ function addLead() {
   const industry = document.getElementById('lead-industry').value;
   const status = document.getElementById('lead-status').value;
   const notes = document.getElementById('lead-notes').value;
-
   const contentSelect = document.getElementById('lead-content');
   const contentStrategies = $(contentSelect).val() || [];
 
@@ -3650,42 +3649,37 @@ function addLead() {
     return;
   }
 
-  // ✅ Make sure leads object exists
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-
-  // ✅ Construct new lead
   const newLead = {
-    id: 'lead-' + Date.now(), // 🔥 Unique ID is critical for edit
+    id: 'lead-' + Date.now(),
     company,
     contact,
     email,
     phone,
     source,
-    stage, // for compatibility
-    currentStage: stage, // for display/UI logic
+    stage,  // ✅ use this, not currentStage
     industry,
     status,
     notes,
     contentStrategies,
     dateAdded: new Date().toISOString(),
     lastContact: new Date().toISOString(),
-    value: Math.floor(Math.random() * 10000) + 1000 // Demo value
+    value: Math.floor(Math.random() * 10000) + 1000
   };
 
-  // ✅ Push to correct stage
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
+
   leads[stage].push(newLead);
   localStorage.setItem('leads', JSON.stringify(leads));
 
-  // ✅ Reset UI
   document.getElementById('add-lead-modal').classList.add('hidden');
   document.getElementById('lead-form').reset();
-
-  loadLeads?.();
-  updateAnalytics?.();
-  showNotification?.('Lead added successfully');
+  loadLeads();
+  updateAnalytics();
+  showNotification('Lead added successfully');
 }
+
         
         // Add new content strategy
         function addContent() {
@@ -4550,6 +4544,30 @@ function saveNewLead(lead) {
   }
 
   // ✅ Open the side panel with lead data
+
+ function toggleLeadPanel(show) {
+    const panel = document.getElementById('lead-side-panel');
+    if (!panel) return;
+    panel.classList.toggle('hidden', !show);
+    panel.classList.toggle('show', show);
+  }
+
+  // ✅ Open the editor with existing lead data
+  function toggleLeadPanel(show) {
+    const panel = document.getElementById('lead-side-panel');
+    if (!panel) return;
+    panel.classList.toggle('hidden', !show);
+    panel.classList.toggle('show', show);
+  }
+
+  function toggleEditModal(show) {
+    const modal = document.getElementById('edit-lead-modal');
+    if (!modal) return;
+    modal.classList.toggle('hidden', !show);
+    modal.classList.toggle('show', show);
+  }
+
+  // ✅ Side Panel Logic
   function openSidePanelLeadEditor(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
       awareness: [], interest: [], intent: [], evaluation: [], purchase: []
@@ -4575,60 +4593,114 @@ function saveNewLead(lead) {
     document.getElementById('side-lead-id').value = selected.id;
     document.getElementById('side-lead-company').value = selected.company || '';
     document.getElementById('side-lead-contact').value = selected.contact || '';
-    document.getElementById('side-lead-stage').value = foundStage;
+    document.getElementById('side-lead-stage').value = selected.stage || foundStage;
 
     toggleLeadPanel(true);
   }
 
-  // ✅ Save edited lead
   document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('side-panel-lead-form');
-    if (!form) return;
+    // ✅ Save from side panel
+    const sidePanelForm = document.getElementById('side-panel-lead-form');
+    if (sidePanelForm) {
+      sidePanelForm.addEventListener('submit', function (e) {
+        e.preventDefault();
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
+        const id = document.getElementById('side-lead-id').value;
+        const newCompany = document.getElementById('side-lead-company').value;
+        const newContact = document.getElementById('side-lead-contact').value;
+        const newStage = document.getElementById('side-lead-stage').value;
 
-      const id = document.getElementById('side-lead-id').value;
-      const newCompany = document.getElementById('side-lead-company').value;
-      const newContact = document.getElementById('side-lead-contact').value;
-      const newStage = document.getElementById('side-lead-stage').value;
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+          awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
 
-      const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-      };
+        let updatedLead = null;
 
-      let updatedLead = null;
-
-      for (const [stage, list] of Object.entries(leads)) {
-        const idx = list.findIndex(l => l.id === id);
-        if (idx !== -1) {
-          updatedLead = list[idx];
-          list.splice(idx, 1); // remove from old stage
-          break;
+        for (const [stage, list] of Object.entries(leads)) {
+          const idx = list.findIndex(l => l.id === id);
+          if (idx !== -1) {
+            updatedLead = list[idx];
+            list.splice(idx, 1);
+            break;
+          }
         }
-      }
 
-      if (!updatedLead) {
-        showNotification?.('Lead not found for saving', 'error');
-        return;
-      }
+        if (!updatedLead) {
+          showNotification?.('Lead not found for saving', 'error');
+          return;
+        }
 
-      const updated = {
-        ...updatedLead,
-        company: newCompany,
-        contact: newContact,
-        lastContact: new Date().toISOString()
-      };
+        const updated = {
+          ...updatedLead,
+          company: newCompany,
+          contact: newContact,
+          stage: newStage,
+          lastContact: new Date().toISOString()
+        };
 
-      leads[newStage].push(updated);
-      localStorage.setItem('leads', JSON.stringify(leads));
+        leads[newStage].push(updated);
+        localStorage.setItem('leads', JSON.stringify(leads));
 
-      toggleLeadPanel(false);
-      showNotification?.('Lead updated!', 'success');
-      loadLeads?.();
-    });
+        toggleLeadPanel(false);
+        showNotification?.('Lead updated!', 'success');
+        loadLeads?.();
+      });
+    }
 
-    // ✅ Hook edit buttons
+    // ✅ Save from full edit modal
+    const editForm = document.getElementById('edit-lead-form');
+    if (editForm) {
+      editForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('edit-lead-id').value;
+        const stage = document.getElementById('edit-lead-stage').value;
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+          awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        let foundLead = null;
+
+        for (const [key, list] of Object.entries(leads)) {
+          const index = list.findIndex(l => l.id === id);
+          if (index !== -1) {
+            foundLead = list[index];
+            list.splice(index, 1);
+            break;
+          }
+        }
+
+        if (!foundLead) {
+          alert('Lead not found.');
+          return;
+        }
+
+        const updatedLead = {
+          ...foundLead,
+          company: document.getElementById('edit-lead-company').value,
+          contact: document.getElementById('edit-lead-contact').value,
+          email: document.getElementById('edit-lead-email').value,
+          phone: document.getElementById('edit-lead-phone').value,
+          stage: stage,
+          source: document.getElementById('edit-lead-source').value,
+          industry: document.getElementById('edit-lead-industry').value,
+          status: document.getElementById('edit-lead-status').value,
+          notes: document.getElementById('edit-lead-notes').value,
+          contentStrategies: $('#edit-lead-content').val() || [],
+          lastContact: new Date().toISOString()
+        };
+
+        leads[stage].push(updatedLead);
+        localStorage.setItem('leads', JSON.stringify(leads));
+
+        toggleEditModal(false);
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+      });
+    }
+
+    // ✅ Hook edit-insight-btn for side panel
     document.addEventListener('click', function (e) {
       const btn = e.target.closest('.edit-insight-btn');
       if (btn && btn.dataset.leadId) {
@@ -4638,7 +4710,7 @@ function saveNewLead(lead) {
   });
 </script>
 
-<!-- ✅ Lead Side Panel for Editing -->
+<!-- ✅ Side Panel for Quick Editing -->
 <div id="lead-side-panel" class="modal hidden">
   <div class="modal-content">
     <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
@@ -4675,5 +4747,79 @@ function saveNewLead(lead) {
   </div>
 </div>
 
+<!-- ✅ Full Edit Modal -->
+<div id="edit-lead-modal" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
+    <h2>Edit Lead (Full)</h2>
+    <form id="edit-lead-form">
+      <input type="hidden" id="edit-lead-id" />
+
+      <div class="form-group">
+        <label for="edit-lead-company">Company</label>
+        <input type="text" id="edit-lead-company" required />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-contact">Contact</label>
+        <input type="text" id="edit-lead-contact" required />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-email">Email</label>
+        <input type="email" id="edit-lead-email" />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-phone">Phone</label>
+        <input type="text" id="edit-lead-phone" />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-stage">Stage</label>
+        <select id="edit-lead-stage">
+          <option value="awareness">Awareness</option>
+          <option value="interest">Interest</option>
+          <option value="intent">Intent</option>
+          <option value="evaluation">Evaluation</option>
+          <option value="purchase">Purchase</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-source">Source</label>
+        <input type="text" id="edit-lead-source" />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-industry">Industry</label>
+        <input type="text" id="edit-lead-industry" />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-status">Status</label>
+        <input type="text" id="edit-lead-status" />
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-notes">Notes</label>
+        <textarea id="edit-lead-notes" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-lead-content">Content Strategy</label>
+        <select id="edit-lead-content" class="content-select" multiple></select>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="toggleEditModal(false)">Cancel</button>
+        <button type="submit" class="submit-btn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>
+
+        
