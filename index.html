@@ -2588,21 +2588,6 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
 }
 
 
-
-// ✅ Lead Edit Side Panel Integration
-
-
-// Edit buttons must have: class="edit-insight-btn" data-lead-id="LEAD_ID"
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn && btn.dataset.leadId) {
-    openEditLeadModalById(btn.dataset.leadId);
-  }
-});
-
-// ✅ FULLY FIXED EDIT LEAD FUNCTIONALITY
-
-// 1. Open Edit Modal and Load Lead Data
 function openEditLeadModalById(leadId) {
   const leads = JSON.parse(localStorage.getItem('leads')) || {
     awareness: [], interest: [], intent: [], evaluation: [], purchase: []
@@ -2621,11 +2606,10 @@ function openEditLeadModalById(leadId) {
   }
 
   if (!selectedLead) {
-    showNotification('Lead not found', 'error');
+    showNotification('Lead not found for editing', 'error');
     return;
   }
 
-  // Fill modal inputs
   document.getElementById('edit-lead-id').value = leadId;
   document.getElementById('edit-lead-company').value = selectedLead.company || '';
   document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
@@ -2645,7 +2629,7 @@ function openEditLeadModalById(leadId) {
   document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
-// 2. Save Changes to Lead
+// ✅ SAVE CHANGES ON SUBMIT
 const editLeadForm = document.getElementById('edit-lead-form');
 if (editLeadForm) {
   editLeadForm.addEventListener('submit', function (e) {
@@ -2657,14 +2641,14 @@ if (editLeadForm) {
     };
 
     let leadToUpdate = null;
-    let originalStage = '';
+    let currentStage = '';
 
     for (const stage in leads) {
       const index = leads[stage].findIndex(lead => lead.id === leadId);
       if (index !== -1) {
         leadToUpdate = leads[stage][index];
-        leads[stage].splice(index, 1);
-        originalStage = stage;
+        leads[stage].splice(index, 1); // remove from old stage
+        currentStage = stage;
         break;
       }
     }
@@ -2685,30 +2669,20 @@ if (editLeadForm) {
       status: document.getElementById('edit-lead-status').value,
       notes: document.getElementById('edit-lead-notes').value,
       contentStrategies: $('#edit-lead-content').val() || [],
+      currentStage: document.getElementById('edit-lead-stage').value,
       lastContact: new Date().toISOString()
     };
 
-    const newStage = document.getElementById('edit-lead-stage').value;
-    leads[newStage].push(updatedLead);
+    leads[updatedLead.currentStage].push(updatedLead);
     localStorage.setItem('leads', JSON.stringify(leads));
 
     document.getElementById('edit-lead-modal').classList.add('hidden');
-    showNotification('Lead updated successfully!');
     loadLeads();
     updateAnalytics?.();
+    refreshFunnelInsights?.();
+    showNotification('Lead updated successfully!');
   });
 }
-
-// 3. Hook All Edit Buttons
-// Make sure edit buttons look like this: <button class="edit-insight-btn" data-lead-id="123">Edit</button>
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn && btn.dataset.leadId) {
-    openEditLeadModalById(btn.dataset.leadId);
-  }
-});
-
-        
 
 // ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
 function refreshFunnelInsights() {
@@ -3049,7 +3023,7 @@ leadCard.addEventListener('click', () => {
     <p><strong>Stage:</strong> ${lead.currentStage}</p>
     <p><strong>Insight:</strong> ${insight}</p>
     <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
-<button class="edit-insight-btn" data-lead-id="LEAD_ID">Edit</button>
+    <button class="edit-insight-btn" data-lead-id="${lead.id}">✏️ Edit Lead</button>
   `;
   toggleLeadPanel(true, contentHTML);
 });
@@ -4668,91 +4642,6 @@ document.addEventListener('click', function (e) {
   }
 });
 
-<script>
-function openEditLeadModalById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let selectedLead = null;
-    let originalStage = '';
-
-    for (const stage in leads) {
-        const found = leads[stage].find(lead => lead.id === leadId);
-        if (found) {
-            selectedLead = found;
-            originalStage = stage;
-            break;
-        }
-    }
-
-    if (!selectedLead) {
-        alert("Lead not found.");
-        return;
-    }
-
-    // Fill form fields
-    document.getElementById('edit-lead-id').value = selectedLead.id;
-    document.getElementById('edit-lead-company').value = selectedLead.company || '';
-    document.getElementById('edit-lead-contact').value = selectedLead.contact || '';
-    document.getElementById('edit-lead-email').value = selectedLead.email || '';
-    document.getElementById('edit-lead-phone').value = selectedLead.phone || '';
-    document.getElementById('edit-lead-stage').value = originalStage;
-    document.getElementById('edit-lead-source').value = selectedLead.source || '';
-    document.getElementById('edit-lead-industry').value = selectedLead.industry || '';
-    document.getElementById('edit-lead-status').value = selectedLead.status || '';
-    document.getElementById('edit-lead-notes').value = selectedLead.notes || '';
-
-    $('#edit-lead-content').val(selectedLead.contentStrategies || []).trigger('change');
-
-    document.getElementById('edit-lead-modal').classList.remove('hidden');
-}
-
-document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const leadId = document.getElementById('edit-lead-id').value;
-    const updatedStage = document.getElementById('edit-lead-stage').value;
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    // Remove old lead
-    let existing = null;
-    for (const stage in leads) {
-        const idx = leads[stage].findIndex(l => l.id === leadId);
-        if (idx !== -1) {
-            existing = leads[stage][idx];
-            leads[stage].splice(idx, 1);
-            break;
-        }
-    }
-
-    if (!existing) {
-        alert("Could not find existing lead to update.");
-        return;
-    }
-
-    const updatedLead = {
-        ...existing,
-        company: document.getElementById('edit-lead-company').value,
-        contact: document.getElementById('edit-lead-contact').value,
-        email: document.getElementById('edit-lead-email').value,
-        phone: document.getElementById('edit-lead-phone').value,
-        source: document.getElementById('edit-lead-source').value,
-        industry: document.getElementById('edit-lead-industry').value,
-        status: document.getElementById('edit-lead-status').value,
-        notes: document.getElementById('edit-lead-notes').value,
-        contentStrategies: $('#edit-lead-content').val() || [],
-        lastContact: new Date().toISOString()
-    };
-
-    leads[updatedStage].push(updatedLead);
-    localStorage.setItem('leads', JSON.stringify(leads));
-
-    document.getElementById('edit-lead-modal').classList.add('hidden');
-    loadLeads();
-});
 
         
     function toggleLeadPanel(show) {
