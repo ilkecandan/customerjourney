@@ -2064,579 +2064,2054 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
-    <script>
+  
+<script>
+    let currentSelectedLeadId = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // First hide the app container
+        document.getElementById('app-container').classList.add('hidden');
+
+        // Check authentication status
+        const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+
+        if (isAuthenticated) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            setupInstallButton();
+            
+            // Check if onboarding has been completed
+            if (!localStorage.getItem('onboarding_completed')) {
+                document.getElementById('onboarding-overlay').classList.remove('hidden');
+                setupOnboarding();
+            } else {
+                initializeApp();
+            }
+        } else {
+            setupAuth();
+        }
+
+        // Single event delegation for lead card clicks
+        document.addEventListener('click', function(e) {
+            // Check if clicked on a lead card in the funnel
+            const leadCard = e.target.closest('.lead-card');
+            if (leadCard) {
+                const leadId = leadCard.dataset.leadId;
+                if (leadId) {
+                    openEditLeadModalById(leadId);
+                }
+                return;
+            }
+            
+            // Check if clicked on a lead row in the table (but not on action buttons)
+            const tableRow = e.target.closest('#leads-table-body tr');
+            if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+                const leadId = tableRow.dataset.leadId;
+                if (leadId) {
+                    openEditLeadModalById(leadId);
+                }
+            }
+
+            // Handle edit button clicks
+            const editBtn = e.target.closest('.edit-btn');
+            if (editBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const leadId = editBtn.dataset.leadId;
+                if (leadId) openEditLeadModalById(leadId);
+                return;
+            }
+
+            // Handle edit insight button clicks
+            const editInsightBtn = e.target.closest('.edit-insight-btn');
+            if (editInsightBtn && editInsightBtn.dataset.leadId) {
+                openEditLeadModalById(editInsightBtn.dataset.leadId);
+            }
+        });
+
+        // Setup all other event listeners
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        // Handle edit form submission
+        const editForm = document.getElementById('edit-lead-form');
+        if (editForm) {
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveLeadChanges();
+            });
+        }
+
+        // Handle add lead button
+        document.getElementById('add-lead-btn')?.addEventListener('click', function() {
+            document.getElementById('lead-form').reset();
+            document.getElementById('add-lead-modal').classList.remove('hidden');
+        });
+
+        // Handle add content button
+        document.getElementById('add-content-btn')?.addEventListener('click', function() {
+            document.getElementById('content-form').reset();
+            document.getElementById('add-content-modal').classList.remove('hidden');
+        });
+
+        // Handle refresh advice button
+        document.getElementById('refresh-advice')?.addEventListener('click', function() {
+            refreshFunnelInsights();
+        });
+
+        // Handle expand funnel button
+        document.getElementById('expand-funnel')?.addEventListener('click', function() {
+            const funnelContainer = document.querySelector('.funnel-container');
+            funnelContainer.classList.add('pulse-highlight');
+            setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
+        });
+
+        // Handle export buttons
+        document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+        document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
+
+        // Handle lead stage filter
+        document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+            filterLeadsTable(this.value);
+        });
+
+        // Handle lead search
+        const leadSearch = document.getElementById('lead-search');
+        if (leadSearch) {
+            leadSearch.addEventListener('input', function() {
+                clearTimeout(searchLeads.debounce);
+                searchLeads.debounce = setTimeout(() => {
+                    searchLeads(this.value);
+                }, 300);
+            });
+        }
+
+        // Handle modal close buttons
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.modal').classList.add('hidden');
+            });
+        });
+
+        // Handle delete lead button in edit modal
+        document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteLead();
+        });
+
+        // Handle content form submission
+        document.getElementById('content-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            addContent();
+        });
+
+        // Handle edit content form submission
+        document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveContentChanges();
+        });
+
+        // Handle clicks outside modals to close them
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+        });
+    }
+
+    // Authentication setup
+    function setupAuth() {
+        const pinInput = document.getElementById('pin-input');
+        const loginBtn = document.getElementById('login-btn');
+        const pinError = document.getElementById('pin-error');
         
-        let currentSelectedLeadId = null;
+        // Configurable PINs
+        const validPins = ['1234', '4321', '0000'];
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // First hide the app container
-            document.getElementById('app-container').classList.add('hidden');
+        // Focus on the PIN input when the page loads
+        pinInput.focus();
 
-
-            // Check authentication status
-            const isAuthenticated = localStorage.getItem('authenticated') === 'true';
-
-            if (isAuthenticated) {
+        loginBtn.addEventListener('click', function() {
+           if (validPins.includes(pinInput.value)) {
+                localStorage.setItem('authenticated', 'true');
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
-                setupInstallButton();
-                
-                // Check if onboarding has been completed
+
+                // Show onboarding if first time
                 if (!localStorage.getItem('onboarding_completed')) {
                     document.getElementById('onboarding-overlay').classList.remove('hidden');
                     setupOnboarding();
                 } else {
                     initializeApp();
                 }
-            } else {
-                setupAuth();
+            }
+            else {
+                pinError.textContent = 'Incorrect PIN. Please try again.';
+                pinInput.value = '';
+                pinInput.focus();
             }
         });
 
-        // Add this to your initialization code
-document.addEventListener('click', function(e) {
-    // Check if clicked on a lead card in the funnel
-    const leadCard = e.target.closest('.lead-card');
-    if (leadCard) {
-        const leadId = leadCard.dataset.leadId;
-        if (leadId) {
-            openEditLeadModalById(leadId);
-        }
-        return;
-    }
-    
-    // Check if clicked on a lead row in the table (but not on action buttons)
-    const tableRow = e.target.closest('#leads-table-body tr');
-    if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-        const leadId = tableRow.dataset.leadId;
-        if (leadId) {
-            openEditLeadModalById(leadId);
-        }
-    }
-});
-        
-        // Handle lead card clicks for editing (both in funnel and table)
-document.addEventListener('click', function(e) {
-    // Check if clicked on a lead card in the funnel
-    const leadCard = e.target.closest('.lead-card');
-    if (leadCard) {
-        const leadId = leadCard.dataset.leadId;
-        if (leadId) {
-            openEditLeadModalById(leadId);
-        }
-        return;
-    }
-    
-    // Check if clicked on a lead row in the table (but not on action buttons)
-    const tableRow = e.target.closest('#leads-table-body tr');
-    if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-        const leadId = tableRow.dataset.leadId;
-        if (leadId) {
-            openEditLeadModalById(leadId);
-        }
-    }
-});
+        // Also allow login on Enter key press
+        pinInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginBtn.click();
+            }
+        });
 
-        function setupEventListeners() {
-    // Handle edit form submission
-    const editForm = document.getElementById('edit-lead-form');
-    if (editForm) {
-        editForm.addEventListener('submit', function(e) {
+        pinInput.addEventListener('input', function() {
+            pinError.textContent = '';
+        });
+    }
+
+    // Onboarding setup
+    function setupOnboarding() {
+        document.getElementById('skip-onboarding').addEventListener('click', function() {
+            localStorage.setItem('onboarding_completed', 'true');
+            document.getElementById('onboarding-overlay').classList.add('hidden');
+            initializeApp();
+        });
+
+        document.getElementById('start-using-app').addEventListener('click', function() {
+            localStorage.setItem('onboarding_completed', 'true');
+            document.getElementById('onboarding-overlay').classList.add('hidden');
+            initializeApp();
+
+            // Start guided tooltip tour
+            setTimeout(setupOnboardingTour, 700);
+        });
+    }
+
+    // Onboarding tour
+    function setupOnboardingTour() {
+        const steps = [
+            {
+                targetId: 'add-lead-btn',
+                message: 'Start here by adding your first lead.'
+            },
+            {
+                targetId: 'install-btn',
+                message: 'Install this app to your device for easier access later.'
+            },
+            {
+                targetId: 'add-content-btn',
+                message: 'Now add some content to nurture them.'
+            },
+            {
+                targetId: 'awareness-count',
+                message: 'Drag your leads into the funnel stages to track progress.'
+            },
+            {
+                targetId: 'leadmanagement',
+                message: 'Click here for the whole lead list.'
+            }
+        ];
+
+        let currentStep = 0;
+
+        function showStep(stepIndex) {
+            const step = steps[stepIndex];
+            const target = document.getElementById(step.targetId);
+
+            if (!target) return;
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'onboarding-tooltip';
+            tooltip.innerText = step.message;
+
+            document.body.appendChild(tooltip);
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            const rect = target.getBoundingClientRect();
+            const tooltipWidth = 220;
+            let left = rect.left + rect.width / 2 - tooltipWidth / 2;
+            left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+
+            tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+            tooltip.style.left = `${left}px`;
+
+            target.classList.add('pulse-highlight');
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
+            nextBtn.className = 'submit-btn';
+            nextBtn.style.marginTop = '0.5rem';
+            tooltip.appendChild(nextBtn);
+
+            nextBtn.addEventListener('click', () => {
+                tooltip.remove();
+                target.classList.remove('pulse-highlight');
+                if (stepIndex + 1 < steps.length) {
+                    showStep(stepIndex + 1);
+                } else {
+                    // End of tour
+                    localStorage.setItem('onboarding_completed', 'true');
+                }
+            });
+        }
+
+        showStep(0);
+    }
+
+    // Main application initialization
+    function initializeApp() {
+        console.log('Initializing app...');
+        
+        // Set up all event listeners first
+        setupCoreEventListeners();
+        
+        // Initialize default data if none exists
+        initializeDefaultData();
+        
+        // Initialize UI components
+        initializeUIComponents();
+        
+        // Load data and update views
+        loadInitialData();
+    }
+
+    function setupCoreEventListeners() {
+        // Edit lead form submission
+        document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
             e.preventDefault();
             saveLeadChanges();
         });
     }
 
-    // Handle add lead button
-    document.getElementById('add-lead-btn')?.addEventListener('click', function() {
-        document.getElementById('lead-form').reset();
-        document.getElementById('add-lead-modal').classList.remove('hidden');
-    });
+    function initializeDefaultData() {
+        // Initialize metadata if none exists
+        if (!localStorage.getItem('funnel_metadata')) {
+            localStorage.setItem('funnel_metadata', JSON.stringify({
+                created: new Date().toISOString(),
+                version: '1.1',
+                last_updated: new Date().toISOString()
+            }));
+        }
+        
+        // Initialize default leads if none exist
+        if (!localStorage.getItem('leads')) {
+            const defaultLeads = {
+                awareness: [createDefaultLead('awareness')],
+                interest: [createDefaultLead('interest')],
+                intent: [],
+                evaluation: [],
+                purchase: []
+            };
+            localStorage.setItem('leads', JSON.stringify(defaultLeads));
+        }
 
-    // Handle add content button
-    document.getElementById('add-content-btn')?.addEventListener('click', function() {
-        document.getElementById('content-form').reset();
-        document.getElementById('add-content-modal').classList.remove('hidden');
-    });
-
-    // Handle refresh advice button
-    document.getElementById('refresh-advice')?.addEventListener('click', function() {
-        refreshFunnelInsights();
-    });
-
-    // Handle expand funnel button
-    document.getElementById('expand-funnel')?.addEventListener('click', function() {
-        const funnelContainer = document.querySelector('.funnel-container');
-        funnelContainer.classList.add('pulse-highlight');
-        setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
-    });
-
-    // Handle export buttons
-    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
-    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
-
-    // Handle lead stage filter
-    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
-        filterLeadsTable(this.value);
-    });
-
-    // Handle lead search
-    const leadSearch = document.getElementById('lead-search');
-    if (leadSearch) {
-        leadSearch.addEventListener('input', function() {
-            clearTimeout(searchLeads.debounce);
-            searchLeads.debounce = setTimeout(() => {
-                searchLeads(this.value);
-            }, 300);
-        });
+        // Initialize default content if none exists
+        if (!localStorage.getItem('content')) {
+            const defaultContent = [
+                createContentItem('awareness', 'blog'),
+                createContentItem('interest', 'video'),
+                createContentItem('intent', 'casestudy'),
+                createContentItem('evaluation', 'ebook'),
+                createContentItem('purchase', 'video')
+            ];
+            localStorage.setItem('content', JSON.stringify(defaultContent));
+        }
     }
 
-    // Handle modal close buttons
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.closest('.modal').classList.add('hidden');
-        });
-    });
+    function createDefaultLead(stage) {
+        const isAwareness = stage === 'awareness';
+        return {
+            id: 'lead-' + Date.now(),
+            company: isAwareness ? 'Example Corp' : 'Sample Inc',
+            contact: isAwareness ? 'John Smith' : 'Sarah Johnson',
+            email: isAwareness ? 'john@example.com' : 'sarah@sample.com',
+            phone: isAwareness ? '555-1234' : '555-5678',
+            currentStage: stage,
+            notes: isAwareness ? 'Interested in our blog content' : 'Downloaded our whitepaper',
+            contentStrategies: isAwareness ? ['content-1'] : ['content-2'],
+            dateAdded: new Date().toISOString(),
+            lastContact: new Date().toISOString(),
+            industry: isAwareness ? 'saas' : 'ecommerce',
+            status: isAwareness ? 'new' : 'hot',
+            value: isAwareness ? 5000 : 10000,
+            source: isAwareness ? 'website' : 'social'
+        };
+    }
 
-    // Handle delete lead button in edit modal
-    document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        deleteLead();
-    });
-
-    // Handle content form submission
-    document.getElementById('content-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        addContent();
-    });
-
-    // Handle edit content form submission
-    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveContentChanges();
-    });
-
-    // Handle clicks outside modals to close them
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.add('hidden');
+    function createContentItem(stage, type) {
+        const contentData = {
+            awareness: {
+                name: 'Example Blog Post',
+                description: 'Basic introduction to our product',
+                targetConversion: 5
+            },
+            interest: {
+                name: 'Sample Demo Video',
+                description: 'Detailed product demonstration',
+                targetConversion: 15
+            },
+            intent: {
+                name: 'Example Case Study',
+                description: 'Success story from existing customer',
+                targetConversion: 25
+            },
+            evaluation: {
+                name: 'Sample Pricing Guide',
+                description: 'Detailed pricing information',
+                targetConversion: 20
+            },
+            purchase: {
+                name: 'Example Testimonials',
+                description: 'Video testimonials from happy customers',
+                targetConversion: 30
             }
-        });
-    });
-}
+        };
         
-        // Authentication setup
-        function setupAuth() {
-            const pinInput = document.getElementById('pin-input');
-            const loginBtn = document.getElementById('login-btn');
-            const pinError = document.getElementById('pin-error');
-            
-            // Configurable PINs
-            const validPins = ['1234', '4321', '0000'];
+        return {
+            id: `content-${Date.now()}`,
+            name: contentData[stage].name,
+            description: contentData[stage].description,
+            stage,
+            type,
+            link: `https://example.com/${type}`,
+            targetConversion: contentData[stage].targetConversion,
+            dateCreated: new Date().toISOString()
+        };
+    }
 
-            // Focus on the PIN input when the page loads
-            pinInput.focus();
+    function initializeUIComponents() {
+        // Initialize Select2 for content selection
+        $('.content-select').select2({
+            placeholder: 'Select content strategies',
+            width: '100%'
+        });
 
-            loginBtn.addEventListener('click', function() {
-               if (validPins.includes(pinInput.value)) {
-                    localStorage.setItem('authenticated', 'true');
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('app-container').classList.remove('hidden');
+        // Populate content options
+        populateContentOptions();
+        
+        // Setup drag and drop
+        setupDragAndDrop();
+        
+        // Setup PWA install button
+        setupInstallButton();
+    }
 
-                    // Show onboarding if first time
-                    if (!localStorage.getItem('onboarding_completed')) {
-                        document.getElementById('onboarding-overlay').classList.remove('hidden');
-                        setupOnboarding();
-                    } else {
-                        initializeApp();
-                    }
+    function loadInitialData() {
+        // Load data and setup UI
+        loadLeads();
+        loadContent();
+        setupEventListeners();
+        updateAnalytics();
+    }
+
+    function loadLeads() {
+        let leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+        // Ensure all leads have an ID
+        let updated = false;
+        for (const stage of Object.keys(leads)) {
+            leads[stage] = leads[stage].map(lead => {
+                if (!lead.id) {
+                    lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
+                    updated = true;
                 }
-                else {
-                    pinError.textContent = 'Incorrect PIN. Please try again.';
-                    pinInput.value = '';
-                    pinInput.focus();
-                }
-            });
-
-            // Also allow login on Enter key press
-            pinInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    loginBtn.click();
-                }
-            });
-
-            pinInput.addEventListener('input', function() {
-                pinError.textContent = '';
+                return lead;
             });
         }
-
-        // Onboarding setup
-        function setupOnboarding() {
-            document.getElementById('skip-onboarding').addEventListener('click', function() {
-                localStorage.setItem('onboarding_completed', 'true');
-                document.getElementById('onboarding-overlay').classList.add('hidden');
-                initializeApp();
-            });
-
-            document.getElementById('start-using-app').addEventListener('click', function() {
-                localStorage.setItem('onboarding_completed', 'true');
-                document.getElementById('onboarding-overlay').classList.add('hidden');
-                initializeApp();
-
-                // Start guided tooltip tour
-                setTimeout(setupOnboardingTour, 700);
-            });
+        if (updated) {
+            localStorage.setItem('leads', JSON.stringify(leads));
         }
 
-        // Onboarding tour
-        function setupOnboardingTour() {
-            const steps = [
-                {
-                    targetId: 'add-lead-btn',
-                    message: 'Start here by adding your first lead.'
-                },
+        // Clear and populate each stage body
+        document.querySelectorAll('.stage-body').forEach(container => {
+            container.innerHTML = '';
+            const stage = container.dataset.dropTarget;
 
-                {
-                    targetId: 'install-btn',
-                    message: 'Install this app to your device for easier access later.'
-                },
+            // Content badges for this stage
+            const stageContent = contentItems.filter(c => c.stage === stage);
+            if (stageContent.length > 0) {
+                const contentBadges = document.createElement('div');
+                contentBadges.className = 'content-badges';
 
-                {
-                    targetId: 'add-content-btn',
-                    message: 'Now add some content to nurture them.'
-                },
-            
-                {
-                    targetId: 'awareness-count',
-                    message: 'Drag your leads into the funnel stages to track progress.'
-                },
+                stageContent.forEach(content => {
+                    const badge = document.createElement('div');
+                    badge.className = 'content-badge';
+                    badge.dataset.contentId = content.id;
+                    badge.draggable = true;
+                    badge.title = `${content.name}\n${content.description}`;
 
-                 {
-                    targetId: 'leadmanagement',
-                    message: 'Click here for the whole lead list.'
-                   },
-            ];
+                    badge.innerHTML = `
+                        <i class="${getContentIcon(content.type)}"></i>
+                        <span>${content.name.substring(0, 3)}</span>
+                    `;
 
-            let currentStep = 0;
+                    badge.addEventListener('dragstart', handleContentDragStart);
+                    badge.addEventListener('click', () => openEditContentModal(content));
 
-            function showStep(stepIndex) {
-                const step = steps[stepIndex];
-                const target = document.getElementById(step.targetId);
+                    contentBadges.appendChild(badge);
+                });
 
-                if (!target) return;
+                container.appendChild(contentBadges);
+            }
 
-             const tooltip = document.createElement('div');
-             tooltip.className = 'onboarding-tooltip';
-             tooltip.innerText = step.message;
-
-            document.body.appendChild(tooltip);
-                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-
-              const rect = target.getBoundingClientRect();
-              const tooltipWidth = 220;
-              let left = rect.left + rect.width / 2 - tooltipWidth / 2;
-              left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
-
-              tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
-              tooltip.style.left = `${left}px`;
-
-                target.classList.add('pulse-highlight');
-
-                const nextBtn = document.createElement('button');
-                nextBtn.textContent = stepIndex === steps.length - 1 ? 'Finish' : 'Next';
-                nextBtn.className = 'submit-btn';
-                nextBtn.style.marginTop = '0.5rem';
-                tooltip.appendChild(nextBtn);
-
-                nextBtn.addEventListener('click', () => {
-                    tooltip.remove();
-                    target.classList.remove('pulse-highlight');
-                    if (stepIndex + 1 < steps.length) {
-                        showStep(stepIndex + 1);
-                    } else {
-                        // End of tour
-                        localStorage.setItem('onboarding_completed', 'true');
-                    }
+            // Lead cards
+            if (leads[stage] && leads[stage].length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'empty';
+                emptyDiv.textContent = 'Drop leads here';
+                container.appendChild(emptyDiv);
+            } else if (leads[stage]) {
+                leads[stage].forEach(lead => {
+                    container.appendChild(createLeadCard(lead));
                 });
             }
+        });
 
-            showStep(0);
+        // Update funnel stage stats
+        document.getElementById('awareness-count').textContent = leads.awareness.length;
+        document.getElementById('interest-count').textContent = leads.interest.length;
+        document.getElementById('consideration-count').textContent =
+            leads.intent.length + leads.evaluation.length + leads.purchase.length;
+
+        // Update leads table
+        updateLeadsTable();
+
+        updateConversionPercentages();
+        generateSmartAdvice();
+        updateAdvancedAnalytics();
+    }
+
+    function openEditLeadModalById(leadId) {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        let foundLead = null;
+        let originalStage = '';
+
+        // Search through all stages for the lead
+        for (const [stage, stageLeads] of Object.entries(leads)) {
+            const lead = stageLeads.find(l => l.id === leadId);
+            if (lead) {
+                foundLead = lead;
+                originalStage = stage;
+                break;
+            }
         }
 
-        // Main application initialization
-
-function initializeApp() {
-    console.log('Initializing app...');
-    
-    // Set up all event listeners first
-    setupCoreEventListeners();
-    
-    // Initialize default data if none exists
-    initializeDefaultData();
-    
-    // Initialize UI components
-    initializeUIComponents();
-    
-    // Load data and update views
-    loadInitialData();
-}
-
-function setupCoreEventListeners() {
-    // Edit lead form submission
-    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveLeadChanges();
-    });
-    
-    // Delegated click handler for edit buttons and lead cards
-    document.addEventListener('click', function(e) {
-        // Handle edit button clicks
-        const editBtn = e.target.closest('.edit-btn');
-        if (editBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const leadId = editBtn.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
+        if (!foundLead) {
+            showNotification('Lead not found', 'error');
             return;
         }
-        
-        // Handle lead card clicks in funnel
-        const leadCard = e.target.closest('.lead-card');
-        if (leadCard) {
-            const leadId = leadCard.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
-        
-        // Handle table row clicks (excluding action buttons)
-        const tableRow = e.target.closest('#leads-table-body tr');
-        if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-            const leadId = tableRow.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-        }
-    });
-}
 
-function initializeDefaultData() {
-    // Initialize metadata if none exists
-    if (!localStorage.getItem('funnel_metadata')) {
-        localStorage.setItem('funnel_metadata', JSON.stringify({
-            created: new Date().toISOString(),
-            version: '1.1',
-            last_updated: new Date().toISOString()
-        }));
+        // Populate the edit form
+        document.getElementById('edit-lead-id').value = foundLead.id;
+        document.getElementById('edit-lead-company').value = foundLead.company || '';
+        document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+        document.getElementById('edit-lead-email').value = foundLead.email || '';
+        document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+        document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
+        document.getElementById('edit-lead-source').value = foundLead.source || '';
+        document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+        document.getElementById('edit-lead-status').value = foundLead.status || '';
+        document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+        
+        // Set content strategies
+        $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+
+        // Show the modal
+        document.getElementById('edit-lead-modal').classList.remove('hidden');
     }
     
-    // Initialize default leads if none exist
-    if (!localStorage.getItem('leads')) {
-        const defaultLeads = {
-            awareness: [createDefaultLead('awareness')],
-            interest: [createDefaultLead('interest')],
+    function refreshFunnelInsights() {
+        const loader = document.getElementById('insight-loader');
+        const text = document.getElementById('insight-text');
+
+        if (loader) loader.classList.remove('hidden');
+        if (text) text.textContent = 'Reanalyzing your funnel data...';
+
+        setTimeout(() => {
+            if (loader) loader.classList.add('hidden');
+            if (text) text.textContent = getRandomInsight();
+        }, 3000);
+    }
+
+    function setupAutoInsightRefresh(intervalInMinutes = 15) {
+        const intervalMs = intervalInMinutes * 60 * 1000;
+
+        setInterval(() => {
+            const refreshBtn = document.getElementById('refresh-advice');
+            if (refreshBtn) {
+                refreshBtn.click();
+            }
+        }, intervalMs);
+    }
+
+    // Update advanced analytics metrics
+    function updateAdvancedAnalytics() {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        
+        // Calculate average time in funnel
+        const allLeads = Object.values(leads).flat();
+        const now = new Date();
+        let totalDays = 0;
+        let leadCount = 0;
+        
+        allLeads.forEach(lead => {
+            if (lead.dateAdded) {
+                const addedDate = new Date(lead.dateAdded);
+                const daysInFunnel = (now - addedDate) / (1000 * 60 * 60 * 24);
+                totalDays += daysInFunnel;
+                leadCount++;
+            }
+        });
+        
+        const avgDays = leadCount > 0 ? (totalDays / leadCount).toFixed(1) : 0;
+        document.getElementById('avg-funnel-time').textContent = `${avgDays} days`;
+        
+        // Count hot leads
+        const hotLeads = allLeads.filter(lead => lead.status === 'hot').length;
+        document.getElementById('hot-leads-count').textContent = hotLeads;
+        
+        // Calculate content effectiveness
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        let effectiveContentCount = 0;
+        let totalContentUsage = 0;
+        
+        contentItems.forEach(content => {
+            const leadsUsingContent = allLeads.filter(lead => 
+                lead.contentStrategies && lead.contentStrategies.includes(content.id)
+            ).length;
+            
+            if (leadsUsingContent > 0) {
+                const nextStageLeads = allLeads.filter(lead => {
+                    const currentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(lead.currentStage);
+                    const contentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(content.stage);
+                    return currentStageIndex > contentStageIndex && 
+                           lead.contentStrategies && 
+                           lead.contentStrategies.includes(content.id);
+                }).length;
+                
+                if (nextStageLeads > 0) {
+                    effectiveContentCount++;
+                }
+                totalContentUsage++;
+            }
+        });
+        
+        const effectivenessRate = totalContentUsage > 0 ? 
+            Math.round((effectiveContentCount / totalContentUsage) * 100) : 0;
+        document.getElementById('content-effectiveness').textContent = `${effectivenessRate}%`;
+        
+        // Calculate engagement rate (leads contacted in last 7 days)
+        const engagedLeads = allLeads.filter(lead => {
+            if (!lead.lastContact) return false;
+            const lastContactDate = new Date(lead.lastContact);
+            const daysSinceContact = (now - lastContactDate) / (1000 * 60 * 60 * 24);
+            return daysSinceContact <= 7;
+        }).length;
+        
+        const engagementRate = allLeads.length > 0 ? 
+            Math.round((engagedLeads / allLeads.length) * 100) : 0;
+        document.getElementById('engagement-rate').textContent = `${engagementRate}%`;
+        
+        // Calculate average response time (simplified)
+        let totalResponseHours = 0;
+        let responseCount = 0;
+        
+        allLeads.forEach(lead => {
+            if (lead.dateAdded && lead.lastContact) {
+                const addedDate = new Date(lead.dateAdded);
+                const contactDate = new Date(lead.lastContact);
+                const responseHours = (contactDate - addedDate) / (1000 * 60 * 60);
+                totalResponseHours += responseHours;
+                responseCount++;
+            }
+        });
+        
+        const avgResponseTime = responseCount > 0 ? (totalResponseHours / responseCount).toFixed(1) : 0;
+        document.getElementById('response-time').textContent = `${avgResponseTime} hrs`;
+        
+        // Calculate revenue potential (sum of all lead values)
+        let revenuePotential = 0;
+        allLeads.forEach(lead => {
+            if (lead.value) {
+                revenuePotential += lead.value;
+            }
+        });
+        
+        document.getElementById('revenue-potential').textContent = `$${revenuePotential.toLocaleString()}`;
+    }
+
+    // Handle content drag start
+    function handleContentDragStart(e) {
+        e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
+        e.target.classList.add('dragging-content');
+    }
+
+    // Load content in the content section
+    function loadContent() {
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const container = document.getElementById('content-items-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (contentItems.length === 0) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.innerHTML = `
+                <i class="fas fa-file-alt"></i>
+                <h3>No Content Strategies</h3>
+                <p>Add content to help move leads through your funnel</p>
+                <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
+                    <i class="fas fa-plus"></i> Add Content
+                </button>
+            `;
+            container.appendChild(emptyState);
+            
+            document.getElementById('add-content-empty-btn').addEventListener('click', () => {
+                document.getElementById('content-form').reset();
+                document.getElementById('add-content-modal').classList.remove('hidden');
+            });
+            return;
+        }
+
+        contentItems.forEach(content => {
+            const item = document.createElement('div');
+            item.className = 'content-item interactive-element';
+            item.dataset.contentId = content.id;
+            item.dataset.stage = content.stage;
+            item.draggable = true;
+            
+            // Add drag events
+            item.addEventListener('dragstart', handleContentItemDragStart);
+            
+            const icon = document.createElement('i');
+            icon.className = getContentIcon(content.type);
+
+            const name = document.createElement('h4');
+            name.textContent = content.name;
+            name.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openEditContentModal(content);
+            });
+
+            const desc = document.createElement('p');
+            desc.className = 'content-description';
+            desc.textContent = content.description;
+
+            const stageBadge = document.createElement('span');
+            stageBadge.className = 'stage-badge';
+            stageBadge.textContent = capitalizeFirstLetter(content.stage);
+
+            const link = document.createElement('a');
+            link.href = content.link || '#';
+            link.target = '_blank';
+            link.className = 'content-link';
+            link.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
+
+            const actions = document.createElement('div');
+            actions.className = 'content-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-content';
+            editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openEditContentModal(content);
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-content';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this content strategy?')) {
+                    deleteContent(content.id);
+                }
+            });
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+
+            item.appendChild(icon);
+            item.appendChild(name);
+            item.appendChild(desc);
+            item.appendChild(stageBadge);
+            item.appendChild(link);
+            item.appendChild(actions);
+
+            container.appendChild(item);
+        });
+    }
+
+    // Handle content item drag start
+    function handleContentItemDragStart(e) {
+        e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
+        e.target.classList.add('dragging-content');
+    }
+
+    // Delete content by ID
+    function deleteContent(contentId) {
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const updatedContent = contentItems.filter(c => c.id !== contentId);
+        localStorage.setItem('content', JSON.stringify(updatedContent));
+        
+        // Also remove from any leads that might reference this content
+        const leads = JSON.parse(localStorage.getItem('leads'));
+        for (const stage in leads) {
+            leads[stage].forEach(lead => {
+                if (lead.contentStrategies && lead.contentStrategies.includes(contentId)) {
+                    lead.contentStrategies = lead.contentStrategies.filter(id => id !== contentId);
+                }
+            });
+        }
+        localStorage.setItem('leads', JSON.stringify(leads));
+        
+        loadLeads();
+        loadContent();
+        populateContentOptions();
+        showNotification('Content deleted successfully');
+    }
+
+    // Create a lead card element for the funnel
+    function createLeadCard(lead) {
+        const leadCard = document.createElement('div');
+        leadCard.className = 'lead-card interactive-element';
+        
+        // Add color class based on industry
+        if (lead.industry) {
+            leadCard.classList.add(lead.industry.toLowerCase());
+        }
+
+        leadCard.draggable = true;
+        leadCard.dataset.leadId = lead.id;
+        leadCard.dataset.currentStage = lead.currentStage;
+
+        const company = document.createElement('div');
+        company.className = 'company';
+        company.textContent = lead.company;
+
+        const contact = document.createElement('div');
+        contact.className = 'contact';
+        contact.textContent = lead.contact || 'No contact';
+
+        // Add click event to open edit modal
+        leadCard.addEventListener('click', function(e) {
+            // Don't open modal if clicking on a drag handle or other element
+            if (e.target !== leadCard && !e.target.classList.contains('company') && !e.target.classList.contains('contact')) {
+                return;
+            }
+            e.stopPropagation();
+            openEditLeadModalById(lead.id);
+        });
+
+        leadCard.appendChild(company);
+        leadCard.appendChild(contact);
+
+        return leadCard;
+    }
+
+    function toggleLeadPanel(show, html = '') {
+        let panel = document.getElementById('lead-insight-panel');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'lead-insight-panel';
+            panel.style.position = 'fixed';
+            panel.style.top = '0';
+            panel.style.right = show ? '0' : '-400px';
+            panel.style.width = '360px';
+            panel.style.height = '100%';
+            panel.style.background = '#0E4954';
+            panel.style.color = '#fff';
+            panel.style.padding = '20px';
+            panel.style.zIndex = '9999';
+            panel.style.transition = 'right 0.3s ease-in-out';
+            panel.style.overflowY = 'auto';
+            document.body.appendChild(panel);
+        }
+        panel.innerHTML = `<h3>Lead Insight</h3>${html}`;
+        panel.style.right = show ? '0' : '-400px';
+    }
+
+    function saveLeadToLocalStorage(lead) {
+        // Initialize lead fields
+        if (!lead.id) lead.id = 'lead_' + Date.now();
+        if (!lead.createdAt) lead.createdAt = new Date().toISOString();
+        if (!lead.moves) lead.moves = 0;
+        if (!lead.days) lead.days = 0;
+
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [],
+            interest: [],
             intent: [],
             evaluation: [],
             purchase: []
         };
-        localStorage.setItem('leads', JSON.stringify(defaultLeads));
-    }
 
-    // Initialize default content if none exists
-    if (!localStorage.getItem('content')) {
-        const defaultContent = [
-            createContentItem('awareness', 'blog'),
-            createContentItem('interest', 'video'),
-            createContentItem('intent', 'casestudy'),
-            createContentItem('evaluation', 'ebook'),
-            createContentItem('purchase', 'video')
-        ];
-        localStorage.setItem('content', JSON.stringify(defaultContent));
-    }
-}
+        const stage = lead.currentStage || 'awareness';
 
-function createDefaultLead(stage) {
-    const isAwareness = stage === 'awareness';
-    return {
-        id: 'lead-' + Date.now(),
-        company: isAwareness ? 'Example Corp' : 'Sample Inc',
-        contact: isAwareness ? 'John Smith' : 'Sarah Johnson',
-        email: isAwareness ? 'john@example.com' : 'sarah@sample.com',
-        phone: isAwareness ? '555-1234' : '555-5678',
-        currentStage: stage,
-        notes: isAwareness ? 'Interested in our blog content' : 'Downloaded our whitepaper',
-        contentStrategies: isAwareness ? ['content-1'] : ['content-2'],
-        dateAdded: new Date().toISOString(),
-        lastContact: new Date().toISOString(),
-        industry: isAwareness ? 'saas' : 'ecommerce',
-        status: isAwareness ? 'new' : 'hot',
-        value: isAwareness ? 5000 : 10000,
-        source: isAwareness ? 'website' : 'social'
-    };
-}
-
-function createContentItem(stage, type) {
-    const contentData = {
-        awareness: {
-            name: 'Example Blog Post',
-            description: 'Basic introduction to our product',
-            targetConversion: 5
-        },
-        interest: {
-            name: 'Sample Demo Video',
-            description: 'Detailed product demonstration',
-            targetConversion: 15
-        },
-        intent: {
-            name: 'Example Case Study',
-            description: 'Success story from existing customer',
-            targetConversion: 25
-        },
-        evaluation: {
-            name: 'Sample Pricing Guide',
-            description: 'Detailed pricing information',
-            targetConversion: 20
-        },
-        purchase: {
-            name: 'Example Testimonials',
-            description: 'Video testimonials from happy customers',
-            targetConversion: 30
+        // Remove duplicate if it already exists in any stage
+        for (let key in leads) {
+            leads[key] = leads[key].filter(l => l.id !== lead.id);
         }
-    };
-    
-    return {
-        id: `content-${Date.now()}`,
-        name: contentData[stage].name,
-        description: contentData[stage].description,
-        stage,
-        type,
-        link: `https://example.com/${type}`,
-        targetConversion: contentData[stage].targetConversion,
-        dateCreated: new Date().toISOString()
-    };
-}
 
-function initializeUIComponents() {
-    // Initialize Select2 for content selection
-    $('.content-select').select2({
-        placeholder: 'Select content strategies',
-        width: '100%'
-    });
+        // Push lead to the correct stage
+        leads[stage].push(lead);
 
-    // Populate content options
-    populateContentOptions();
-    
-    // Setup drag and drop
-    setupDragAndDrop();
-    
-    // Setup PWA install button
-    setupInstallButton();
-}
-
-function loadInitialData() {
-    // Load data and setup UI
-    loadLeads();
-    loadContent();
-    setupEventListeners();
-    updateAnalytics();
-}
-
-
-function loadLeads() {
-    let leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-
-    // Ensure all leads have an ID
-    let updated = false;
-    for (const stage of Object.keys(leads)) {
-        leads[stage] = leads[stage].map(lead => {
-            if (!lead.id) {
-                lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
-                updated = true;
-            }
-            return lead;
-        });
-    }
-    if (updated) {
+        // Save back
         localStorage.setItem('leads', JSON.stringify(leads));
     }
 
-    // Clear and populate each stage body
-    document.querySelectorAll('.stage-body').forEach(container => {
-        container.innerHTML = '';
-        const stage = container.dataset.dropTarget;
+    function updateLeadsTable() {
+        const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
 
-        // Content badges for this stage
-        const stageContent = contentItems.filter(c => c.stage === stage);
-        if (stageContent.length > 0) {
-            const contentBadges = document.createElement('div');
-            contentBadges.className = 'content-badges';
+        const tableBody = document.getElementById('leads-table-body');
+        tableBody.innerHTML = '';
 
-            stageContent.forEach(content => {
-                const badge = document.createElement('div');
-                badge.className = 'content-badge';
-                badge.dataset.contentId = content.id;
-                badge.draggable = true;
-                badge.title = `${content.name}\n${content.description}`;
+        const allLeads = [];
 
-                badge.innerHTML = `
-                    <i class="${getContentIcon(content.type)}"></i>
-                    <span>${content.name.substring(0, 3)}</span>
-                `;
-
-                badge.addEventListener('dragstart', handleContentDragStart);
-                badge.addEventListener('click', () => openEditContentModal(content));
-
-                contentBadges.appendChild(badge);
-            });
-
-            container.appendChild(contentBadges);
-        }
-
-        // Lead cards
-        if (leads[stage] && leads[stage].length === 0) {
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'empty';
-            emptyDiv.textContent = 'Drop leads here';
-            container.appendChild(emptyDiv);
-        } else if (leads[stage]) {
-            leads[stage].forEach(lead => {
-                container.appendChild(createLeadCard(lead));
+        for (const [stage, stageLeads] of Object.entries(leadsData)) {
+            stageLeads.forEach(lead => {
+                if (!lead.id) {
+                    lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
+                }
+                allLeads.push({ ...lead, stage });
             });
         }
-    });
 
-    // Update funnel stage stats
-    document.getElementById('awareness-count').textContent = leads.awareness.length;
-    document.getElementById('interest-count').textContent = leads.interest.length;
-    document.getElementById('consideration-count').textContent =
-        leads.intent.length + leads.evaluation.length + leads.purchase.length;
+        if (allLeads.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
+            tableBody.appendChild(row);
+            attachEditButtonListeners();
+            return;
+        }
 
-    // Update leads table
-    const tableBody = document.getElementById('leads-table-body');
-    tableBody.innerHTML = '';
+        allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
 
-    const allLeads = [];
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        stageLeads.forEach(lead => {
-            allLeads.push({ ...lead, stage });
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+        allLeads.forEach(lead => {
+            const row = document.createElement('tr');
+            row.dataset.leadId = lead.id;
+            row.dataset.stage = lead.stage;
+
+            const contentUsed = lead.contentStrategies?.map(contentId => {
+                const content = contentItems.find(c => c.id === contentId);
+                return content ? content.name : '';
+            }).filter(Boolean) || [];
+
+            const lastContactDate = lead.lastContact
+                ? new Date(lead.lastContact).toLocaleDateString()
+                : 'Never';
+
+            const companyCell = document.createElement('td');
+            companyCell.className = 'company-cell';
+            companyCell.textContent = lead.company;
+
+            if (lead.industry || lead.status) {
+                const tags = document.createElement('div');
+                tags.style.display = 'flex';
+                tags.style.gap = '4px';
+                tags.style.marginTop = '4px';
+
+                if (lead.industry) {
+                    const industryTag = document.createElement('span');
+                    industryTag.style.background = 'var(--primary-color)';
+                    industryTag.style.padding = '2px 6px';
+                    industryTag.style.borderRadius = '4px';
+                    industryTag.style.fontSize = '0.7rem';
+                    industryTag.textContent = lead.industry;
+                    tags.appendChild(industryTag);
+                }
+
+                if (lead.status) {
+                    const statusTag = document.createElement('span');
+                    statusTag.style.background =
+                        lead.status === 'hot'
+                            ? 'var(--error-color)'
+                            : lead.status === 'cold'
+                            ? 'var(--accent-color)'
+                            : 'var(--text-muted)';
+                    statusTag.style.padding = '2px 6px';
+                    statusTag.style.borderRadius = '4px';
+                    statusTag.style.fontSize = '0.7rem';
+                    statusTag.textContent = lead.status;
+                    tags.appendChild(statusTag);
+                }
+
+                companyCell.appendChild(tags);
+            }
+
+            row.innerHTML = `
+                <td class="contact-cell">${lead.contact || 'N/A'}</td>
+                <td>${capitalizeFirstLetter(lead.stage)}</td>
+                <td>${contentUsed.join(', ') || 'None'}</td>
+                <td>${lastContactDate}</td>
+                <td>
+                    <button class="edit-btn" data-lead-id="${lead.id}" title="Edit Lead">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-btn" data-lead-id="${lead.id}" title="Delete Lead">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            row.insertBefore(companyCell, row.firstChild);
+            tableBody.appendChild(row);
+
+            // Make the whole row clickable for editing
+            row.addEventListener('click', e => {
+                const isDeleteClick = e.target.closest('.delete-btn');
+                if (!isDeleteClick) {
+                    openEditLeadModalById(lead.id);
+                }
+            });
+        });
+
+        // Keep delete working separately
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const leadId = btn.dataset.leadId;
+                if (confirm('Are you sure you want to delete this lead?')) {
+                    deleteLeadById(leadId);
+                }
+            });
+        });
+
+        attachEditButtonListeners();
+    }
+
+    function attachEditButtonListeners() {
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const leadId = this.dataset.leadId;
+                if (leadId) openEditLeadModalById(leadId);
+            });
+        });
+    }
+    
+    // Helper function to capitalize first letter
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // Delete lead by ID
+    function deleteLeadById(leadId) {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        let leadFound = false;
+
+        for (const stage of Object.keys(leads)) {
+            const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
+            if (leadIndex !== -1) {
+                leads[stage].splice(leadIndex, 1);
+                leadFound = true;
+                break;
+            }
+        }
+
+        if (leadFound) {
+            localStorage.setItem('leads', JSON.stringify(leads));
+            loadLeads();
+            showNotification('Lead deleted successfully');
+        } else {
+            showNotification('Error: Lead could not be deleted', 'error');
+        }
+    }
+
+    // Get appropriate icon for content type
+    function getContentIcon(type) {
+        const icons = {
+            blog: 'fas fa-file-alt',
+            ebook: 'fas fa-book',
+            video: 'fas fa-video',
+            webinar: 'fas fa-chalkboard-teacher',
+            casestudy: 'fas fa-chart-line',
+            demo: 'fas fa-desktop',
+            other: 'fas fa-file'
+        };
+        return icons[type] || icons.other;
+    }
+
+    function toggleModal(modalId, show = true) {
+        const modal = document.getElementById(modalId);
+        if (show) {
+            modal.classList.remove('hidden');
+            modal.classList.add('show');
+        } else {
+            modal.classList.remove('show');
+            modal.classList.add('hidden');
+        }
+    }
+
+    // Add a new lead
+    function addLead() {
+        const company = document.getElementById('lead-company').value;
+        const contact = document.getElementById('lead-contact').value;
+        const email = document.getElementById('lead-email').value;
+        const phone = document.getElementById('lead-phone').value;
+        const stage = document.getElementById('lead-stage').value;
+        const source = document.getElementById('lead-source').value;
+        const industry = document.getElementById('lead-industry').value;
+        const status = document.getElementById('lead-status').value;
+        const notes = document.getElementById('lead-notes').value;
+        const contentSelect = document.getElementById('lead-content');
+        const contentStrategies = $(contentSelect).val() || [];
+
+        if (!company || !contact || !email) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+
+        const newLead = {
+            id: 'lead-' + Date.now(),
+            company,
+            contact,
+            email,
+            phone,
+            source,
+            stage,
+            industry,
+            status,
+            notes,
+            contentStrategies,
+            dateAdded: new Date().toISOString(),
+            lastContact: new Date().toISOString(),
+            value: Math.floor(Math.random() * 10000) + 1000
+        };
+
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        leads[stage].push(newLead);
+        localStorage.setItem('leads', JSON.stringify(leads));
+
+        document.getElementById('add-lead-modal').classList.add('hidden');
+        document.getElementById('lead-form').reset();
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead added successfully');
+    }
+    
+    // Add new content strategy
+    function addContent() {
+        const name = document.getElementById('content-name').value;
+        const description = document.getElementById('content-description').value;
+        const stage = document.getElementById('content-stage').value;
+        const type = document.getElementById('content-type').value;
+        const link = document.getElementById('content-link').value;
+        const targetConversion = document.getElementById('content-target-conversion').value || 0;
+
+        if (!name || !stage) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+
+        const newContent = {
+            id: 'content-' + Date.now(),
+            name,
+            description,
+            stage,
+            type,
+            link,
+            targetConversion: parseInt(targetConversion),
+            dateCreated: new Date().toISOString()
+        };
+
+        // Add to storage
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        contentItems.push(newContent);
+        localStorage.setItem('content', JSON.stringify(contentItems));
+
+        // Close modal and reset form
+        document.getElementById('add-content-modal').classList.add('hidden');
+        document.getElementById('content-form').reset();
+
+        // Update UI
+        loadLeads();
+        loadContent();
+        populateContentOptions();
+        showNotification('Content strategy added successfully');
+    }
+
+    // Open edit lead modal
+    function openEditLeadModal(lead) {
+        document.getElementById('edit-lead-id').value = lead.id;
+        document.getElementById('edit-lead-company').value = lead.company;
+        document.getElementById('edit-lead-contact').value = lead.contact || '';
+        document.getElementById('edit-lead-email').value = lead.email || '';
+        document.getElementById('edit-lead-phone').value = lead.phone || '';
+        document.getElementById('edit-lead-stage').value = lead.currentStage;
+        document.getElementById('edit-lead-source').value = lead.source || 'website';
+        document.getElementById('edit-lead-industry').value = lead.industry || 'other';
+        document.getElementById('edit-lead-status').value = lead.status || 'new';
+        document.getElementById('edit-lead-notes').value = lead.notes || '';
+
+        // Set content strategies
+        const contentSelect = document.getElementById('edit-lead-content');
+        $(contentSelect).val(lead.contentStrategies || []).trigger('change');
+
+        document.getElementById('edit-lead-modal').classList.remove('hidden');
+    }
+
+    // Save lead changes
+    function saveLeadChanges() {
+        const leadId = document.getElementById('edit-lead-id').value;
+        const company = document.getElementById('edit-lead-company').value;
+        const contact = document.getElementById('edit-lead-contact').value;
+        const email = document.getElementById('edit-lead-email').value;
+        const phone = document.getElementById('edit-lead-phone').value;
+        const stage = document.getElementById('edit-lead-stage').value;
+        const source = document.getElementById('edit-lead-source').value;
+        const industry = document.getElementById('edit-lead-industry').value;
+        const status = document.getElementById('edit-lead-status').value;
+        const notes = document.getElementById('edit-lead-notes').value;
+
+        // Get selected content strategies
+        const contentSelect = document.getElementById('edit-lead-content');
+        const contentStrategies = $(contentSelect).val() || [];
+
+        if (!company || !contact || !email) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+
+        // Update lead in storage
+        const leads = JSON.parse(localStorage.getItem('leads'));
+        let leadFound = false;
+
+        // Search through all stages to find the lead
+        for (const [stageKey, stageLeads] of Object.entries(leads)) {
+            const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+            
+            if (leadIndex !== -1) {
+                // If stage changed, move the lead
+                if (stageKey !== stage) {
+                    const lead = stageLeads[leadIndex];
+                    stageLeads.splice(leadIndex, 1);
+                    
+                    // Update lead properties
+                    lead.company = company;
+                    lead.contact = contact;
+                    lead.email = email;
+                    lead.phone = phone;
+                    lead.source = source;
+                    lead.industry = industry;
+                    lead.status = status;
+                    lead.currentStage = stage;
+                    lead.notes = notes;
+                    lead.contentStrategies = contentStrategies;
+                    lead.lastContact = new Date().toISOString();
+                    
+                    // Add to new stage
+                    leads[stage].push(lead);
+                } else {
+                    // Just update the lead
+                    const lead = stageLeads[leadIndex];
+                    lead.company = company;
+                    lead.contact = contact;
+                    lead.email = email;
+                    lead.phone = phone;
+                    lead.source = source;
+                    lead.industry = industry;
+                    lead.status = status;
+                    lead.notes = notes;
+                    lead.contentStrategies = contentStrategies;
+                    lead.lastContact = new Date().toISOString();
+                }
+                
+                leadFound = true;
+                break;
+            }
+        }
+
+        if (leadFound) {
+            localStorage.setItem('leads', JSON.stringify(leads));
+            document.getElementById('edit-lead-modal').classList.add('hidden');
+            loadLeads();
+            updateAnalytics();
+            showNotification('Lead updated successfully');
+        }
+    }
+
+    // Open edit content modal
+    function openEditContentModal(content) {
+        if (!content) return;
+        
+        console.log('Opening edit modal for content:', content.id);
+        
+        document.getElementById('edit-content-id').value = content.id;
+        document.getElementById('edit-content-name').value = content.name;
+        document.getElementById('edit-content-description').value = content.description || '';
+        document.getElementById('edit-content-stage').value = content.stage;
+        document.getElementById('edit-content-type').value = content.type || 'blog';
+        document.getElementById('edit-content-link').value = content.link || '';
+        document.getElementById('edit-content-target-conversion').value = content.targetConversion || '';
+
+        const modal = document.getElementById('edit-content-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('show');
+    }
+
+    // Save content changes
+    function saveContentChanges() {
+        const contentId = document.getElementById('edit-content-id').value;
+        const name = document.getElementById('edit-content-name').value;
+        const description = document.getElementById('edit-content-description').value;
+        const stage = document.getElementById('edit-content-stage').value;
+        const type = document.getElementById('edit-content-type').value;
+        const link = document.getElementById('edit-content-link').value;
+        const targetConversion = document.getElementById('edit-content-target-conversion').value;
+
+        console.log('Saving content changes for:', contentId);
+
+        if (!name || !stage) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+
+        // Update content in storage
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const contentIndex = contentItems.findIndex(c => c.id === contentId);
+        
+        if (contentIndex !== -1) {
+            contentItems[contentIndex] = {
+                ...contentItems[contentIndex],
+                name,
+                description,
+                stage,
+                type,
+                link,
+                targetConversion: parseInt(targetConversion) || 0
+            };
+            
+            localStorage.setItem('content', JSON.stringify(contentItems));
+            document.getElementById('edit-content-modal').classList.add('hidden');
+            loadLeads();
+            loadContent();
+            populateContentOptions();
+            showNotification('Content updated successfully');
+        } else {
+            showNotification('Content not found', 'error');
+        }
+    }
+  
+    // Delete lead from edit modal
+    function deleteLead() {
+        const leadId = document.getElementById('edit-lead-id').value;
+        if (leadId && confirm('Are you sure you want to delete this lead?')) {
+            deleteLeadById(leadId);
+            document.getElementById('edit-lead-modal').classList.add('hidden');
+        }
+    }
+
+    // Populate content options in select elements
+    function populateContentOptions() {
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const selectElements = document.querySelectorAll('.content-select');
+        
+        selectElements.forEach(select => {
+            // Clear existing options
+            $(select).empty();
+            
+            // Add new options
+            contentItems.forEach(content => {
+                const option = new Option(content.name, content.id);
+                $(select).append(option);
+            });
         });
     }
 
-    if (allLeads.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="6" style="text-align: center;">No leads found</td>`;
-        tableBody.appendChild(row);
-    } else {
-        const recentLeads = allLeads
+    // Calculate key metrics
+    function calculateMetrics(leads) {
+        const totalLeads = Object.values(leads).flat().length;
+        const awarenessCount = leads.awareness.length;
+        const interestCount = leads.interest.length;
+        const considerationCount = leads.intent.length + leads.evaluation.length;
+        const purchaseCount = leads.purchase.length;
+
+        // Conversion rates (dummy basic logic)
+        const awarenessToInterest = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
+        const interestToConsideration = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
+        const totalConversion = totalLeads > 0 ? Math.round((purchaseCount / totalLeads) * 100) : 0;
+
+        // Hot leads count (if status is 'hot')
+        const allLeads = Object.values(leads).flat();
+        const hotLeads = allLeads.filter(l => l.status === 'hot');
+
+        return {
+            totalLeads,
+            awarenessToInterest,
+            interestToConsideration,
+            totalConversion,
+            hotLeadCount: hotLeads.length
+        };
+    }
+
+    // Update conversion percentages between stages
+    function updateConversionPercentages() {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        // Calculate metrics
+        const metrics = calculateMetrics(leads);
+
+        // Update DOM with metrics
+        document.getElementById('total-leads').textContent = metrics.totalLeads;
+        document.getElementById('awareness-interest-rate').textContent = `${metrics.awarenessToInterest}%`;
+        document.getElementById('awareness-conversion-rate').textContent = `${metrics.awarenessToInterest}%`;
+        document.getElementById('interest-consideration-rate').textContent = `${metrics.interestToConsideration}%`;
+        document.getElementById('interest-conversion-rate').textContent = `${metrics.interestToConsideration}%`;
+        document.getElementById('conversion-rate').textContent = `${metrics.totalConversion}%`;
+        document.getElementById('hot-leads-count').textContent = metrics.hotLeadCount;
+        
+        // Store metrics in localStorage
+        localStorage.setItem('funnel_metrics', JSON.stringify(metrics));
+    }
+
+    // Generate smart advice based on funnel state
+    function generateSmartAdvice() {
+        const metrics = JSON.parse(localStorage.getItem('funnel_metrics')) || {};
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        const allLeads = Object.values(leads).flat();
+        const today = new Date();
+
+        const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        // --- Dynamic Advice Options ---
+        const adviceOptions = {
+            emptyFunnel: [
+                "Your funnel is empty. Add new leads to get started!",
+                "No leads yet. Time to hunt down some future customers!",
+                "The funnel's feeling like a ghost town. Invite someone in!",
+                "Nothing here yet—this is your sign to populate your funnel!",
+                "Imagine a party where no one shows up. That's your funnel right now."
+            ],
+            noAwareness: [
+                "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
+                "No Awareness leads. Top-of-funnel visibility is critical—let's fix that.",
+                "No one knows you exist if Awareness is empty. Start there.",
+                "Lead the way—literally. Add leads to the Awareness stage.",
+                "Your brand is whispering into the void. Make some noise."
+            ],
+            stuckInInterest: [
+                "Your leads are showing interest—that's a great sign. Give them the nudge they need to go further.",
+                "They're leaning in. Meet them with clarity, value, and a next step.",
+                "This is your moment to shine. A well-timed message or content piece could unlock real movement.",
+                "Interest means the door is open. You just need to walk through it with purpose.",
+                "They're curious. Guide them toward consideration with something meaningful."
+            ],
+            noPurchases: [
+                "You have leads in Consideration but no purchases. Your closing game is next—refine and shine.",
+                "They're almost ready. Strengthen the final touchpoint to guide the decision.",
+                "You're so close—help them take the last step with clarity and confidence.",
+                "No deals closed yet, but interest is alive. Bring precision to your offer.",
+                "Your leads are listening—now give them something undeniable to say yes to."
+            ],
+            underperformingContent: [
+                "Some content may need improvement: {items}. Consider updating or replacing these assets.",
+                "Underperforming content detected: {items}. Time to give them a second life—or a graceful exit.",
+                "Not all content converts. These aren't pulling their weight: {items}. Let's fix that.",
+                "Give these pieces a makeover: {items}. Your funnel deserves better.",
+                "These content assets aren't keeping up: {items}. Refine, refresh, or retire."
+            ],
+            notContacted: [
+                "{count} leads haven't been contacted in over a week. Keep things warm by reaching out again.",
+                "You're ghosting {count} leads. 👻 Maybe it's time to reconnect?",
+                "{count} leads are cooling off. Ping them while there's still a spark.",
+                "A little love goes a long way—contact those {count} leads again!",
+                "These {count} leads haven't heard from you in a while. Don't let silence kill the momentum."
+            ],
+            stalledLeads: [
+                "{count} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.",
+                "{count} leads are gathering dust. Shake things up!",
+                "Those {count} stagnant leads? Time to check if they're still breathing.",
+                "Re-engagement alert: {count} leads are stuck. Rescue time!",
+                "{count} leads have been sitting too long. Nudge them—or set them free."
+            ],
+            hotLeads: [
+                "You have {count} hot leads. Prioritize these for quick follow-ups and personalized attention.",
+                "🔥 {count} hot leads await your charm. Don't keep them waiting.",
+                "{count} hot leads. These are your low-hanging fruit—go pick!",
+                "Your {count} hot leads are ready. Move fast, close faster.",
+                "If you blink, these {count} hot leads might cool down. Take action now."
+            ]
+        };
+
+        // Calculate conditions
+        const stalledLeads = allLeads.filter(lead => {
+            if (!lead.dateAdded) return false;
+            const addedDate = new Date(lead.dateAdded);
+            return (today - addedDate) / (1000 * 60 * 60 * 24) > 14;
+        }).length;
+
+        const leadsNotContactedRecently = allLeads.filter(lead => {
+            if (!lead.lastContact) return true;
+            const lastContactDate = new Date(lead.lastContact);
+            return (today - lastContactDate) / (1000 * 60 * 60 * 24) > 7;
+        }).length;
+
+        const contentEffectiveness = {};
+        contentItems.forEach(content => {
+            const leadsUsing = allLeads.filter(l => l.contentStrategies?.includes(content.id)).length;
+            if (leadsUsing > 0) {
+                const advanced = allLeads.filter(l => {
+                    const stageIndex = ['awareness','interest','intent','evaluation','purchase'];
+                    return stageIndex.indexOf(l.currentStage) > stageIndex.indexOf(content.stage) && l.contentStrategies?.includes(content.id);
+                }).length;
+                const rate = Math.round((advanced / leadsUsing) * 100);
+                contentEffectiveness[content.id] = {
+                    name: content.name,
+                    rate,
+                    target: content.targetConversion || 0
+                };
+            }
+        });
+
+        const underperformingContent = Object.entries(contentEffectiveness)
+            .filter(([_, stats]) => stats.rate < stats.target)
+            .map(([_, stats]) => stats.name);
+
+        // Build advice
+        const advice = [];
+        const insights = [];
+
+        if (metrics.totalLeads === 0) {
+            advice.push(getRandom(adviceOptions.emptyFunnel));
+        } else {
+            if (leads.awareness.length === 0) {
+                advice.push(getRandom(adviceOptions.noAwareness));
+            }
+            if (leads.interest.length > 0 && (leads.intent.length + leads.evaluation.length) === 0) {
+                advice.push(getRandom(adviceOptions.stuckInInterest));
+            }
+            if (leads.purchase.length === 0 && (leads.intent.length + leads.evaluation.length) > 0) {
+                advice.push(getRandom(adviceOptions.noPurchases));
+            }
+        }
+
+        if (underperformingContent.length > 0) {
+            let msg = getRandom(adviceOptions.underperformingContent);
+            advice.push(msg.replace('{items}', underperformingContent.join(', ')));
+        }
+
+        if (leadsNotContactedRecently > 0) {
+            let msg = getRandom(adviceOptions.notContacted);
+            advice.push(msg.replace('{count}', leadsNotContactedRecently));
+        }
+
+        if (stalledLeads > 0) {
+            let msg = getRandom(adviceOptions.stalledLeads);
+            advice.push(msg.replace('{count}', stalledLeads));
+        }
+
+        if (metrics.hotLeadCount > 0) {
+            let msg = getRandom(adviceOptions.hotLeads);
+            advice.push(msg.replace('{count}', metrics.hotLeadCount));
+        }
+
+        insights.push(`Awareness → Interest conversion: ${metrics.awarenessToInterest || 0}%`);
+        insights.push(`Interest → Consideration conversion: ${metrics.interestToConsideration || 0}%`);
+        insights.push(`Overall conversion rate: ${metrics.totalConversion || 0}%`);
+
+        // Display in DOM
+        const adviceBox = document.getElementById('funnel-advice');
+        adviceBox.innerHTML = '';
+
+        if (advice.length > 0) {
+            const ul = document.createElement('ul');
+            advice.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                ul.appendChild(li);
+            });
+            adviceBox.appendChild(ul);
+        }
+
+        if (insights.length > 0) {
+            const header = document.createElement('h4');
+            header.textContent = 'Key Metrics:';
+            header.style.marginTop = '1rem';
+            header.style.color = 'var(--accent-color)';
+            adviceBox.appendChild(header);
+
+            const ul = document.createElement('ul');
+            insights.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                ul.appendChild(li);
+            });
+            adviceBox.appendChild(ul);
+        }
+    }
+
+    // Update analytics charts and metrics
+    function updateAnalytics() {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        // Update conversion percentages
+        updateConversionPercentages();
+        
+        // Generate smart advice
+        generateSmartAdvice();
+        
+        // Update advanced analytics
+        updateAdvancedAnalytics();
+    }
+
+    // Filter leads table by stage
+    function filterLeadsTable(stage) {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        let filtered = [];
+
+        if (stage === 'all') {
+            filtered = Object.values(leads).flat();
+        } else {
+            filtered = leads[stage] || [];
+        }
+
+        const sorted = filtered
             .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
             .slice(0, 5);
 
-        recentLeads.forEach(lead => {
+        renderLeadTable(sorted);
+    }
+
+    // Search leads
+    function searchLeads(query) {
+        const rows = document.querySelectorAll('#leads-table-body tr');
+        const normalizedQuery = query.toLowerCase();
+        
+        rows.forEach(row => {
+            if (row.dataset.leadId === undefined) {
+                // Show the "no leads" row only if there's no search query
+                row.style.display = query ? 'none' : '';
+                return;
+            }
+            
+            const company = row.querySelector('.company-cell').textContent.toLowerCase();
+            const contact = row.querySelector('.contact-cell').textContent.toLowerCase();
+            
+            if (company.includes(normalizedQuery) || contact.includes(normalizedQuery)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Export to PDF
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Add title
+        doc.setFontSize(20);
+        doc.text('Marketing Funnel Report', 105, 20, { align: 'center' });
+        
+        // Add date
+        doc.setFontSize(12);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+        
+        // Add funnel data
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        
+        let yPosition = 50;
+        
+        // Add funnel visualization summary
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 255);
+        doc.text('Funnel Summary', 14, yPosition);
+        yPosition += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Awareness: ${leads.awareness.length} leads`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Interest: ${leads.interest.length} leads`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Consideration: ${leads.intent.length + leads.evaluation.length + leads.purchase.length} leads`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Purchases: ${leads.purchase.length} leads`, 14, yPosition);
+        yPosition += 15;
+        
+        // Add conversion rates
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 255);
+        doc.text('Conversion Rates', 14, yPosition);
+        yPosition += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Awareness → Interest: ${document.getElementById('awareness-interest-rate').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Interest → Consideration: ${document.getElementById('interest-consideration-rate').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Overall Conversion: ${document.getElementById('conversion-rate').textContent}`, 14, yPosition);
+        yPosition += 15;
+        
+        // Add advanced analytics
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 255);
+        doc.text('Advanced Analytics', 14, yPosition);
+        yPosition += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Average Time in Funnel: ${document.getElementById('avg-funnel-time').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Hot Leads: ${document.getElementById('hot-leads-count').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Content Effectiveness: ${document.getElementById('content-effectiveness').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Engagement Rate: ${document.getElementById('engagement-rate').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Average Response Time: ${document.getElementById('response-time').textContent}`, 14, yPosition);
+        yPosition += 7;
+        doc.text(`Revenue Potential: ${document.getElementById('revenue-potential').textContent}`, 14, yPosition);
+        yPosition += 15;
+        
+        // Add content strategy summary
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        if (contentItems.length > 0) {
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 255);
+            doc.text('Content Strategy', 14, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            contentItems.forEach(content => {
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                doc.text(`${content.name} (${content.type}) - ${content.stage} stage`, 14, yPosition);
+                yPosition += 7;
+                doc.text(`Target conversion: ${content.targetConversion}%`, 20, yPosition);
+                yPosition += 7;
+            });
+        }
+        
+        // Save the PDF
+        doc.save('Marketing_Funnel_Report.pdf');
+        showNotification('PDF exported successfully');
+    }
+
+    // Export to Excel
+    function exportToExcel() {
+        const leadsData = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        
+        // Combine all leads from all stages
+        const allLeads = [];
+        for (const [stage, stageLeads] of Object.entries(leadsData)) {
+            stageLeads.forEach(lead => {
+                // Get content names for this lead
+                const contentUsed = lead.contentStrategies?.map(contentId => {
+                    const content = contentItems.find(c => c.id === contentId);
+                    return content ? content.name : '';
+                }).filter(name => name) || [];
+                
+                allLeads.push({
+                    'Company': lead.company,
+                    'Contact': lead.contact || '',
+                    'Email': lead.email || '',
+                    'Phone': lead.phone || '',
+                    'Stage': capitalizeFirstLetter(stage),
+                    'Industry': capitalizeFirstLetter(lead.industry || ''),
+                    'Status': capitalizeFirstLetter(lead.status || ''),
+                    'Source': capitalizeFirstLetter(lead.source || ''),
+                    'Content Used': contentUsed.join(', '),
+                    'Notes': lead.notes || '',
+                    'Date Added': new Date(lead.dateAdded).toLocaleDateString(),
+                    'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : '',
+                    'Value': lead.value || ''
+                });
+            });
+        }
+        
+        if (allLeads.length === 0) {
+            showNotification('No leads to export', 'error');
+            return;
+        }
+        
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(allLeads);
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+        
+        // Export to Excel file
+        XLSX.writeFile(wb, 'Marketing_Funnel_Leads.xlsx');
+        showNotification('Excel file exported successfully');
+    }
+
+    // Setup drag and drop functionality
+    function setupDragAndDrop() {
+        setTimeout(() => {
+            const containers = Array.from(document.querySelectorAll('.stage-body'));
+            const contentContainer = document.getElementById('content-items-container');
+
+            if (contentContainer) containers.push(contentContainer);
+
+            if (containers.length > 0) {
+                const drake = dragula(containers, {
+                    moves: function (el, source, handle, sibling) {
+                        return el.classList.contains('lead-card') ||
+                            el.classList.contains('content-badge') ||
+                            el.classList.contains('content-item');
+                    }
+                });
+
+                drake.on('drop', function (el, target, source, sibling) {
+                    const fromStage = source.dataset.dropTarget || 'content-container';
+                    const toStage = target.dataset.dropTarget || 'content-container';
+
+                    if (el.classList.contains('lead-card')) {
+                        const leadId = el.dataset.leadId;
+                        if (fromStage && toStage && fromStage !== toStage) {
+                            const leads = JSON.parse(localStorage.getItem('leads')) || {
+                                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+                            };
+                            let lead = leads[fromStage].find(l => l.id === leadId);
+                            if (lead) {
+                                leads[fromStage] = leads[fromStage].filter(l => l.id !== leadId);
+                                updateLeadMovement(lead, toStage);
+                                leads[toStage].push(lead);
+                                localStorage.setItem('leads', JSON.stringify(leads));
+                                loadLeads();
+                            }
+                        }
+                    } else if (el.classList.contains('content-badge') || el.classList.contains('content-item')) {
+                        const contentId = el.dataset.contentId;
+                        if (fromStage !== toStage) {
+                            moveContentToStage(contentId, toStage);
+                        }
+                    }
+                });
+
+                drake.on('dragend', function (el) {
+                    el.classList.remove('dragging-content');
+                });
+            }
+        }, 100);
+    }
+
+    function updateLeadMovement(lead, newStage) {
+        if (!lead.createdAt) {
+            lead.createdAt = new Date().toISOString();
+        }
+        if (!lead.moves) lead.moves = 0;
+        if (lead.currentStage !== newStage) {
+            lead.moves += 1;
+            lead.currentStage = newStage;
+        }
+        const daysPassed = Math.floor((new Date() - new Date(lead.createdAt)) / (1000 * 60 * 60 * 24));
+        lead.days = daysPassed;
+    }
+
+    // Move lead between stages
+    function moveLead(leadId, fromStage, toStage) {
+        const leads = JSON.parse(localStorage.getItem('leads'));
+        
+        // Find the lead
+        const leadIndex = leads[fromStage].findIndex(lead => lead.id === leadId);
+        if (leadIndex === -1) return;
+
+        const lead = leads[fromStage][leadIndex];
+        
+        // Remove from old stage
+        leads[fromStage].splice(leadIndex, 1);
+        
+        // Update lead's current stage
+        lead.currentStage = toStage;
+        lead.lastContact = new Date().toISOString();
+        
+        // Add to new stage
+        leads[toStage].push(lead);
+        
+        // Save to storage
+        localStorage.setItem('leads', JSON.stringify(leads));
+        
+        // Update UI
+        loadLeads();
+        updateAnalytics();
+        
+        // Show notification
+        showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
+    }
+
+    // Move content to a different stage
+    function moveContentToStage(contentId, toStage) {
+        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+        const index = contentItems.findIndex(item => item.id === contentId);
+        if (index !== -1) {
+            contentItems[index].stage = toStage;
+            localStorage.setItem('content', JSON.stringify(contentItems));
+            showNotification(`Content moved to ${capitalizeFirstLetter(toStage)} stage`);
+
+            // Re-render updated funnel + content area
+            loadLeads();
+            loadContent();
+            populateContentOptions();
+        }
+    }
+
+    // Drag start handler
+    function handleDragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.dataset.leadId);
+        e.target.classList.add('dragging');
+    }
+
+    function generateUniqueId() {
+        return 'lead-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // When adding a new lead
+    function saveNewLead(lead) {
+        if (!lead.id) {
+            lead.id = generateUniqueId();
+        }
+
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        leads[lead.stage].push(lead);
+        localStorage.setItem('leads', JSON.stringify(leads));
+        loadLeads();
+    }
+
+    // Install button functionality
+    function setupInstallButton() {
+        const installBtn = document.getElementById('install-btn');
+        
+        // If install button doesn't exist, exit the function
+        if (!installBtn) {
+            console.log('Install button not found - skipping setup');
+            return;
+        }
+
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show the install button
+            installBtn.classList.remove('hidden');
+            
+            // Add click event listener
+            installBtn.addEventListener('click', async () => {
+                installBtn.classList.add('hidden');
+                deferredPrompt.prompt();
+                
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                deferredPrompt = null;
+            });
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('App was installed');
+            installBtn.classList.add('hidden');
+        });
+    }
+
+    // Register service worker
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+        }
+    }
+
+    // Show toast notification
+    function showNotification(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast show';
+        if (type === 'error') {
+            toast.classList.add('error');
+        } else {
+            toast.classList.remove('error');
+        }
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Register service worker on page load
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('✅ Service worker registered:', reg))
+                .catch(err => console.error('❌ Service worker registration failed:', err));
+        });
+    }
+
+    function getRandomInsight() {
+        const insights = [
+            "Try focusing on personalized follow-ups for leads in the Consideration stage",
+            "Your Awareness to Interest conversion could be improved with more targeted content",
+            "Consider creating case studies for leads in the Evaluation stage",
+            "Hot leads are often ready for a direct conversation - don't wait too long",
+            "Leads who engage with multiple content pieces convert 3x more often"
+        ];
+        return insights[Math.floor(Math.random() * insights.length)];
+    }
+
+    function renderLeadTable(leads) {
+        const tableBody = document.getElementById('leads-table-body');
+        tableBody.innerHTML = '';
+
+        if (leads.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
+            tableBody.appendChild(row);
+            return;
+        }
+
+        leads.forEach(lead => {
             const row = document.createElement('tr');
             row.dataset.leadId = lead.id;
-            
             row.innerHTML = `
                 <td>${lead.company}</td>
                 <td>${lead.contact}</td>
@@ -2648,1981 +4123,13 @@ function loadLeads() {
                     <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
                 </td>
             `;
-
-            // Add click handler for the row
-            row.addEventListener('click', function(e) {
-                // Only open edit modal if clicking on the row itself, not buttons
-                if (!e.target.closest('button')) {
-                    openEditLeadModalById(lead.id);
-                }
-            });
-
             tableBody.appendChild(row);
         });
 
-        // Add delete button handlers
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const leadId = btn.dataset.leadId;
-                if (confirm('Are you sure you want to delete this lead?')) {
-                    deleteLeadById(leadId);
-                }
-            });
-        });
-    }
-
-    updateConversionPercentages();
-    generateSmartAdvice();
-    updateAdvancedAnalytics();
-}
-
-function openEditLeadModalById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let foundLead = null;
-    let originalStage = '';
-
-    // Search through all stages for the lead
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const lead = stageLeads.find(l => l.id === leadId);
-        if (lead) {
-            foundLead = lead;
-            originalStage = stage;
-            break;
-        }
-    }
-
-    if (!foundLead) {
-        showNotification('Lead not found', 'error');
-        return;
-    }
-
-    // Populate the edit form
-    document.getElementById('edit-lead-id').value = foundLead.id;
-    document.getElementById('edit-lead-company').value = foundLead.company || '';
-    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-    document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
-    document.getElementById('edit-lead-source').value = foundLead.source || '';
-    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-    document.getElementById('edit-lead-status').value = foundLead.status || '';
-    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
-    
-    // Set content strategies
-    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
-
-    // Show the modal
-    document.getElementById('edit-lead-modal').classList.remove('hidden');
-}
-        
-// ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
-function refreshFunnelInsights() {
-  const loader = document.getElementById('insight-loader');
-  const text = document.getElementById('insight-text');
-
-  if (loader) loader.classList.remove('hidden');
-  if (text) text.textContent = 'Reanalyzing your funnel data...';
-
-  setTimeout(() => {
-    if (loader) loader.classList.add('hidden');
-    if (text) text.textContent = getRandomInsight(); // If you have a function generating insights
-  }, 3000); // Simulated delay
-}
-
-// ✅ CONNECT EDIT BUTTONS TO MODAL
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn && btn.dataset.leadId) {
-    openEditLeadModalById(btn.dataset.leadId);
-  }
-});
-
-
-        
-
-        function setupAutoInsightRefresh(intervalInMinutes = 15) {
-    const intervalMs = intervalInMinutes * 60 * 1000;
-
-    setInterval(() => {
-        const refreshBtn = document.getElementById('refresh-advice');
-        if (refreshBtn) {
-            refreshBtn.click(); // trigger funnel insight refresh
-        }
-    }, intervalMs);
-}
-
-
-        // Update advanced analytics metrics
-        function updateAdvancedAnalytics() {
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-            
-            // Calculate average time in funnel
-            const allLeads = Object.values(leads).flat();
-            const now = new Date();
-            let totalDays = 0;
-            let leadCount = 0;
-            
-            allLeads.forEach(lead => {
-                if (lead.dateAdded) {
-                    const addedDate = new Date(lead.dateAdded);
-                    const daysInFunnel = (now - addedDate) / (1000 * 60 * 60 * 24);
-                    totalDays += daysInFunnel;
-                    leadCount++;
-                }
-            });
-            
-            const avgDays = leadCount > 0 ? (totalDays / leadCount).toFixed(1) : 0;
-            document.getElementById('avg-funnel-time').textContent = `${avgDays} days`;
-            
-            // Count hot leads
-            const hotLeads = allLeads.filter(lead => lead.status === 'hot').length;
-            document.getElementById('hot-leads-count').textContent = hotLeads;
-            
-            // Calculate content effectiveness
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            let effectiveContentCount = 0;
-            let totalContentUsage = 0;
-            
-            contentItems.forEach(content => {
-                const leadsUsingContent = allLeads.filter(lead => 
-                    lead.contentStrategies && lead.contentStrategies.includes(content.id)
-                ).length;
-                
-                if (leadsUsingContent > 0) {
-                    const nextStageLeads = allLeads.filter(lead => {
-                        const currentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(lead.currentStage);
-                        const contentStageIndex = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'].indexOf(content.stage);
-                        return currentStageIndex > contentStageIndex && 
-                               lead.contentStrategies && 
-                               lead.contentStrategies.includes(content.id);
-                    }).length;
-                    
-                    if (nextStageLeads > 0) {
-                        effectiveContentCount++;
-                    }
-                    totalContentUsage++;
-                }
-            });
-            
-            const effectivenessRate = totalContentUsage > 0 ? 
-                Math.round((effectiveContentCount / totalContentUsage) * 100) : 0;
-            document.getElementById('content-effectiveness').textContent = `${effectivenessRate}%`;
-            
-            // Calculate engagement rate (leads contacted in last 7 days)
-            const engagedLeads = allLeads.filter(lead => {
-                if (!lead.lastContact) return false;
-                const lastContactDate = new Date(lead.lastContact);
-                const daysSinceContact = (now - lastContactDate) / (1000 * 60 * 60 * 24);
-                return daysSinceContact <= 7;
-            }).length;
-            
-            const engagementRate = allLeads.length > 0 ? 
-                Math.round((engagedLeads / allLeads.length) * 100) : 0;
-            document.getElementById('engagement-rate').textContent = `${engagementRate}%`;
-            
-            // Calculate average response time (simplified)
-            let totalResponseHours = 0;
-            let responseCount = 0;
-            
-            allLeads.forEach(lead => {
-                if (lead.dateAdded && lead.lastContact) {
-                    const addedDate = new Date(lead.dateAdded);
-                    const contactDate = new Date(lead.lastContact);
-                    const responseHours = (contactDate - addedDate) / (1000 * 60 * 60);
-                    totalResponseHours += responseHours;
-                    responseCount++;
-                }
-            });
-            
-            const avgResponseTime = responseCount > 0 ? (totalResponseHours / responseCount).toFixed(1) : 0;
-            document.getElementById('response-time').textContent = `${avgResponseTime} hrs`;
-            
-            // Calculate revenue potential (sum of all lead values)
-            let revenuePotential = 0;
-            allLeads.forEach(lead => {
-                if (lead.value) {
-                    revenuePotential += lead.value;
-                }
-            });
-            
-            document.getElementById('revenue-potential').textContent = `$${revenuePotential.toLocaleString()}`;
-        }
-
-        // Handle content drag start
-        function handleContentDragStart(e) {
-            e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
-            e.target.classList.add('dragging-content');
-        }
-
-        // Load content in the content section
-        function loadContent() {
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const container = document.getElementById('content-items-container');
-            if (!container) return;
-
-            container.innerHTML = '';
-
-            if (contentItems.length === 0) {
-                const emptyState = document.createElement('div');
-                emptyState.className = 'empty-state';
-                emptyState.innerHTML = `
-                    <i class="fas fa-file-alt"></i>
-                    <h3>No Content Strategies</h3>
-                    <p>Add content to help move leads through your funnel</p>
-                    <button id="add-content-empty-btn" class="action-btn" style="margin-top: 1rem;">
-                        <i class="fas fa-plus"></i> Add Content
-                    </button>
-                `;
-                container.appendChild(emptyState);
-                
-                document.getElementById('add-content-empty-btn').addEventListener('click', () => {
-                    document.getElementById('content-form').reset();
-                    document.getElementById('add-content-modal').classList.remove('hidden');
-                });
-                return;
-            }
-
-            contentItems.forEach(content => {
-                const item = document.createElement('div');
-                item.className = 'content-item interactive-element';
-                item.dataset.contentId = content.id;
-                item.dataset.stage = content.stage;
-                item.draggable = true;
-                
-                // Add drag events
-                item.addEventListener('dragstart', handleContentItemDragStart);
-                
-                const icon = document.createElement('i');
-                icon.className = getContentIcon(content.type);
-
-                const name = document.createElement('h4');
-                name.textContent = content.name;
-                name.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditContentModal(content);
-                });
-
-                const desc = document.createElement('p');
-                desc.className = 'content-description';
-                desc.textContent = content.description;
-
-                const stageBadge = document.createElement('span');
-                stageBadge.className = 'stage-badge';
-                stageBadge.textContent = capitalizeFirstLetter(content.stage);
-
-                const link = document.createElement('a');
-                link.href = content.link || '#';
-                link.target = '_blank';
-                link.className = 'content-link';
-                link.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
-
-                const actions = document.createElement('div');
-                actions.className = 'content-actions';
-
-                const editBtn = document.createElement('button');
-                editBtn.className = 'edit-content';
-                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditContentModal(content);
-                });
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-content';
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to delete this content strategy?')) {
-                        deleteContent(content.id);
-                    }
-                });
-
-                actions.appendChild(editBtn);
-                actions.appendChild(deleteBtn);
-
-                item.appendChild(icon);
-                item.appendChild(name);
-                item.appendChild(desc);
-                item.appendChild(stageBadge);
-                item.appendChild(link);
-                item.appendChild(actions);
-
-                container.appendChild(item);
-            });
-        }
-
-        // Handle content item drag start
-        function handleContentItemDragStart(e) {
-            e.dataTransfer.setData('text/content-id', e.target.dataset.contentId);
-            e.target.classList.add('dragging-content');
-        }
-
-        // Delete content by ID
-        function deleteContent(contentId) {
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const updatedContent = contentItems.filter(c => c.id !== contentId);
-            localStorage.setItem('content', JSON.stringify(updatedContent));
-            
-            // Also remove from any leads that might reference this content
-            const leads = JSON.parse(localStorage.getItem('leads'));
-            for (const stage in leads) {
-                leads[stage].forEach(lead => {
-                    if (lead.contentStrategies && lead.contentStrategies.includes(contentId)) {
-                        lead.contentStrategies = lead.contentStrategies.filter(id => id !== contentId);
-                    }
-                });
-            }
-            localStorage.setItem('leads', JSON.stringify(leads));
-            
-            loadLeads();
-            loadContent();
-            populateContentOptions();
-            showNotification('Content deleted successfully');
-        }
-
-        // Create a lead card element for the funnel
-
-// In the createLeadCard function (around line 2620):
-function createLeadCard(lead) {
-    const leadCard = document.createElement('div');
-    leadCard.className = 'lead-card interactive-element';
-    
-    // Add color class based on industry
-    if (lead.industry) {
-        leadCard.classList.add(lead.industry.toLowerCase());
-    }
-
-    leadCard.draggable = true;
-    leadCard.dataset.leadId = lead.id;
-    leadCard.dataset.currentStage = lead.currentStage;
-
-    const company = document.createElement('div');
-    company.className = 'company';
-    company.textContent = lead.company;
-
-    const contact = document.createElement('div');
-    contact.className = 'contact';
-    contact.textContent = lead.contact || 'No contact';
-
-    // Add click event to open edit modal
-    leadCard.addEventListener('click', function(e) {
-        // Don't open modal if clicking on a drag handle or other element
-        if (e.target !== leadCard && !e.target.classList.contains('company') && !e.target.classList.contains('contact')) {
-            return;
-        }
-        e.stopPropagation();
-        openEditLeadModalById(lead.id);
-    });
-
-    leadCard.appendChild(company);
-    leadCard.appendChild(contact);
-
-    return leadCard;
-}
-
-function toggleLeadPanel(show, html = '') {
-    let panel = document.getElementById('lead-insight-panel');
-    if (!panel) {
-        panel = document.createElement('div');
-        panel.id = 'lead-insight-panel';
-        panel.style.position = 'fixed';
-        panel.style.top = '0';
-        panel.style.right = show ? '0' : '-400px';
-        panel.style.width = '360px';
-        panel.style.height = '100%';
-        panel.style.background = '#0E4954';
-        panel.style.color = '#fff';
-        panel.style.padding = '20px';
-        panel.style.zIndex = '9999';
-        panel.style.transition = 'right 0.3s ease-in-out';
-        panel.style.overflowY = 'auto';
-        document.body.appendChild(panel);
-    }
-    panel.innerHTML = `<h3>Lead Insight</h3>${html}`;
-    panel.style.right = show ? '0' : '-400px';
-}
-
-        function saveLeadToLocalStorage(lead) {
-    // Initialize lead fields
-    if (!lead.id) lead.id = 'lead_' + Date.now();
-    if (!lead.createdAt) lead.createdAt = new Date().toISOString();
-    if (!lead.moves) lead.moves = 0;
-    if (!lead.days) lead.days = 0;
-
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [],
-        interest: [],
-        intent: [],
-        evaluation: [],
-        purchase: []
-    };
-
-    const stage = lead.currentStage || 'awareness';
-
-    // Remove duplicate if it already exists in any stage
-    for (let key in leads) {
-        leads[key] = leads[key].filter(l => l.id !== lead.id);
-    }
-
-    // Push lead to the correct stage
-    leads[stage].push(lead);
-
-    // Save back
-    localStorage.setItem('leads', JSON.stringify(leads));
-}
-
-
-function updateLeadsTable() {
-    const leadsData = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    const tableBody = document.getElementById('leads-table-body');
-    tableBody.innerHTML = '';
-
-    const allLeads = [];
-
-    for (const [stage, stageLeads] of Object.entries(leadsData)) {
-        stageLeads.forEach(lead => {
-            if (!lead.id) {
-                lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
-            }
-            allLeads.push({ ...lead, stage });
-        });
-    }
-
-    if (allLeads.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
-        tableBody.appendChild(row);
         attachEditButtonListeners();
-
-        return;
     }
-
-    allLeads.sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
-
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-
-    allLeads.forEach(lead => {
-        const row = document.createElement('tr');
-        row.dataset.leadId = lead.id;
-        row.dataset.stage = lead.stage;
-
-        const contentUsed = lead.contentStrategies?.map(contentId => {
-            const content = contentItems.find(c => c.id === contentId);
-            return content ? content.name : '';
-        }).filter(Boolean) || [];
-
-        const lastContactDate = lead.lastContact
-            ? new Date(lead.lastContact).toLocaleDateString()
-            : 'Never';
-
-        const companyCell = document.createElement('td');
-        companyCell.className = 'company-cell';
-        companyCell.textContent = lead.company;
-
-        if (lead.industry || lead.status) {
-            const tags = document.createElement('div');
-            tags.style.display = 'flex';
-            tags.style.gap = '4px';
-            tags.style.marginTop = '4px';
-
-            if (lead.industry) {
-                const industryTag = document.createElement('span');
-                industryTag.style.background = 'var(--primary-color)';
-                industryTag.style.padding = '2px 6px';
-                industryTag.style.borderRadius = '4px';
-                industryTag.style.fontSize = '0.7rem';
-                industryTag.textContent = lead.industry;
-                tags.appendChild(industryTag);
-            }
-
-            if (lead.status) {
-                const statusTag = document.createElement('span');
-                statusTag.style.background =
-                    lead.status === 'hot'
-                        ? 'var(--error-color)'
-                        : lead.status === 'cold'
-                        ? 'var(--accent-color)'
-                        : 'var(--text-muted)';
-                statusTag.style.padding = '2px 6px';
-                statusTag.style.borderRadius = '4px';
-                statusTag.style.fontSize = '0.7rem';
-                statusTag.textContent = lead.status;
-                tags.appendChild(statusTag);
-            }
-
-            companyCell.appendChild(tags);
-        }
-
-        row.innerHTML = `
-            <td class="contact-cell">${lead.contact || 'N/A'}</td>
-            <td>${capitalizeFirstLetter(lead.stage)}</td>
-            <td>${contentUsed.join(', ') || 'None'}</td>
-            <td>${lastContactDate}</td>
-            <td>
-<button class="edit-btn" data-lead-id="${lead.id}" title="Edit Lead">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="delete-btn" data-lead-id="${lead.id}" title="Delete Lead">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
-
-        row.insertBefore(companyCell, row.firstChild);
-        tableBody.appendChild(row);
-        attachEditButtonListeners();
-
-
-        // ✅ Make the whole row clickable for editing
-        row.addEventListener('click', e => {
-            const isDeleteClick = e.target.closest('.delete-btn');
-            if (!isDeleteClick) {
-                openEditLeadModal(lead.id);
-            }
-        });
-    });
-
-    // 🔧 Keep delete working separately
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const leadId = btn.dataset.leadId;
-            if (confirm('Are you sure you want to delete this lead?')) {
-                deleteLeadById(leadId);
-            }
-        });
-    });
-}
-
-        function attachEditButtonListeners() {
-  document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation(); // prevent row click
-      const leadId = this.dataset.leadId;
-      if (leadId) openEditLeadModalById(leadId);
-    });
-  });
-}
-
-
-        
-        // Helper function to capitalize first letter
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
-        // Delete lead by ID
-
-function deleteLeadById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-    let leadFound = false;
-
-    for (const stage of Object.keys(leads)) {
-        const leadIndex = leads[stage].findIndex(lead => lead.id === leadId);
-        if (leadIndex !== -1) {
-            leads[stage].splice(leadIndex, 1);
-            leadFound = true;
-            break;
-        }
-    }
-
-    if (leadFound) {
-        localStorage.setItem('leads', JSON.stringify(leads));
-        loadLeads();
-        showNotification('Lead deleted successfully');
-    } else {
-        showNotification('Error: Lead could not be deleted', 'error');
-    }
-}
-
-
-        
-        // Fix #3: Event delegation for delete buttons (call this after rendering leads)
-function attachDeleteListeners() {
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const leadId = btn.dataset.leadId;
-            if (confirm('Are you sure you want to delete this lead?')) {
-                deleteLeadById(leadId);
-            }
-        });
-    });
-}
-
-        function ensureLeadIds(leads) {
-    let updated = false;
-    for (const stage of Object.keys(leads)) {
-        leads[stage] = leads[stage].map(lead => {
-            if (!lead.id) {
-                lead.id = generateUniqueId();
-                updated = true;
-            }
-            return lead;
-        });
-    }
-    if (updated) {
-        localStorage.setItem('leads', JSON.stringify(leads));
-    }
-    return leads;
-}
-
-        // Get appropriate icon for content type
-        function getContentIcon(type) {
-            const icons = {
-                blog: 'fas fa-file-alt',
-                ebook: 'fas fa-book',
-                video: 'fas fa-video',
-                webinar: 'fas fa-chalkboard-teacher',
-                casestudy: 'fas fa-chart-line',
-                demo: 'fas fa-desktop',
-                other: 'fas fa-file'
-            };
-            return icons[type] || icons.other;
-        }
-
-        function toggleModal(modalId, show = true) {
-            const modal = document.getElementById(modalId);
-            if (show) {
-                modal.classList.remove('hidden');
-                modal.classList.add('show');
-            } else {
-                modal.classList.remove('show');
-                modal.classList.add('hidden');
-            }
-        }
-
-        // Setup event listeners
-
-// Setup event listeners
-function setupEventListeners() {
-    document.addEventListener('click', function(e) {
-        // 🟢 Open Add Lead Modal
-        if (e.target.matches('#add-lead-btn, #add-lead-btn *')) {
-            document.getElementById('lead-form').reset();
-            toggleModal('add-lead-modal', true);
-            return;
-        }
-
-        // 🟢 Open Add Content Modal
-        if (e.target.matches('#add-content-btn, #add-content-btn *, #add-content-empty-btn, #add-content-empty-btn *')) {
-            document.getElementById('content-form').reset();
-            toggleModal('add-content-modal', true);
-            return;
-        }
-
-        // 🟡 Close any modal
-        if (e.target.matches('.close-modal, .close-modal *, .cancel-btn, .cancel-btn *')) {
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.add('hidden'));
-            return;
-        }
-
-        // 🌀 Refresh Insights
-        if (e.target.matches('#refresh-advice, #refresh-advice *')) {
-            updateAnalytics();
-            showNotification('Insights refreshed');
-            return;
-        }
-
-        // ✏️ Edit Lead
-        if (e.target.matches('.edit-btn, .edit-btn *')) {
-            const row = e.target.closest('tr');
-            const leadId = row?.dataset.leadId;
-            if (!leadId) return;
-
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-
-            let foundLead = null;
-            for (const stageLeads of Object.values(leads)) {
-                const match = stageLeads.find(l => l.id === leadId);
-                if (match) {
-                    foundLead = match;
-                    break;
-                }
-            }
-
-            if (foundLead) {
-    openEditLeadModalById(foundLead.id);
-            } else {
-                showNotification('Lead not found', 'error');
-            }
-            return;
-        }
-
-        // ⬇️ Highlight Funnel
-        if (e.target.matches('#expand-funnel, #expand-funnel *')) {
-            const funnelContainer = document.querySelector('.funnel-container');
-            funnelContainer.classList.add('pulse-highlight');
-            setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
-            return;
-        }
-    });
-
-    // 📝 Form Submissions
-document.getElementById('lead-form')?.addEventListener('submit', e => {
-  e.preventDefault();
-
-  const newLead = {
-    id: 'lead_' + Date.now(), // ✅ unique ID
-    company: document.getElementById('lead-company').value,
-    contact: document.getElementById('lead-contact').value,
-    email: document.getElementById('lead-email').value,
-    phone: document.getElementById('lead-phone').value,
-    stage: document.getElementById('lead-stage').value,
-    source: document.getElementById('lead-source').value,
-    industry: document.getElementById('lead-industry').value,
-    status: document.getElementById('lead-status').value,
-    contentStrategies: $('#lead-content').val() || [],
-    notes: document.getElementById('lead-notes').value,
-    lastContact: new Date().toISOString()
-  };
-
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-
-  leads[newLead.stage].push(newLead);
-  localStorage.setItem('leads', JSON.stringify(leads));
-
-  document.getElementById('add-lead-modal').classList.add('hidden');
-  showNotification?.('Lead added successfully!');
-  loadLeads?.();
-});
-
-
-    document.getElementById('edit-lead-form')?.addEventListener('submit', e => {
-        e.preventDefault();
-        saveLeadChanges();
-    });
-
-    document.getElementById('content-form')?.addEventListener('submit', e => {
-        e.preventDefault();
-        addContent();
-    });
-
-    document.getElementById('edit-content-form')?.addEventListener('submit', e => {
-        e.preventDefault();
-        saveContentChanges();
-    });
-
-    // ❌ Delete Lead Button
-    document.getElementById('delete-lead-btn')?.addEventListener('click', e => {
-        e.preventDefault();
-        deleteLead();
-    });
-
-    // 🌫 Close modals by clicking outside
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) this.classList.add('hidden');
-        });
-    });
-
-    // 📦 Export Actions
-    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
-    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
-
-    // 🔍 Search & Filter
-    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
-        filterLeadsTable(this.value);
-    });
-
-    const leadSearch = document.getElementById('lead-search');
-    if (leadSearch) {
-        leadSearch.addEventListener('input', function() {
-            clearTimeout(searchLeads.debounce);
-            searchLeads.debounce = setTimeout(() => {
-                searchLeads(this.value);
-            }, 300);
-        });
-    }
-}
-
-        // Handle lead card clicks for editing (both in funnel and table)
-document.addEventListener('click', function(e) {
-    // Check if clicked on a lead card in the funnel
-    const leadCard = e.target.closest('.lead-card');
-    if (leadCard) {
-        const leadId = leadCard.dataset.leadId;
-        if (leadId) {
-            openEditLeadModalById(leadId);
-        }
-        return;
-    }
-    
-    // Check if clicked on a lead row in the table (but not on action buttons)
-    const tableRow = e.target.closest('#leads-table-body tr');
-    if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-        const leadId = tableRow.dataset.leadId;
-        if (leadId) {
-            openEditLeadModalById(leadId);
-        }
-    }
-});
-// ✅ OPEN the modal with correct data
-
-function openEditLeadModalById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let foundLead = null;
-    let originalStage = '';
-
-    // Search through all stages for the lead
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const lead = stageLeads.find(l => l.id === leadId);
-        if (lead) {
-            foundLead = lead;
-            originalStage = stage;
-            break;
-        }
-    }
-
-    if (!foundLead) {
-        showNotification('Lead not found', 'error');
-        return;
-    }
-
-    // Populate the edit form
-    document.getElementById('edit-lead-id').value = foundLead.id;
-    document.getElementById('edit-lead-company').value = foundLead.company || '';
-    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-    document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
-    document.getElementById('edit-lead-source').value = foundLead.source || '';
-    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-    document.getElementById('edit-lead-status').value = foundLead.status || '';
-    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
-    
-    // Set content strategies
-    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
-
-    // Show the modal
-    document.getElementById('edit-lead-modal').classList.remove('hidden');
-}
-
-        // Export to Excel
-        function exportToExcel() {
-            const leadsData = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            
-            // Combine all leads from all stages
-            const allLeads = [];
-            for (const [stage, stageLeads] of Object.entries(leadsData)) {
-                stageLeads.forEach(lead => {
-                    // Get content names for this lead
-                    const contentUsed = lead.contentStrategies?.map(contentId => {
-                        const content = contentItems.find(c => c.id === contentId);
-                        return content ? content.name : '';
-                    }).filter(name => name) || [];
-                    
-                    allLeads.push({
-                        'Company': lead.company,
-                        'Contact': lead.contact || '',
-                        'Email': lead.email || '',
-                        'Phone': lead.phone || '',
-                        'Stage': capitalizeFirstLetter(stage),
-                        'Industry': capitalizeFirstLetter(lead.industry || ''),
-                        'Status': capitalizeFirstLetter(lead.status || ''),
-                        'Source': capitalizeFirstLetter(lead.source || ''),
-                        'Content Used': contentUsed.join(', '),
-                        'Notes': lead.notes || '',
-                        'Date Added': new Date(lead.dateAdded).toLocaleDateString(),
-                        'Last Contact': lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : '',
-                        'Value': lead.value || ''
-                    });
-                });
-            }
-            
-            if (allLeads.length === 0) {
-                showNotification('No leads to export', 'error');
-                return;
-            }
-            
-            // Create worksheet
-            const ws = XLSX.utils.json_to_sheet(allLeads);
-            
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Leads');
-            
-            // Export to Excel file
-            XLSX.writeFile(wb, 'Marketing_Funnel_Leads.xlsx');
-            showNotification('Excel file exported successfully');
-        }
-
-        // Setup drag and drop functionality
-
-function setupDragAndDrop() {
-    setTimeout(() => {
-        const containers = Array.from(document.querySelectorAll('.stage-body'));
-        const contentContainer = document.getElementById('content-items-container');
-
-        if (contentContainer) containers.push(contentContainer);
-
-        if (containers.length > 0) {
-            const drake = dragula(containers, {
-                moves: function (el, source, handle, sibling) {
-                    return el.classList.contains('lead-card') ||
-                        el.classList.contains('content-badge') ||
-                        el.classList.contains('content-item');
-                }
-            });
-
-            drake.on('drop', function (el, target, source, sibling) {
-                const fromStage = source.dataset.dropTarget || 'content-container';
-                const toStage = target.dataset.dropTarget || 'content-container';
-
-                if (el.classList.contains('lead-card')) {
-                    const leadId = el.dataset.leadId;
-                    if (fromStage && toStage && fromStage !== toStage) {
-                        const leads = JSON.parse(localStorage.getItem('leads')) || {
-                            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-                        };
-                        let lead = leads[fromStage].find(l => l.id === leadId);
-                        if (lead) {
-                            leads[fromStage] = leads[fromStage].filter(l => l.id !== leadId);
-                            updateLeadMovement(lead, toStage);
-                            leads[toStage].push(lead);
-                            localStorage.setItem('leads', JSON.stringify(leads));
-                            loadLeads();
-                        }
-                    }
-                } else if (el.classList.contains('content-badge') || el.classList.contains('content-item')) {
-                    const contentId = el.dataset.contentId;
-                    if (fromStage !== toStage) {
-                        moveContentToStage(contentId, toStage);
-                    }
-                }
-            });
-
-            drake.on('dragend', function (el) {
-                el.classList.remove('dragging-content');
-            });
-        }
-    }, 100);
-}
-function updateLeadMovement(lead, newStage) {
-    if (!lead.createdAt) {
-        lead.createdAt = new Date().toISOString();
-    }
-    if (!lead.moves) lead.moves = 0;
-    if (lead.currentStage !== newStage) {
-        lead.moves += 1;
-        lead.currentStage = newStage;
-    }
-    const daysPassed = Math.floor((new Date() - new Date(lead.createdAt)) / (1000 * 60 * 60 * 24));
-    lead.days = daysPassed;
-}
-        
-
-        // Move lead between stages
-        function moveLead(leadId, fromStage, toStage) {
-            const leads = JSON.parse(localStorage.getItem('leads'));
-            
-            // Find the lead
-            const leadIndex = leads[fromStage].findIndex(lead => lead.id === leadId);
-            if (leadIndex === -1) return;
-
-            const lead = leads[fromStage][leadIndex];
-            
-            // Remove from old stage
-            leads[fromStage].splice(leadIndex, 1);
-            
-            // Update lead's current stage
-            lead.currentStage = toStage;
-            lead.lastContact = new Date().toISOString();
-            
-            // Add to new stage
-            leads[toStage].push(lead);
-            
-            // Save to storage
-            localStorage.setItem('leads', JSON.stringify(leads));
-            
-            // Update UI
-            loadLeads();
-            updateAnalytics();
-            
-            // Show notification
-            showNotification(`Lead moved to ${capitalizeFirstLetter(toStage)} stage`);
-        }
-
-        // Move content to a different stage
-        function moveContentToStage(contentId, toStage) {
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-
-            const index = contentItems.findIndex(item => item.id === contentId);
-            if (index !== -1) {
-                contentItems[index].stage = toStage;
-                localStorage.setItem('content', JSON.stringify(contentItems));
-                showNotification(`Content moved to ${capitalizeFirstLetter(toStage)} stage`);
-
-                // Re-render updated funnel + content area
-                loadLeads();
-                loadContent();
-                populateContentOptions();
-            }
-        }
-
-        // Drag start handler
-        function handleDragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.dataset.leadId);
-            e.target.classList.add('dragging');
-        }
-
-        // Add a new lead
-
-function addLead() {
-  const company = document.getElementById('lead-company').value;
-  const contact = document.getElementById('lead-contact').value;
-  const email = document.getElementById('lead-email').value;
-  const phone = document.getElementById('lead-phone').value;
-  const stage = document.getElementById('lead-stage').value;
-  const source = document.getElementById('lead-source').value;
-  const industry = document.getElementById('lead-industry').value;
-  const status = document.getElementById('lead-status').value;
-  const notes = document.getElementById('lead-notes').value;
-  const contentSelect = document.getElementById('lead-content');
-  const contentStrategies = $(contentSelect).val() || [];
-
-  if (!company || !contact || !email) {
-    showNotification('Please fill in all required fields', 'error');
-    return;
-  }
-
-  const newLead = {
-    id: 'lead-' + Date.now(),
-    company,
-    contact,
-    email,
-    phone,
-    source,
-    stage,  // ✅ use this, not currentStage
-    industry,
-    status,
-    notes,
-    contentStrategies,
-    dateAdded: new Date().toISOString(),
-    lastContact: new Date().toISOString(),
-    value: Math.floor(Math.random() * 10000) + 1000
-  };
-
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-
-  leads[stage].push(newLead);
-  localStorage.setItem('leads', JSON.stringify(leads));
-
-  document.getElementById('add-lead-modal').classList.add('hidden');
-  document.getElementById('lead-form').reset();
-  loadLeads();
-  updateAnalytics();
-  showNotification('Lead added successfully');
-}
-
-        
-        // Add new content strategy
-        function addContent() {
-            const name = document.getElementById('content-name').value;
-            const description = document.getElementById('content-description').value;
-            const stage = document.getElementById('content-stage').value;
-            const type = document.getElementById('content-type').value;
-            const link = document.getElementById('content-link').value;
-            const targetConversion = document.getElementById('content-target-conversion').value || 0;
-
-            if (!name || !stage) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
-
-            const newContent = {
-                id: 'content-' + Date.now(),
-                name,
-                description,
-                stage,
-                type,
-                link,
-                targetConversion: parseInt(targetConversion),
-                dateCreated: new Date().toISOString()
-            };
-
-            // Add to storage
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            contentItems.push(newContent);
-            localStorage.setItem('content', JSON.stringify(contentItems));
-
-            // Close modal and reset form
-            document.getElementById('add-content-modal').classList.add('hidden');
-            document.getElementById('content-form').reset();
-
-            // Update UI
-            loadLeads();
-            loadContent();
-            populateContentOptions();
-            showNotification('Content strategy added successfully');
-        }
-
-        // Open edit lead modal
-        function openEditLeadModal(lead) {
-            document.getElementById('edit-lead-id').value = lead.id;
-            document.getElementById('edit-lead-company').value = lead.company;
-            document.getElementById('edit-lead-contact').value = lead.contact || '';
-            document.getElementById('edit-lead-email').value = lead.email || '';
-            document.getElementById('edit-lead-phone').value = lead.phone || '';
-            document.getElementById('edit-lead-stage').value = lead.currentStage;
-            document.getElementById('edit-lead-source').value = lead.source || 'website';
-            document.getElementById('edit-lead-industry').value = lead.industry || 'other';
-            document.getElementById('edit-lead-status').value = lead.status || 'new';
-            document.getElementById('edit-lead-notes').value = lead.notes || '';
-
-            // Set content strategies
-            const contentSelect = document.getElementById('edit-lead-content');
-            $(contentSelect).val(lead.contentStrategies || []).trigger('change');
-
-            document.getElementById('edit-lead-modal').classList.remove('hidden');
-        }
-
-        // Save lead changes
-document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    saveLeadChanges();
-});
-
-function saveLeadChanges() {
-    const leadId = document.getElementById('edit-lead-id').value;
-    const company = document.getElementById('edit-lead-company').value;
-    const contact = document.getElementById('edit-lead-contact').value;
-    const email = document.getElementById('edit-lead-email').value;
-    const phone = document.getElementById('edit-lead-phone').value;
-    const stage = document.getElementById('edit-lead-stage').value;
-    const source = document.getElementById('edit-lead-source').value;
-    const industry = document.getElementById('edit-lead-industry').value;
-    const status = document.getElementById('edit-lead-status').value;
-    const notes = document.getElementById('edit-lead-notes').value;
-
-    // Get selected content strategies
-    const contentSelect = document.getElementById('edit-lead-content');
-    const contentStrategies = $(contentSelect).val() || [];
-
-    if (!company || !contact || !email) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-
-    // Update lead in storage
-    const leads = JSON.parse(localStorage.getItem('leads'));
-    let leadFound = false;
-
-    // Search through all stages to find the lead
-    for (const [stageKey, stageLeads] of Object.entries(leads)) {
-        const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
-        
-        if (leadIndex !== -1) {
-            // If stage changed, move the lead
-            if (stageKey !== stage) {
-                const lead = stageLeads[leadIndex];
-                stageLeads.splice(leadIndex, 1);
-                
-                // Update lead properties
-                lead.company = company;
-                lead.contact = contact;
-                lead.email = email;
-                lead.phone = phone;
-                lead.source = source;
-                lead.industry = industry;
-                lead.status = status;
-                lead.currentStage = stage;
-                lead.notes = notes;
-                lead.contentStrategies = contentStrategies;
-                lead.lastContact = new Date().toISOString();
-                
-                // Add to new stage
-                leads[stage].push(lead);
-            } else {
-                // Just update the lead
-                const lead = stageLeads[leadIndex];
-                lead.company = company;
-                lead.contact = contact;
-                lead.email = email;
-                lead.phone = phone;
-                lead.source = source;
-                lead.industry = industry;
-                lead.status = status;
-                lead.notes = notes;
-                lead.contentStrategies = contentStrategies;
-                lead.lastContact = new Date().toISOString();
-            }
-            
-            leadFound = true;
-            break;
-        }
-    }
-
-    if (leadFound) {
-        localStorage.setItem('leads', JSON.stringify(leads));
-        document.getElementById('edit-lead-modal').classList.add('hidden');
-        loadLeads();
-        updateAnalytics();
-        showNotification('Lead updated successfully');
-    }
-}
-
-        
-        // Open edit content modal
-        function openEditContentModal(content) {
-            if (!content) return;
-            
-            console.log('Opening edit modal for content:', content.id); // Debug log
-            
-            document.getElementById('edit-content-id').value = content.id;
-            document.getElementById('edit-content-name').value = content.name;
-            document.getElementById('edit-content-description').value = content.description || '';
-            document.getElementById('edit-content-stage').value = content.stage;
-            document.getElementById('edit-content-type').value = content.type || 'blog';
-            document.getElementById('edit-content-link').value = content.link || '';
-            document.getElementById('edit-content-target-conversion').value = content.targetConversion || '';
-
-            const modal = document.getElementById('edit-content-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('show');
-        }
-
-        // Save content changes
-        function saveContentChanges() {
-            const contentId = document.getElementById('edit-content-id').value;
-            const name = document.getElementById('edit-content-name').value;
-            const description = document.getElementById('edit-content-description').value;
-            const stage = document.getElementById('edit-content-stage').value;
-            const type = document.getElementById('edit-content-type').value;
-            const link = document.getElementById('edit-content-link').value;
-            const targetConversion = document.getElementById('edit-content-target-conversion').value;
-
-            console.log('Saving content changes for:', contentId); // Debug log
-
-            if (!name || !stage) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
-
-            // Update content in storage
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const contentIndex = contentItems.findIndex(c => c.id === contentId);
-            
-            if (contentIndex !== -1) {
-                contentItems[contentIndex] = {
-                    ...contentItems[contentIndex],
-                    name,
-                    description,
-                    stage,
-                    type,
-                    link,
-                    targetConversion: parseInt(targetConversion) || 0
-                };
-                
-                localStorage.setItem('content', JSON.stringify(contentItems));
-                document.getElementById('edit-content-modal').classList.add('hidden');
-                loadLeads();
-                loadContent();
-                populateContentOptions();
-                showNotification('Content updated successfully');
-            } else {
-                showNotification('Content not found', 'error');
-            }
-        }
-      
-// Delete lead from edit modal
-// Delete lead from edit modal
-function deleteLead() {
-    const leadId = document.getElementById('edit-lead-id').value;
-    if (leadId && confirm('Are you sure you want to delete this lead?')) {
-        deleteLeadById(leadId);
-        document.getElementById('edit-lead-modal').classList.add('hidden');
-    }
-}
-
-document.getElementById('delete-lead-btn').addEventListener('click', function(e) {
-    e.preventDefault();
-    deleteLead();
-});
-
-        // Populate content options in select elements
-        function populateContentOptions() {
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const selectElements = document.querySelectorAll('.content-select');
-            
-            selectElements.forEach(select => {
-                // Clear existing options
-                $(select).empty();
-                
-                // Add new options
-                contentItems.forEach(content => {
-                    const option = new Option(content.name, content.id);
-                    $(select).append(option);
-                });
-            });
-        }
-
-        // Calculate key metrics
-        function calculateMetrics(leads) {
-            const totalLeads = Object.values(leads).flat().length;
-            const awarenessCount = leads.awareness.length;
-            const interestCount = leads.interest.length;
-            const considerationCount = leads.intent.length + leads.evaluation.length;
-            const purchaseCount = leads.purchase.length;
-
-            // Conversion rates (dummy basic logic)
-            const awarenessToInterest = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
-            const interestToConsideration = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
-            const totalConversion = totalLeads > 0 ? Math.round((purchaseCount / totalLeads) * 100) : 0;
-
-            // Hot leads count (if status is 'hot')
-            const allLeads = Object.values(leads).flat();
-            const hotLeads = allLeads.filter(l => l.status === 'hot');
-
-            return {
-                totalLeads,
-                awarenessToInterest,
-                interestToConsideration,
-                totalConversion,
-                hotLeadCount: hotLeads.length
-            };
-        }
-
-        // Update conversion percentages between stages
-        function updateConversionPercentages() {
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-
-            // Calculate metrics
-            const metrics = calculateMetrics(leads);
-
-            // Update DOM with metrics
-            document.getElementById('total-leads').textContent = metrics.totalLeads;
-            document.getElementById('awareness-interest-rate').textContent = `${metrics.awarenessToInterest}%`;
-            document.getElementById('awareness-conversion-rate').textContent = `${metrics.awarenessToInterest}%`;
-            document.getElementById('interest-consideration-rate').textContent = `${metrics.interestToConsideration}%`;
-            document.getElementById('interest-conversion-rate').textContent = `${metrics.interestToConsideration}%`;
-            document.getElementById('conversion-rate').textContent = `${metrics.totalConversion}%`;
-            document.getElementById('hot-leads-count').textContent = metrics.hotLeadCount;
-            
-            // Store metrics in localStorage
-            localStorage.setItem('funnel_metrics', JSON.stringify(metrics));
-        }
-
-        // Generate smart advice based on funnel state
-      function generateSmartAdvice() {
-    const metrics = JSON.parse(localStorage.getItem('funnel_metrics')) || {};
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-    const allLeads = Object.values(leads).flat();
-    const today = new Date();
-
-    const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-    // --- Dynamic Advice Options ---
-    const adviceOptions = {
-        emptyFunnel: [
-    "Your funnel is empty. Add new leads to get started!",
-    "No leads yet. Time to hunt down some future customers!",
-    "The funnel’s feeling like a ghost town. Invite someone in!",
-    "Nothing here yet—this is your sign to populate your funnel!",
-    "Imagine a party where no one shows up. That’s your funnel right now.",
-    "Even tumbleweeds are getting bored. Add some leads!",
-    "Your funnel is zen... but maybe too zen. Let’s stir some action.",
-    "This space is full of potential—but zero people. Let’s fix that.",
-    "Your funnel is a blank canvas. Time to paint with prospects.",
-    "Silence in the funnel doesn’t always mean peace—it means no data to optimize.",
-    "Not even a bot would convert here. Add. Some. Humans.",
-    "Leads won’t find you through telepathy. Make some noise!",
-    "Still waters run deep, but they also don’t pay your bills. Get some traffic in.",
-    "Zero leads = zero insights. Start feeding the system.",
-    "Your dashboard is lonely. Give it some leads to play with."
-],
-        noAwareness: [
-    "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
-    "No Awareness leads. Top-of-funnel visibility is critical—let’s fix that.",
-    "No one knows you exist if Awareness is empty. Start there.",
-    "Lead the way—literally. Add leads to the Awareness stage.",
-    "Your brand is whispering into the void. Make some noise.",
-    "If Awareness is empty, who’s supposed to care? Let them know you’re here.",
-    "This is like performing a concert to an empty stadium. Invite an audience.",
-    "You're trying to date without saying hello. Awareness is the hello.",
-    "Your funnel's top is missing, which makes it more of a... tube?",
-    "You can’t have Interest without Awareness. That’s not marketing—that’s magic.",
-    "Think of Awareness as lighting the signal fire. Yours is out. Strike the match.",
-    "The journey starts here. And right now, there’s no one at the starting line.",
-    "No awareness = no brand memory = no clicks = no life. Fix the top.",
-    "You're building a castle, but nobody knows the kingdom exists. Send out messengers.",
-    "If leads don’t know you exist, they can’t desire, evaluate, or convert. Visibility first."
-],
-
-    stuckInInterest: [
-    "Your leads are showing interest—that's a great sign. Give them the nudge they need to go further.",
-    "They're leaning in. Meet them with clarity, value, and a next step.",
-    "This is your moment to shine. A well-timed message or content piece could unlock real movement.",
-    "Interest means the door is open. You just need to walk through it with purpose.",
-    "They’re curious. Guide them toward consideration with something meaningful.",
-    "Don’t underestimate the power of one follow-up. Sometimes that’s all it takes.",
-    "Your leads are warm. Stoke the fire with value-packed content or a timely check-in.",
-    "They’ve paused, not vanished. Help them take the next step—gently, confidently.",
-    "Momentum lives here. A single spark could reignite the journey.",
-    "You’ve caught their attention. Now, help them imagine what’s possible with you.",
-    "This isn’t stagnation—it’s an invitation. Show up and inspire the next move.",
-    "They're interested for a reason. Help them remember why—and show what comes next.",
-    "You’re halfway there. Keep the energy up, and the conversions will follow."
-],
-
-       noPurchases: [
-    "You have leads in Consideration but no purchases. Your closing game is next—refine and shine.",
-    "They're almost ready. Strengthen the final touchpoint to guide the decision.",
-    "You're so close—help them take the last step with clarity and confidence.",
-    "No deals closed yet, but interest is alive. Bring precision to your offer.",
-    "Your leads are listening—now give them something undeniable to say yes to.",
-    "Consideration is a sign of potential. Make the purchase path feel obvious and safe.",
-    "Stuck at the door of Purchase? Sometimes, a stronger CTA or simplified checkout is all it takes.",
-    "They’re on the edge. A timely incentive or personalized outreach could tip the scale.",
-    "If they’re here, they’re interested. Reaffirm value and remove friction.",
-    "This is your closing act. Make it feel like a no-brainer, not a negotiation.",
-    "Don’t just sell—resolve. Show them your offer solves their exact problem, beautifully.",
-    "If they're hovering, help them land. Use clarity, urgency, and trust signals.",
-    "Purchases happen when confidence meets timing. Guide them gently but with purpose."
-],
-
-      underperformingContent: [
-    "Some content may need improvement: {items}. Consider updating or replacing these assets.",
-    "Underperforming content detected: {items}. Time to give them a second life—or a graceful exit.",
-    "Not all content converts. These aren’t pulling their weight: {items}. Let’s fix that.",
-    "Give these pieces a makeover: {items}. Your funnel deserves better.",
-    "These content assets aren’t keeping up: {items}. Refine, refresh, or retire.",
-    "Content is only as good as its results. These may need your magic touch: {items}.",
-    "These underperformers are costing you momentum: {items}. Time to reimagine.",
-    "Great content converts. These ones aren’t: {items}. Find out why.",
-    "Your audience deserves clarity—these might be missing the mark: {items}.",
-    "Weak links spotted in your content chain: {items}. Strengthen them.",
-    "If these pieces were employees, you'd be scheduling performance reviews: {items}.",
-    "The data has spoken—these aren’t working: {items}. Let’s do better.",
-    "Content is your silent salesperson. These are saying the wrong things: {items}. Rework the script."
-],
-
-notContacted: [
-    "{count} leads haven't been contacted in over a week. Keep things warm by reaching out again.",
-    "You’re ghosting {count} leads. 👻 Maybe it’s time to reconnect?",
-    "{count} leads are cooling off. Ping them while there’s still a spark.",
-    "A little love goes a long way—contact those {count} leads again!",
-    "These {count} leads haven’t heard from you in a while. Don’t let silence kill the momentum.",
-    "The trail’s going cold. Reignite connection with {count} leads before it’s too late.",
-    "{count} people are waiting for your follow-up. Don’t leave them in limbo.",
-    "Conversations go stale fast. Reach out and revive {count} leads.",
-    "Every lead ignored is a door closing. You’ve got {count} doors left ajar.",
-    "{count} leads are slipping into the void. A quick message could change everything.",
-    "They were interested once. Give {count} leads a reason to remember why.",
-    "It’s been a while for {count} leads. Send value, not just a ‘Hey.’",
-    "Re-engagement isn’t hard—just honest. Talk to those {count} leads again with purpose."
-],
-
-    stalledLeads: [
-    "{count} leads have been in the same stage for over 2 weeks. Consider re-engaging or qualifying them.",
-    "{count} leads are gathering dust. Shake things up!",
-    "Those {count} stagnant leads? Time to check if they’re still breathing.",
-    "Re-engagement alert: {count} leads are stuck. Rescue time!",
-    "{count} leads have been sitting too long. Nudge them—or set them free.",
-    "Momentum is fading for {count} leads. Time to re-spark the journey.",
-    "{count} leads have lost their way in the funnel. Be the guide back to movement.",
-    "Stillness isn’t progress. {count} leads need a reason to move again.",
-    "Some leads stall because they’re unsure. Clarify the next step for these {count} wanderers.",
-    "You wouldn’t let a friend zone relationship go 2 weeks with silence—do the same for these {count} leads.",
-    "{count} leads paused their journey. Help them remember why they started.",
-    "Stalled leads = lost signals. Reach out, recalibrate, and reconnect with those {count}."
-],
-       hotLeads: [
-    "You have {count} hot leads. Prioritize these for quick follow-ups and personalized attention.",
-    "🔥 {count} hot leads await your charm. Don’t keep them waiting.",
-    "{count} hot leads. These are your low-hanging fruit—go pick!",
-    "Your {count} hot leads are ready. Move fast, close faster.",
-    "If you blink, these {count} hot leads might cool down. Take action now.",
-    "These {count} leads are fire. Fan the flames with smart follow-up.",
-    "{count} leads are on the edge of a yes. Help them leap.",
-    "Don’t let your hottest leads simmer down. Follow up while they’re warm.",
-    "{count} leads are already sold—they just need the final nudge.",
-    "You're top-of-mind for these {count} leads. Stay there, and close.",
-    "These {count} are your funnel’s VIP guests. Treat them like it.",
-    "Quick wins live here: {count} hot leads, primed and waiting."
-]
-
-    };
-
-    // Calculate conditions
-    const stalledLeads = allLeads.filter(lead => {
-        if (!lead.dateAdded) return false;
-        const addedDate = new Date(lead.dateAdded);
-        return (today - addedDate) / (1000 * 60 * 60 * 24) > 14;
-    }).length;
-
-    const leadsNotContactedRecently = allLeads.filter(lead => {
-        if (!lead.lastContact) return true;
-        const lastContactDate = new Date(lead.lastContact);
-        return (today - lastContactDate) / (1000 * 60 * 60 * 24) > 7;
-    }).length;
-
-    const contentEffectiveness = {};
-    contentItems.forEach(content => {
-        const leadsUsing = allLeads.filter(l => l.contentStrategies?.includes(content.id)).length;
-        if (leadsUsing > 0) {
-            const advanced = allLeads.filter(l => {
-                const stageIndex = ['awareness','interest','intent','evaluation','purchase'];
-                return stageIndex.indexOf(l.currentStage) > stageIndex.indexOf(content.stage) && l.contentStrategies?.includes(content.id);
-            }).length;
-            const rate = Math.round((advanced / leadsUsing) * 100);
-            contentEffectiveness[content.id] = {
-                name: content.name,
-                rate,
-                target: content.targetConversion || 0
-            };
-        }
-    });
-
-    const underperformingContent = Object.entries(contentEffectiveness)
-        .filter(([_, stats]) => stats.rate < stats.target)
-        .map(([_, stats]) => stats.name);
-
-    // Build advice
-    const advice = [];
-    const insights = [];
-
-    if (metrics.totalLeads === 0) {
-        advice.push(getRandom(adviceOptions.emptyFunnel));
-    } else {
-        if (leads.awareness.length === 0) {
-            advice.push(getRandom(adviceOptions.noAwareness));
-        }
-        if (leads.interest.length > 0 && (leads.intent.length + leads.evaluation.length) === 0) {
-            advice.push(getRandom(adviceOptions.stuckInInterest));
-        }
-        if (leads.purchase.length === 0 && (leads.intent.length + leads.evaluation.length) > 0) {
-            advice.push(getRandom(adviceOptions.noPurchases));
-        }
-    }
-
-    if (underperformingContent.length > 0) {
-        let msg = getRandom(adviceOptions.underperformingContent);
-        advice.push(msg.replace('{items}', underperformingContent.join(', ')));
-    }
-
-    if (leadsNotContactedRecently > 0) {
-        let msg = getRandom(adviceOptions.notContacted);
-        advice.push(msg.replace('{count}', leadsNotContactedRecently));
-    }
-
-    if (stalledLeads > 0) {
-        let msg = getRandom(adviceOptions.stalledLeads);
-        advice.push(msg.replace('{count}', stalledLeads));
-    }
-
-    if (metrics.hotLeadCount > 0) {
-        let msg = getRandom(adviceOptions.hotLeads);
-        advice.push(msg.replace('{count}', metrics.hotLeadCount));
-    }
-
-    insights.push(`Awareness → Interest conversion: ${metrics.awarenessToInterest || 0}%`);
-    insights.push(`Interest → Consideration conversion: ${metrics.interestToConsideration || 0}%`);
-    insights.push(`Overall conversion rate: ${metrics.totalConversion || 0}%`);
-
-    // Display in DOM
-    const adviceBox = document.getElementById('funnel-advice');
-    adviceBox.innerHTML = '';
-
-    if (advice.length > 0) {
-        const ul = document.createElement('ul');
-        advice.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = item;
-            ul.appendChild(li);
-        });
-        adviceBox.appendChild(ul);
-    }
-
-    if (insights.length > 0) {
-        const header = document.createElement('h4');
-        header.textContent = 'Key Metrics:';
-        header.style.marginTop = '1rem';
-        header.style.color = 'var(--accent-color)';
-        adviceBox.appendChild(header);
-
-        const ul = document.createElement('ul');
-        insights.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = item;
-            ul.appendChild(li);
-        });
-        adviceBox.appendChild(ul);
-    }
-}
-
-
-        // Update analytics charts and metrics
-        function updateAnalytics() {
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-
-            // Update conversion percentages
-            updateConversionPercentages();
-            
-            // Generate smart advice
-            generateSmartAdvice();
-            
-            // Update advanced analytics
-            updateAdvancedAnalytics();
-        }
-
-        // Filter leads table by stage
-    function filterLeadsTable(stage) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let filtered = [];
-
-    if (stage === 'all') {
-        filtered = Object.values(leads).flat();
-    } else {
-        filtered = leads[stage] || [];
-    }
-
-    const sorted = filtered
-        .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
-        .slice(0, 5);
-
-    renderLeadTable(sorted);
-}
-
-
-        // Search leads
-        function searchLeads(query) {
-            const rows = document.querySelectorAll('#leads-table-body tr');
-            const normalizedQuery = query.toLowerCase();
-            
-            rows.forEach(row => {
-                if (row.dataset.leadId === undefined) {
-                    // Show the "no leads" row only if there's no search query
-                    row.style.display = query ? 'none' : '';
-                    return;
-                }
-                
-                const company = row.querySelector('.company-cell').textContent.toLowerCase();
-                const contact = row.querySelector('.contact-cell').textContent.toLowerCase();
-                
-                if (company.includes(normalizedQuery) || contact.includes(normalizedQuery)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        // Export to PDF
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Add title
-            doc.setFontSize(20);
-            doc.text('Marketing Funnel Report', 105, 20, { align: 'center' });
-            
-            // Add date
-            doc.setFontSize(12);
-            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
-            
-            // Add funnel data
-            const leads = JSON.parse(localStorage.getItem('leads')) || {
-                awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-            };
-            
-            let yPosition = 50;
-            
-            // Add funnel visualization summary
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 255);
-            doc.text('Funnel Summary', 14, yPosition);
-            yPosition += 10;
-            
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Awareness: ${leads.awareness.length} leads`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Interest: ${leads.interest.length} leads`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Consideration: ${leads.intent.length + leads.evaluation.length + leads.purchase.length} leads`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Purchases: ${leads.purchase.length} leads`, 14, yPosition);
-            yPosition += 15;
-            
-            // Add conversion rates
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 255);
-            doc.text('Conversion Rates', 14, yPosition);
-            yPosition += 10;
-            
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Awareness → Interest: ${document.getElementById('awareness-interest-rate').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Interest → Consideration: ${document.getElementById('interest-consideration-rate').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Overall Conversion: ${document.getElementById('conversion-rate').textContent}`, 14, yPosition);
-            yPosition += 15;
-            
-            // Add advanced analytics
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 255);
-            doc.text('Advanced Analytics', 14, yPosition);
-            yPosition += 10;
-            
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Average Time in Funnel: ${document.getElementById('avg-funnel-time').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Hot Leads: ${document.getElementById('hot-leads-count').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Content Effectiveness: ${document.getElementById('content-effectiveness').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Engagement Rate: ${document.getElementById('engagement-rate').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Average Response Time: ${document.getElementById('response-time').textContent}`, 14, yPosition);
-            yPosition += 7;
-            doc.text(`Revenue Potential: ${document.getElementById('revenue-potential').textContent}`, 14, yPosition);
-            yPosition += 15;
-            
-            // Add content strategy summary
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            if (contentItems.length > 0) {
-                doc.setFontSize(14);
-                doc.setTextColor(0, 0, 255);
-                doc.text('Content Strategy', 14, yPosition);
-                yPosition += 10;
-                
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-                
-                contentItems.forEach(content => {
-                    if (yPosition > 250) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    
-                    doc.text(`${content.name} (${content.type}) - ${content.stage} stage`, 14, yPosition);
-                    yPosition += 7;
-                    doc.text(`Target conversion: ${content.targetConversion}%`, 20, yPosition);
-                    yPosition += 7;
-                });
-            }
-            
-            // Save the PDF
-            doc.save('Marketing_Funnel_Report.pdf');
-            showNotification('PDF exported successfully');
-        }
-
-
-function generateUniqueId() {
-  return 'lead-' + Math.random().toString(36).substr(2, 9);
-}
-
-
-// When adding a new lead (replace your existing lead-adding logic)
-function saveNewLead(lead) {
-    if (!lead.id) {
-        lead.id = generateUniqueId();
-    }
-
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    leads[lead.stage].push(lead);
-    localStorage.setItem('leads', JSON.stringify(leads));
-    loadLeads();
-}
-
-        
-        // Install button functionality
-
-function setupInstallButton() {
-  const installBtn = document.getElementById('install-btn');
-  
-  // If install button doesn't exist, exit the function
-  if (!installBtn) {
-    console.log('Install button not found - skipping setup');
-    return;
-  }
-
-  let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    // Show the install button
-    installBtn.classList.remove('hidden');
-    
-    // Add click event listener
-    installBtn.addEventListener('click', async () => {
-      installBtn.classList.add('hidden');
-      deferredPrompt.prompt();
-      
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response: ${outcome}`);
-      deferredPrompt = null;
-    });
-  });
-
-  window.addEventListener('appinstalled', () => {
-    console.log('App was installed');
-    installBtn.classList.add('hidden');
-  });
-}
-
-        // Register service worker
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed: ', error);
-                    });
-            }
-        }
-
-
-  // Show or hide the lead side panel (modal)
-  function toggleLeadPanel(show, contentHTML = "") {
-    const panel = document.getElementById("lead-side-panel");
-    if (show) {
-      document.getElementById("lead-history-content").innerHTML = contentHTML || "";
-      panel.classList.add("show");
-      panel.classList.remove("hidden");
-    } else {
-      panel.classList.remove("show");
-      panel.classList.add("hidden");
-    }
-  }
-
-  // Show toast notification
-  function showNotification(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = 'toast show';
-    if (type === 'error') {
-      toast.classList.add('error');
-    } else {
-      toast.classList.remove('error');
-    }
-
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 3000);
-  }
-
-  // Register service worker on page load
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('✅ Service worker registered:', reg))
-        .catch(err => console.error('❌ Service worker registration failed:', err));
-    });
-  }
-
-  // Handle PWA install prompt
-  let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const installBtn = document.getElementById('install-btn');
-      if (!installBtn) {
-        console.error('Install button not found in DOM');
-        return;
-      }
-
-      installBtn.style.display = 'block';
-
-      installBtn.addEventListener('click', () => {
-        installBtn.style.display = 'none';
-        deferredPrompt.prompt();
-
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('✅ User accepted the install prompt');
-          } else {
-            console.log('❌ User dismissed the install prompt');
-          }
-          deferredPrompt = null;
-        });
-      });
-    });
-  });
-
-  // Edit button click (delegated)
-  document.addEventListener('click', function (e) {
-    const editInsightBtn = e.target.closest('.edit-insight-btn');
-    if (!editInsightBtn) return;
-
-    const leadId = editInsightBtn.dataset.leadId;
-    if (leadId) {
-      openEditLeadModalById(leadId);
-    } else {
-      console.warn('No lead ID found in edit-insight-btn');
-    }
-  });
-
-  function toggleLeadPanel(show) {
-    const panel = document.getElementById('lead-side-panel');
-    if (!panel) return;
-
-    if (show) {
-      panel.classList.remove('hidden');
-      panel.classList.add('show');
-    } else {
-      panel.classList.add('hidden');
-      panel.classList.remove('show');
-    }
-  }
-
-function toggleEditModal(show) {
-        const modal = document.getElementById('edit-lead-modal');
-        if (!modal) return;
-        modal.classList.toggle('hidden', !show);
-        modal.classList.toggle('show', show);
-    }
-
-    
-
 </script>
-
+    
 <!-- Edit Lead Modal (make sure this exists in your HTML) -->
 <div id="edit-lead-modal" class="modal hidden">
   <div class="modal-content">
