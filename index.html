@@ -2660,49 +2660,119 @@ function loadLeads() {
 }
 
 function openEditLeadModalById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let foundLead = null;
-    let originalStage = '';
-
-    // Search through all stages for the lead
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const lead = stageLeads.find(l => l.id === leadId);
-        if (lead) {
-            foundLead = lead;
-            originalStage = stage;
-            break;
+    try {
+        // Validate leadId
+        if (!leadId || typeof leadId !== 'string') {
+            console.error('Invalid lead ID:', leadId);
+            showNotification('Invalid lead identifier', 'error');
+            return;
         }
+
+        // Get leads from localStorage with fallback
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], 
+            interest: [], 
+            intent: [], 
+            evaluation: [], 
+            purchase: []
+        };
+
+        let foundLead = null;
+        let originalStage = '';
+
+        // Search through all stages for the lead
+        for (const [stage, stageLeads] of Object.entries(leads)) {
+            if (!Array.isArray(stageLeads)) {
+                console.warn(`Stage ${stage} is not an array`, stageLeads);
+                continue;
+            }
+
+            const lead = stageLeads.find(l => {
+                try {
+                    return l.id === leadId;
+                } catch (e) {
+                    console.error('Error checking lead:', e);
+                    return false;
+                }
+            });
+
+            if (lead) {
+                foundLead = lead;
+                originalStage = stage;
+                break;
+            }
+        }
+
+        if (!foundLead) {
+            showNotification('Lead not found in any stage', 'error');
+            return;
+        }
+
+        // Get all form fields
+        const formFields = {
+            id: document.getElementById('edit-lead-id'),
+            company: document.getElementById('edit-lead-company'),
+            contact: document.getElementById('edit-lead-contact'),
+            email: document.getElementById('edit-lead-email'),
+            phone: document.getElementById('edit-lead-phone'),
+            stage: document.getElementById('edit-lead-stage'),
+            source: document.getElementById('edit-lead-source'),
+            industry: document.getElementById('edit-lead-industry'),
+            status: document.getElementById('edit-lead-status'),
+            notes: document.getElementById('edit-lead-notes')
+        };
+
+        // Validate all form fields exist
+        for (const [fieldName, fieldElement] of Object.entries(formFields)) {
+            if (!fieldElement) {
+                console.error(`Form field not found: edit-lead-${fieldName}`);
+                showNotification('Form configuration error', 'error');
+                return;
+            }
+        }
+
+        // Populate the edit form
+        formFields.id.value = foundLead.id || '';
+        formFields.company.value = foundLead.company || '';
+        formFields.contact.value = foundLead.contact || '';
+        formFields.email.value = foundLead.email || '';
+        formFields.phone.value = foundLead.phone || '';
+        formFields.stage.value = foundLead.currentStage || originalStage;
+        formFields.source.value = foundLead.source || 'website';
+        formFields.industry.value = foundLead.industry || 'other';
+        formFields.status.value = foundLead.status || 'new';
+        formFields.notes.value = foundLead.notes || '';
+        
+        // Initialize Select2 for content strategies if it exists
+        const contentSelect = $('#edit-lead-content');
+        if (contentSelect.length) {
+            contentSelect.val(foundLead.contentStrategies || []).trigger('change');
+        } else {
+            console.warn('Content select element (#edit-lead-content) not found');
+        }
+
+        // Show the modal
+        const editModal = document.getElementById('edit-lead-modal');
+        if (editModal) {
+            editModal.classList.remove('hidden');
+            
+            // Focus on first field for better UX
+            setTimeout(() => {
+                formFields.company.focus();
+            }, 100);
+        } else {
+            console.error('Edit modal (#edit-lead-modal) not found');
+            showNotification('Cannot open edit form', 'error');
+        }
+
+    } catch (error) {
+        console.error('Error opening edit modal:', error);
+        showNotification('Failed to open lead editor', 'error');
     }
-
-    if (!foundLead) {
-        showNotification('Lead not found', 'error');
-        return;
-    }
-
-    // Populate the edit form
-    document.getElementById('edit-lead-id').value = foundLead.id;
-    document.getElementById('edit-lead-company').value = foundLead.company || '';
-    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-    document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
-    document.getElementById('edit-lead-source').value = foundLead.source || '';
-    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-    document.getElementById('edit-lead-status').value = foundLead.status || '';
-    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
-    
-    // Set content strategies
-    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
-
-    // Show the modal
-    document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
 
-        
 
+        
 // ✅ OPTIONALLY: FUNNEL INSIGHT REFRESH MOCK
 function refreshFunnelInsights() {
   const loader = document.getElementById('insight-loader');
@@ -4590,297 +4660,243 @@ function saveNewLead(lead) {
     }
   }
 
-  // ✅ Open the side panel with lead data
-
- function toggleLeadPanel(show) {
-    const panel = document.getElementById('lead-side-panel');
-    if (!panel) return;
-    panel.classList.toggle('hidden', !show);
-    panel.classList.toggle('show', show);
-  }
-
-  // ✅ Open the editor with existing lead data
-  function toggleLeadPanel(show) {
-    const panel = document.getElementById('lead-side-panel');
-    if (!panel) return;
-    panel.classList.toggle('hidden', !show);
-    panel.classList.toggle('show', show);
-  }
-
-  function toggleEditModal(show) {
-    const modal = document.getElementById('edit-lead-modal');
-    if (!modal) return;
-    modal.classList.toggle('hidden', !show);
-    modal.classList.toggle('show', show);
-  }
-
-  // ✅ Side Panel Logic
-
-function openSidePanelLeadEditor(leadId) {
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-
-  let selected = null;
-  let foundStage = null;
-
-  for (const [stage, list] of Object.entries(leads)) {
-    const lead = list.find(l => l.id === leadId);
-    if (lead) {
-      selected = lead;
-      foundStage = stage;
-      break;
+function toggleEditModal(show) {
+        const modal = document.getElementById('edit-lead-modal');
+        if (!modal) return;
+        modal.classList.toggle('hidden', !show);
+        modal.classList.toggle('show', show);
     }
-  }
 
-  if (!selected) {
-    alert('Lead not found.');
-    return;
-  }
+    function openEditLeadModalById(leadId) {
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
 
-  // Fill edit modal
-  document.getElementById('edit-lead-id').value = selected.id;
-  document.getElementById('edit-lead-company').value = selected.company || '';
-  document.getElementById('edit-lead-contact').value = selected.contact || '';
-  document.getElementById('edit-lead-email').value = selected.email || '';
-  document.getElementById('edit-lead-phone').value = selected.phone || '';
-  document.getElementById('edit-lead-stage').value = selected.stage || foundStage;
-  document.getElementById('edit-lead-source').value = selected.source || '';
-  document.getElementById('edit-lead-industry').value = selected.industry || '';
-  document.getElementById('edit-lead-status').value = selected.status || '';
-  document.getElementById('edit-lead-notes').value = selected.notes || '';
-  $('#edit-lead-content').val(selected.contentStrategies || []).trigger('change');
+        let foundLead = null;
+        let originalStage = '';
 
-  document.getElementById('edit-lead-modal').classList.remove('hidden');
-}
-
-document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const leadId = document.getElementById('edit-lead-id').value;
-    const newStage = document.getElementById('edit-lead-stage').value;
-    
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    let foundLead = null;
-    let originalStage = '';
-
-    // Find and remove the lead from its original stage
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const index = stageLeads.findIndex(l => l.id === leadId);
-        if (index !== -1) {
-            foundLead = stageLeads[index];
-            stageLeads.splice(index, 1);
-            originalStage = stage;
-            break;
+        // Search through all stages for the lead
+        for (const [stage, stageLeads] of Object.entries(leads)) {
+            const lead = stageLeads.find(l => l.id === leadId);
+            if (lead) {
+                foundLead = lead;
+                originalStage = stage;
+                break;
+            }
         }
-    }
 
-    if (!foundLead) {
-        showNotification('Lead not found while saving', 'error');
-        return;
-    }
+        if (!foundLead) {
+            showNotification('Lead not found', 'error');
+            return;
+        }
 
-    // Update the lead with new values
-    const updatedLead = {
-        ...foundLead,
-        company: document.getElementById('edit-lead-company').value,
-        contact: document.getElementById('edit-lead-contact').value,
-        email: document.getElementById('edit-lead-email').value,
-        phone: document.getElementById('edit-lead-phone').value,
-        currentStage: newStage,
-        source: document.getElementById('edit-lead-source').value,
-        industry: document.getElementById('edit-lead-industry').value,
-        status: document.getElementById('edit-lead-status').value,
-        notes: document.getElementById('edit-lead-notes').value,
-        contentStrategies: $('#edit-lead-content').val() || [],
-        lastContact: new Date().toISOString()
-    };
-
-    // Add to the new stage
-    leads[newStage].push(updatedLead);
-    
-    // Save back to localStorage
-    localStorage.setItem('leads', JSON.stringify(leads));
-    
-    // Close modal and update UI
-    document.getElementById('edit-lead-modal').classList.add('hidden');
-    loadLeads();
-    updateAnalytics();
-    showNotification('Lead updated successfully');
-});
+        // Populate the edit form
+        document.getElementById('edit-lead-id').value = foundLead.id;
+        document.getElementById('edit-lead-company').value = foundLead.company || '';
+        document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+        document.getElementById('edit-lead-email').value = foundLead.email || '';
+        document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+        document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
+        document.getElementById('edit-lead-source').value = foundLead.source || '';
+        document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+        document.getElementById('edit-lead-status').value = foundLead.status || '';
+        document.getElementById('edit-lead-notes').value = foundLead.notes || '';
         
+        // Set content strategies
+        $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
 
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn && btn.dataset.leadId) {
-    openSidePanelLeadEditor(btn.dataset.leadId);
-  }
-});
+        // Show the modal
+        document.getElementById('edit-lead-modal').classList.remove('hidden');
+    }
+
+    // Updated form submission handler
+    document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const leadId = document.getElementById('edit-lead-id').value;
+        const newStage = document.getElementById('edit-lead-stage').value;
+        
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        let foundLead = null;
+        let originalStage = '';
+
+        // Find and remove the lead from its original stage
+        for (const [stage, stageLeads] of Object.entries(leads)) {
+            const index = stageLeads.findIndex(l => l.id === leadId);
+            if (index !== -1) {
+                foundLead = stageLeads[index];
+                stageLeads.splice(index, 1);
+                originalStage = stage;
+                break;
+            }
+        }
+
+        if (!foundLead) {
+            showNotification('Lead not found while saving', 'error');
+            return;
+        }
+
+        // Update the lead with new values
+        const updatedLead = {
+            ...foundLead,
+            company: document.getElementById('edit-lead-company').value,
+            contact: document.getElementById('edit-lead-contact').value,
+            email: document.getElementById('edit-lead-email').value,
+            phone: document.getElementById('edit-lead-phone').value,
+            currentStage: newStage,
+            source: document.getElementById('edit-lead-source').value,
+            industry: document.getElementById('edit-lead-industry').value,
+            status: document.getElementById('edit-lead-status').value,
+            notes: document.getElementById('edit-lead-notes').value,
+            contentStrategies: $('#edit-lead-content').val() || [],
+            lastContact: new Date().toISOString()
+        };
+
+        // Add to the new stage
+        leads[newStage].push(updatedLead);
+        
+        // Save back to localStorage
+        localStorage.setItem('leads', JSON.stringify(leads));
+        
+        // Close modal and update UI
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+    });
+
+    // Updated edit button click handler
+    document.addEventListener('click', function(e) {
+        // Handle edit buttons in table
+        const editBtn = e.target.closest('.edit-btn');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const leadId = editBtn.dataset.leadId;
+            if (leadId) openEditLeadModalById(leadId);
+        }
+        
+        // Handle edit buttons in insight panels
+        const insightBtn = e.target.closest('.edit-insight-btn');
+        if (insightBtn && insightBtn.dataset.leadId) {
+            e.preventDefault();
+            e.stopPropagation();
+            openEditLeadModalById(insightBtn.dataset.leadId);
+        }
+    });
+
+    // Initialize Select2 for content dropdown
+    document.addEventListener('DOMContentLoaded', () => {
+        $('#edit-lead-content').select2({
+            width: '100%',
+            placeholder: 'Select content strategies'
+        });
+    });
+
+    // [Rest of your existing JavaScript code remains the same]
+    // ... all other functions like loadLeads, updateAnalytics, etc ...
+
 </script>
 
-<!-- ✅ Ensure content select2 is triggered after DOM ready -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  $('#edit-lead-content').select2({
-    width: '100%',
-    placeholder: 'Select content strategies'
-  });
-});
-</script>
-
-
-<!-- ✅ Side Panel for Quick Editing -->
-<div id="lead-side-panel" class="modal hidden">
+<!-- Edit Lead Modal (make sure this exists in your HTML) -->
+<div id="edit-lead-modal" class="modal hidden">
   <div class="modal-content">
-    <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
+    <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
     <h2>Edit Lead</h2>
-    <form id="side-panel-lead-form">
-      <input type="hidden" id="side-lead-id" />
-
-      <div class="form-group">
-        <label for="side-lead-company">Company</label>
-        <input type="text" id="side-lead-company" required />
+    <form id="edit-lead-form">
+      <input type="hidden" id="edit-lead-id">
+      
+      <div class="form-columns">
+        <div class="form-group">
+          <label for="edit-lead-company">Company Name *</label>
+          <input type="text" id="edit-lead-company" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-contact">Contact Person *</label>
+          <input type="text" id="edit-lead-contact" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-email">Email *</label>
+          <input type="email" id="edit-lead-email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-phone">Phone</label>
+          <input type="tel" id="edit-lead-phone">
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-stage">Current Stage *</label>
+          <select id="edit-lead-stage" required>
+            <option value="awareness">Awareness</option>
+            <option value="interest">Interest</option>
+            <option value="intent">Intent</option>
+            <option value="evaluation">Evaluation</option>
+            <option value="purchase">Purchase</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-source">Source</label>
+          <select id="edit-lead-source">
+            <option value="website">Website</option>
+            <option value="social">Social Media</option>
+            <option value="referral">Referral</option>
+            <option value="event">Event</option>
+            <option value="ad">Advertisement</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-industry">Industry</label>
+          <select id="edit-lead-industry">
+            <option value="saas">SaaS</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="realestate">Real Estate</option>
+            <option value="education">Education</option>
+            <option value="consulting">Consulting</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-status">Status</label>
+          <select id="edit-lead-status">
+            <option value="new">New</option>
+            <option value="hot">Hot</option>
+            <option value="cold">Cold</option>
+            <option value="stalled">Stalled</option>
+          </select>
+        </div>
       </div>
-
-      <div class="form-group">
-        <label for="side-lead-contact">Contact</label>
-        <input type="text" id="side-lead-contact" required />
-      </div>
-
-      <div class="form-group">
-        <label for="side-lead-stage">Stage</label>
-        <select id="side-lead-stage">
-          <option value="awareness">Awareness</option>
-          <option value="interest">Interest</option>
-          <option value="intent">Intent</option>
-          <option value="evaluation">Evaluation</option>
-          <option value="purchase">Purchase</option>
+      
+      <div class="form-group full-width">
+        <label for="edit-lead-content">Content Strategy</label>
+        <select id="edit-lead-content" class="content-select" multiple>
+          <!-- Options populated by JavaScript -->
         </select>
       </div>
-
+      
+      <div class="form-group full-width">
+        <label for="edit-lead-notes">Notes</label>
+        <textarea id="edit-lead-notes" rows="3"></textarea>
+      </div>
+      
       <div class="form-actions">
-        <button type="button" class="cancel-btn" onclick="toggleLeadPanel(false)">Cancel</button>
+        <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
         <button type="submit" class="submit-btn">Save Changes</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- ✅ Full Edit Modal -->
-<div id="edit-lead-modal" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
-    <h2>Edit Lead (Full)</h2>
-
-<form id="edit-lead-form">
-  <input type="hidden" id="edit-lead-id" name="edit-lead-id" />
-
-  <div class="form-group">
-    <label for="edit-lead-company">Company</label>
-    <input type="text" id="edit-lead-company" name="edit-lead-company" required />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-contact">Contact</label>
-    <input type="text" id="edit-lead-contact" name="edit-lead-contact" required />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-email">Email</label>
-    <input type="email" id="edit-lead-email" name="edit-lead-email" />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-phone">Phone</label>
-    <input type="tel" id="edit-lead-phone" name="edit-lead-phone" />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-stage">Stage</label>
-    <select id="edit-lead-stage" name="edit-lead-stage">
-      <option value="awareness">Awareness</option>
-      <option value="interest">Interest</option>
-      <option value="intent">Intent</option>
-      <option value="evaluation">Evaluation</option>
-      <option value="purchase">Purchase</option>
-    </select>
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-source">Source</label>
-    <input type="text" id="edit-lead-source" name="edit-lead-source" />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-industry">Industry</label>
-    <input type="text" id="edit-lead-industry" name="edit-lead-industry" />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-status">Status</label>
-    <input type="text" id="edit-lead-status" name="edit-lead-status" />
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-notes">Notes</label>
-    <textarea id="edit-lead-notes" name="edit-lead-notes" rows="3"></textarea>
-  </div>
-
-  <div class="form-group">
-    <label for="edit-lead-content">Content Strategy</label>
-    <select id="edit-lead-content" name="edit-lead-content" class="content-select" multiple></select>
-  </div>
-
-  <div class="form-actions">
-    <button type="button" class="cancel-btn" onclick="toggleEditModal(false)">Cancel</button>
-    <button type="submit" class="submit-btn">Save Changes</button>
-  </div>
-</form>
-
-
-      
-  </div>
-</div>
-
-    <!-- ✅ Side Panel for Quick Editing -->
-<div id="lead-side-panel" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
-    <h2>Edit Lead (Quick)</h2>
-    <form id="side-panel-lead-form">
-      <input type="hidden" id="side-lead-id" />
-
-      <div class="form-group">
-        <label for="side-lead-company">Company</label>
-        <input type="text" id="side-lead-company" required />
-      </div>
-
-      <div class="form-group">
-        <label for="side-lead-contact">Contact</label>
-        <input type="text" id="side-lead-contact" required />
-      </div>
-
-      <div class="form-group">
-        <label for="side-lead-stage">Stage</label>
-        <select id="side-lead-stage">
-          <option value="awareness">Awareness</option>
-          <option value="interest">Interest</option>
-          <option value="intent">Intent</option>
-          <option value="evaluation">Evaluation</option>
-          <option value="purchase">Purchase</option>
-        </select>
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="cancel-btn" onclick="toggleLeadPanel(false)">Cancel</button>
-        <button type="submit" class="submit-btn">Save</button>
-      </div>
-    </form>
-  </div>
-</div>
 
 </body>
 </html>
