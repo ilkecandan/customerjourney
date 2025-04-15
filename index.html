@@ -2093,6 +2093,28 @@
             }
         });
 
+        // Add this to your initialization code
+document.addEventListener('click', function(e) {
+    // Check if clicked on a lead card in the funnel
+    const leadCard = e.target.closest('.lead-card');
+    if (leadCard) {
+        const leadId = leadCard.dataset.leadId;
+        if (leadId) {
+            openEditLeadModalById(leadId);
+        }
+        return;
+    }
+    
+    // Check if clicked on a lead row in the table (but not on action buttons)
+    const tableRow = e.target.closest('#leads-table-body tr');
+    if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+        const leadId = tableRow.dataset.leadId;
+        if (leadId) {
+            openEditLeadModalById(leadId);
+        }
+    }
+});
+        
         // Handle lead card clicks for editing (both in funnel and table)
 document.addEventListener('click', function(e) {
     // Check if clicked on a lead card in the funnel
@@ -2966,6 +2988,7 @@ document.addEventListener('click', function (e) {
 
         // Create a lead card element for the funnel
 
+// In the createLeadCard function (around line 2620):
 function createLeadCard(lead) {
     const leadCard = document.createElement('div');
     leadCard.className = 'lead-card interactive-element';
@@ -3451,7 +3474,7 @@ document.addEventListener('click', function(e) {
 });
 // ✅ OPEN the modal with correct data
 
-        function openEditLeadModalById(leadId) {
+function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
@@ -3492,10 +3515,6 @@ document.addEventListener('click', function(e) {
     // Show the modal
     document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
-        document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    saveLeadChanges();
-});
 
         // Export to Excel
         function exportToExcel() {
@@ -3782,6 +3801,10 @@ function addLead() {
         }
 
         // Save lead changes
+document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    saveLeadChanges();
+});
 
 function saveLeadChanges() {
     const leadId = document.getElementById('edit-lead-id').value;
