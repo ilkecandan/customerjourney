@@ -1788,96 +1788,108 @@
         </main>
 
         <!-- Add Lead Modal -->
-        <div id="add-lead-modal" class="modal hidden">
-            <div class="modal-content">
-                <button class="close-modal" type="button">&times;</button>
-                <h2>Add New Lead</h2>
-                <form id="lead-form">
-                    <div class="form-columns">
-                        <div class="form-group">
-                            <label for="lead-company">Company Name *</label>
-                            <input type="text" id="lead-company" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-contact">Contact Person *</label>
-                            <input type="text" id="lead-contact" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-email">Email *</label>
-                            <input type="email" id="lead-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-phone">Phone</label>
-                            <input type="tel" id="lead-phone">
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-stage">Initial Stage *</label>
-                            <select id="lead-stage" required>
-                                <option value="awareness">Awareness</option>
-                                <option value="interest">Interest</option>
-                                <option value="intent">Intent</option>
-                                <option value="evaluation">Evaluation</option>
-                                <option value="purchase">Purchase</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-source">Source</label>
-                            <select id="lead-source">
-                                <option value="website">Website</option>
-                                <option value="social">Social Media</option>
-                                <option value="referral">Referral</option>
-                                <option value="event">Event</option>
-                                <option value="ad">Advertisement</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-industry">Industry</label>
-                            <select id="lead-industry">
-                                <option value="saas">SaaS</option>
-                                <option value="ecommerce">E-commerce</option>
-                                <option value="healthcare">Healthcare</option>
-                                <option value="realestate">Real Estate</option>
-                                <option value="education">Education</option>
-                                <option value="consulting">Consulting</option>
-                                <option value="finance">Finance</option>
-                               <option value="media">Media</option>
-                               <option value="nonprofit">Nonprofit</option>
-                                <option value="travel">Travel</option>
-                               <option value="logistics">Logistics</option>
-                                <option value="fashion">Fashion</option>
-                                 <option value="gaming">Gaming</option>
-                                 <option value="gaming">Software</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="lead-status">Status</label>
-                            <select id="lead-status">
-                                <option value="new">New</option>
-                                <option value="hot">Hot</option>
-                                <option value="cold">Cold</option>
-                                <option value="stalled">Stalled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="lead-content">Content Strategy</label>
-                        <select id="lead-content" class="content-select" multiple>
-                            <!-- Options will be populated by JavaScript -->
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="lead-notes">Notes</label>
-                        <textarea id="lead-notes" rows="3"></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="cancel-btn">Cancel</button>
-                        <button type="submit" class="submit-btn">Add Lead</button>
-                    </div>
-                </form>
-            </div>
+       <!-- ✅ Add New Lead Modal -->
+<div id="add-lead-modal" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="document.getElementById('add-lead-modal').classList.add('hidden')" type="button">&times;</button>
+    <h2>Add New Lead</h2>
+
+    <form id="lead-form">
+      <div class="form-columns">
+        <div class="form-group">
+          <label for="lead-company">Company Name *</label>
+          <input type="text" id="lead-company" required>
         </div>
+
+        <div class="form-group">
+          <label for="lead-contact">Contact Person *</label>
+          <input type="text" id="lead-contact" required>
+        </div>
+
+        <div class="form-group">
+          <label for="lead-email">Email *</label>
+          <input type="email" id="lead-email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="lead-phone">Phone</label>
+          <input type="tel" id="lead-phone">
+        </div>
+
+        <div class="form-group">
+          <label for="lead-stage">Initial Stage *</label>
+          <select id="lead-stage" required>
+            <option value="awareness">Awareness</option>
+            <option value="interest">Interest</option>
+            <option value="intent">Intent</option>
+            <option value="evaluation">Evaluation</option>
+            <option value="purchase">Purchase</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="lead-source">Source</label>
+          <select id="lead-source">
+            <option value="website">Website</option>
+            <option value="social">Social Media</option>
+            <option value="referral">Referral</option>
+            <option value="event">Event</option>
+            <option value="ad">Advertisement</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="lead-industry">Industry</label>
+          <select id="lead-industry">
+            <option value="saas">SaaS</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="realestate">Real Estate</option>
+            <option value="education">Education</option>
+            <option value="consulting">Consulting</option>
+            <option value="finance">Finance</option>
+            <option value="media">Media</option>
+            <option value="nonprofit">Nonprofit</option>
+            <option value="travel">Travel</option>
+            <option value="logistics">Logistics</option>
+            <option value="fashion">Fashion</option>
+            <option value="gaming">Gaming</option>
+            <option value="software">Software</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="lead-status">Status</label>
+          <select id="lead-status">
+            <option value="new">New</option>
+            <option value="hot">Hot</option>
+            <option value="cold">Cold</option>
+            <option value="stalled">Stalled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full-width">
+        <label for="lead-content">Content Strategy</label>
+        <select id="lead-content" class="content-select" multiple>
+          <!-- Populated by JavaScript -->
+        </select>
+      </div>
+
+      <div class="form-group full-width">
+        <label for="lead-notes">Notes</label>
+        <textarea id="lead-notes" rows="3"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="document.getElementById('add-lead-modal').classList.add('hidden')">Cancel</button>
+        <button type="submit" class="submit-btn">Add Lead</button>
+      </div>
+    </form>
+  </div>
+</div>
 
         <!-- Add Content Modal -->
         <div id="add-content-modal" class="modal hidden">
@@ -4591,8 +4603,9 @@ document.addEventListener('click', function (e) {
   }
 });
 
-function toggleLeadPanel(show) {
-    const panel = document.getElementById('edit-lead-modal');
+<script>
+  function toggleLeadPanel(show) {
+    const panel = document.getElementById('lead-side-panel');
     if (!panel) return;
 
     if (show) {
@@ -4605,7 +4618,7 @@ function toggleLeadPanel(show) {
   }
 
   // ✅ Handle saving edited lead
-  document.getElementById('edit-lead-form').addEventListener('submit', function (e) {
+  document.getElementById('side-panel-lead-form').addEventListener('submit', function (e) {
     e.preventDefault();
 
     const id = document.getElementById('side-lead-id').value;
@@ -4623,7 +4636,7 @@ function toggleLeadPanel(show) {
       const index = leads[stage].findIndex(lead => lead.id === id);
       if (index !== -1) {
         foundLead = leads[stage][index];
-        leads[stage].splice(index, 1);
+        leads[stage].splice(index, 1); // Remove old version
         break;
       }
     }
@@ -4647,11 +4660,11 @@ function toggleLeadPanel(show) {
 </script>
 
 <!-- ✅ Lead Side Panel for Editing -->
-<div id="edit-lead-modal" class="modal hidden">
+<div id="lead-side-panel" class="modal hidden">
   <div class="modal-content">
     <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
     <h2>Edit Lead</h2>
-    <form id="edit-lead-form">
+    <form id="side-panel-lead-form">
       <input type="hidden" id="side-lead-id">
 
       <div class="form-group">
@@ -4685,5 +4698,3 @@ function toggleLeadPanel(show) {
 
 </body>
 </html>
-        
-   
