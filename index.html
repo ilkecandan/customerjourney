@@ -2560,12 +2560,14 @@ recentLeads.forEach(lead => {
 });
 
         // Add edit/delete button listeners
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
+ document.querySelectorAll('.edit-btn').forEach(btn => {
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation(); // 👈 prevent row click from interfering
     const leadId = this.dataset.leadId;
-    if (leadId) openEditModal(leadId);
+    if (leadId) openEditLeadModalById(leadId); // ✅ Correct function name
   });
 });
+
 
 
         document.querySelectorAll('.delete-btn').forEach(btn => {
