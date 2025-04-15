@@ -4788,11 +4788,11 @@ document.addEventListener('click', function (e) {
   </script>
 
   <!-- ✅ Lead Side Panel for Editing -->
-  <div id="lead-side-panel" class="modal hidden">
+<div id="edit-lead-modal" class="modal hidden">
     <div class="modal-content">
       <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
       <h2>Edit Lead</h2>
-      <form id="side-panel-lead-form">
+<form id="edit-lead-form">
         <input type="hidden" id="side-lead-id">
         <div class="form-group">
           <label for="side-lead-company">Company</label>
@@ -4817,6 +4817,8 @@ document.addEventListener('click', function (e) {
           <button type="submit" class="submit-btn">Save Changes</button>
         </div>
       </form>
+        <button onclick="document.getElementById('edit-lead-modal').classList.add('hidden')">&times;</button>
+
       <div id="lead-history-content" style="margin-top: 1rem;"></div>
     </div>
   </div>
