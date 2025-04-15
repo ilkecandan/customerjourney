@@ -2127,10 +2127,11 @@ function setupGlobalEventListeners() {
     // 🔁 Universal Click Handler
     document.addEventListener('click', function(e) {
         // 👉 Add Lead button
-        if (e.target.closest('#add-lead-btn')) {
-            document.getElementById('lead-form').reset();
-document.getElementById('add-lead-modal').classList.remove('hidden');
-        }
+       if (e.target.closest('#add-lead-btn')) {
+    document.getElementById('lead-form').reset();
+    document.getElementById('add-lead-modal').classList.remove('hidden');
+}
+
 
         // 👉 Add Content button
         else if (e.target.closest('#add-content-btn')) {
