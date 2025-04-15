@@ -620,8 +620,17 @@
             vertical-align: top;
         }
 .edit-btn {
-    display: none !important;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.25rem;
 }
+
+.edit-btn:hover {
+    color: var(--accent-color);
+}
+
 
         
         .leads-table th {
@@ -2340,6 +2349,7 @@
 
             // Load data and setup UI
             loadLeads();
+            enableEditButtons();
             loadContent();
             setupEventListeners();
             updateAnalytics();
@@ -2452,7 +2462,9 @@ recentLeads.forEach(lead => {
         <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
         <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
         <td>
-            <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
+<button class="edit-btn" data-lead-id="${lead.id}">
+    <i class="fas fa-edit"></i>
+</button>
             <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
         </td>
     `;
@@ -2626,6 +2638,7 @@ if (editLeadForm) {
 
         document.getElementById('edit-lead-modal').classList.add('hidden');
         loadLeads();
+        enableEditButtons();
         updateAnalytics?.();
         showNotification('Lead updated successfully');
     });
@@ -2893,6 +2906,7 @@ if (editLeadForm) {
             localStorage.setItem('leads', JSON.stringify(leads));
             
             loadLeads();
+            enableEditButtons();
             loadContent();
             populateContentOptions();
             showNotification('Content deleted successfully');
@@ -3148,6 +3162,7 @@ function deleteLeadById(leadId) {
     if (leadFound) {
         localStorage.setItem('leads', JSON.stringify(leads));
         loadLeads();
+        enableEditButtons();
         showNotification('Lead deleted successfully');
     } else {
         showNotification('Error: Lead could not be deleted', 'error');
@@ -3456,6 +3471,7 @@ function setupDragAndDrop() {
                             leads[toStage].push(lead);
                             localStorage.setItem('leads', JSON.stringify(leads));
                             loadLeads();
+                            enableEditButtons();
                         }
                     }
                 } else if (el.classList.contains('content-badge') || el.classList.contains('content-item')) {
@@ -3511,6 +3527,7 @@ function updateLeadMovement(lead, newStage) {
             
             // Update UI
             loadLeads();
+            enableEditButtons();
             updateAnalytics();
             
             // Show notification
@@ -3733,6 +3750,25 @@ function updateLeadMovement(lead, newStage) {
                 showNotification('Lead updated successfully');
             }
         }
+function enableEditButtons() {
+    const editButtons = document.querySelectorAll('.edit-btn');
+
+    editButtons.forEach(button => {
+        button.removeEventListener('click', handleEditClick); // clean slate
+        button.addEventListener('click', handleEditClick);
+    });
+}
+
+function handleEditClick(e) {
+    e.preventDefault();
+    const leadId = e.currentTarget.dataset.leadId;
+    if (leadId) {
+        openEditModal(leadId);
+    }
+}
+
+
+        
 
         // Open edit content modal
         function openEditContentModal(content) {
@@ -3788,6 +3824,7 @@ function updateLeadMovement(lead, newStage) {
                 localStorage.setItem('content', JSON.stringify(contentItems));
                 document.getElementById('edit-content-modal').classList.add('hidden');
                 loadLeads();
+                enableEditButtons();
                 loadContent();
                 populateContentOptions();
                 showNotification('Content updated successfully');
@@ -4305,6 +4342,7 @@ function saveNewLead(lead) {
     leads[lead.stage].push(lead);
     localStorage.setItem('leads', JSON.stringify(leads));
     loadLeads();
+    enableEditButtons();
 }
 
         
