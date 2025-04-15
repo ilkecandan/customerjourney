@@ -2853,7 +2853,7 @@ if (editLeadForm) {
 
         if (foundLead) {
             console.log('Opening edit modal for lead:', leadId); // Debug
-            openEditLeadModal(foundLead);
+    openEditLeadModalById(foundLead.id);
         } else {
             showNotification('Lead not found', 'error');
         }
@@ -3369,7 +3369,7 @@ function setupEventListeners() {
             }
 
             if (foundLead) {
-                openEditLeadModal(foundLead);
+    openEditLeadModalById(foundLead.id);
             } else {
                 showNotification('Lead not found', 'error');
             }
