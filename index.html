@@ -4719,32 +4719,98 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="modal-content">
     <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
     <h2>Edit Lead (Full)</h2>
-    <form id="edit-lead-form">
-      <input type="hidden" id="edit-lead-id" />
+
+<form id="edit-lead-form">
+  <input type="hidden" id="edit-lead-id" name="edit-lead-id" />
+
+  <div class="form-group">
+    <label for="edit-lead-company">Company</label>
+    <input type="text" id="edit-lead-company" name="edit-lead-company" required />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-contact">Contact</label>
+    <input type="text" id="edit-lead-contact" name="edit-lead-contact" required />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-email">Email</label>
+    <input type="email" id="edit-lead-email" name="edit-lead-email" />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-phone">Phone</label>
+    <input type="tel" id="edit-lead-phone" name="edit-lead-phone" />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-stage">Stage</label>
+    <select id="edit-lead-stage" name="edit-lead-stage">
+      <option value="awareness">Awareness</option>
+      <option value="interest">Interest</option>
+      <option value="intent">Intent</option>
+      <option value="evaluation">Evaluation</option>
+      <option value="purchase">Purchase</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-source">Source</label>
+    <input type="text" id="edit-lead-source" name="edit-lead-source" />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-industry">Industry</label>
+    <input type="text" id="edit-lead-industry" name="edit-lead-industry" />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-status">Status</label>
+    <input type="text" id="edit-lead-status" name="edit-lead-status" />
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-notes">Notes</label>
+    <textarea id="edit-lead-notes" name="edit-lead-notes" rows="3"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="edit-lead-content">Content Strategy</label>
+    <select id="edit-lead-content" name="edit-lead-content" class="content-select" multiple></select>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="cancel-btn" onclick="toggleEditModal(false)">Cancel</button>
+    <button type="submit" class="submit-btn">Save Changes</button>
+  </div>
+</form>
+
+
+      
+  </div>
+</div>
+
+    <!-- ✅ Side Panel for Quick Editing -->
+<div id="lead-side-panel" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
+    <h2>Edit Lead (Quick)</h2>
+    <form id="side-panel-lead-form">
+      <input type="hidden" id="side-lead-id" />
 
       <div class="form-group">
-        <label for="edit-lead-company">Company</label>
-        <input type="text" id="edit-lead-company" required />
+        <label for="side-lead-company">Company</label>
+        <input type="text" id="side-lead-company" required />
       </div>
 
       <div class="form-group">
-        <label for="edit-lead-contact">Contact</label>
-        <input type="text" id="edit-lead-contact" required />
+        <label for="side-lead-contact">Contact</label>
+        <input type="text" id="side-lead-contact" required />
       </div>
 
       <div class="form-group">
-        <label for="edit-lead-email">Email</label>
-        <input type="email" id="edit-lead-email" />
-      </div>
-
-      <div class="form-group">
-        <label for="edit-lead-phone">Phone</label>
-        <input type="text" id="edit-lead-phone" />
-      </div>
-
-      <div class="form-group">
-        <label for="edit-lead-stage">Stage</label>
-        <select id="edit-lead-stage">
+        <label for="side-lead-stage">Stage</label>
+        <select id="side-lead-stage">
           <option value="awareness">Awareness</option>
           <option value="interest">Interest</option>
           <option value="intent">Intent</option>
@@ -4753,34 +4819,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="edit-lead-source">Source</label>
-        <input type="text" id="edit-lead-source" />
-      </div>
-
-      <div class="form-group">
-        <label for="edit-lead-industry">Industry</label>
-        <input type="text" id="edit-lead-industry" />
-      </div>
-
-      <div class="form-group">
-        <label for="edit-lead-status">Status</label>
-        <input type="text" id="edit-lead-status" />
-      </div>
-
-      <div class="form-group">
-        <label for="edit-lead-notes">Notes</label>
-        <textarea id="edit-lead-notes" rows="3"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="edit-lead-content">Content Strategy</label>
-        <select id="edit-lead-content" class="content-select" multiple></select>
-      </div>
-
       <div class="form-actions">
-        <button type="button" class="cancel-btn" onclick="toggleEditModal(false)">Cancel</button>
-        <button type="submit" class="submit-btn">Save Changes</button>
+        <button type="button" class="cancel-btn" onclick="toggleLeadPanel(false)">Cancel</button>
+        <button type="submit" class="submit-btn">Save</button>
       </div>
     </form>
   </div>
