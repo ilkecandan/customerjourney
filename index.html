@@ -2069,6 +2069,8 @@
                 setupOnboarding();
             } else {
                 initializeApp();
+                setupGlobalEventListeners();
+
             }
         } else {
             setupAuth();
@@ -2114,6 +2116,8 @@
 
         // Setup all other event listeners
         setupEventListeners();
+        setupGlobalEventListeners();
+
     });
 
 function setupGlobalEventListeners() {
@@ -2318,6 +2322,8 @@ function setupGlobalEventListeners() {
                     setupOnboarding();
                 } else {
                     initializeApp();
+                    setupGlobalEventListeners();
+
                 }
             }
             else {
@@ -2345,12 +2351,16 @@ function setupGlobalEventListeners() {
             localStorage.setItem('onboarding_completed', 'true');
             document.getElementById('onboarding-overlay').classList.add('hidden');
             initializeApp();
+            setupGlobalEventListeners();
+
         });
 
         document.getElementById('start-using-app').addEventListener('click', function() {
             localStorage.setItem('onboarding_completed', 'true');
             document.getElementById('onboarding-overlay').classList.add('hidden');
             initializeApp();
+            setupGlobalEventListeners();
+
 
             // Start guided tooltip tour
             setTimeout(setupOnboardingTour, 700);
@@ -2571,6 +2581,7 @@ function setupGlobalEventListeners() {
         loadLeads();
         loadContent();
         setupEventListeners();
+        setupGlobalEventListeners();
         updateAnalytics();
     }
 
