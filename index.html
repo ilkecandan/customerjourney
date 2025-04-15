@@ -2120,47 +2120,47 @@
     });
 
 function setupGlobalEventListeners() {
-    // Handle all button clicks via event delegation
+    // 🔁 Universal Click Handler
     document.addEventListener('click', function(e) {
-        // Add Lead button
+        // 👉 Add Lead button
         if (e.target.closest('#add-lead-btn')) {
             document.getElementById('lead-form').reset();
-document.getElementById('add-lead-modal').classList.add('show');
+            document.getElementById('add-lead-modal').classList.add('show');
         }
-        
-        // Add Content button
+
+        // 👉 Add Content button
         else if (e.target.closest('#add-content-btn')) {
             document.getElementById('content-form').reset();
-document.getElementById('add-content-modal').classList.add('show');
+            document.getElementById('add-content-modal').classList.add('show');
         }
-        
-        // Refresh Advice button
+
+        // 🔁 Refresh smart insights
         else if (e.target.closest('#refresh-advice')) {
             refreshFunnelInsights();
         }
-        
-        // Export PDF button
+
+        // 🧾 Export PDF
         else if (e.target.closest('#export-pdf')) {
             exportToPDF();
         }
-        
-        // Export Excel button
+
+        // 📊 Export Excel
         else if (e.target.closest('#export-excel')) {
             exportToExcel();
         }
-        
-        // Close modal buttons
+
+        // ❌ Close any modal
         else if (e.target.closest('.close-modal')) {
-e.target.closest('.modal').classList.remove('show');
+            e.target.closest('.modal').classList.remove('show');
         }
-        
-        // Edit buttons in table
+
+        // ✏️ Edit lead
         else if (e.target.closest('.edit-btn')) {
             const leadId = e.target.closest('.edit-btn').dataset.leadId;
             openEditLeadModalById(leadId);
         }
-        
-        // Delete buttons in table
+
+        // 🗑 Delete lead
         else if (e.target.closest('.delete-btn') && !e.target.closest('#delete-lead-btn')) {
             e.stopPropagation();
             const leadId = e.target.closest('.delete-btn').dataset.leadId;
@@ -2170,33 +2170,51 @@ e.target.closest('.modal').classList.remove('show');
         }
     });
 
-    // Form submissions
-    document.getElementById('lead-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        addLead();
-    });
+    // ✅ FORM: Add Lead
+    const leadForm = document.getElementById('lead-form');
+    if (leadForm) {
+        leadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            addLead();
+        });
+    }
 
-    document.getElementById('content-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        addContent();
-    });
+    // ✅ FORM: Add Content
+    const contentForm = document.getElementById('content-form');
+    if (contentForm) {
+        contentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            addContent();
+        });
+    }
 
-    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveLeadChanges();
-    });
+    // ✅ FORM: Edit Lead
+    const editLeadForm = document.getElementById('edit-lead-form');
+    if (editLeadForm) {
+        editLeadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveLeadChanges();
+        });
+    }
 
-    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveContentChanges();
-    });
+    // ✅ FORM: Edit Content
+    const editContentForm = document.getElementById('edit-content-form');
+    if (editContentForm) {
+        editContentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveContentChanges();
+        });
+    }
 
-    // Lead stage filter
-    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
-        filterLeadsTable(this.value);
-    });
+    // 🔍 Filter by Stage
+    const stageFilter = document.getElementById('lead-stage-filter');
+    if (stageFilter) {
+        stageFilter.addEventListener('change', function() {
+            filterLeadsTable(this.value);
+        });
+    }
 
-    // Lead search
+    // 🔎 Search Leads (with debounce)
     const leadSearch = document.getElementById('lead-search');
     if (leadSearch) {
         leadSearch.addEventListener('input', function() {
@@ -2207,6 +2225,9 @@ e.target.closest('.modal').classList.remove('show');
         });
     }
 }
+
+
+    
     
     function setupEventListeners() {
         // Handle edit form submission
