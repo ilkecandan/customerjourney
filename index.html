@@ -4485,93 +4485,168 @@ function saveNewLead(lead) {
         }
 
 
-function toggleLeadPanel(show, contentHTML = "") {
+  // Show or hide the lead side panel (modal)
+  function toggleLeadPanel(show, contentHTML = "") {
     const panel = document.getElementById("lead-side-panel");
     if (show) {
-        document.getElementById("lead-history-content").innerHTML = contentHTML;
-        panel.classList.add("show");
-        panel.classList.remove("hidden");
+      document.getElementById("lead-history-content").innerHTML = contentHTML || "";
+      panel.classList.add("show");
+      panel.classList.remove("hidden");
     } else {
-        panel.classList.remove("show");
-        panel.classList.add("hidden");
+      panel.classList.remove("show");
+      panel.classList.add("hidden");
     }
-}
-        
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast show';
-            if (type === 'error') {
-                toast.classList.add('error');
-            } else {
-                toast.classList.remove('error');
-            }
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
+  }
 
-        // Register service worker on page load
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(reg => console.log('✅ Service worker registered:', reg))
-                    .catch(err => console.error('❌ Service worker registration failed:', err));
-            });
-        }
+  // Show toast notification
+  function showNotification(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast show';
+    if (type === 'error') {
+      toast.classList.add('error');
+    } else {
+      toast.classList.remove('error');
+    }
 
-let deferredPrompt;
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
 
-window.addEventListener('beforeinstallprompt', (e) => {
+  // Register service worker on page load
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('✅ Service worker registered:', reg))
+        .catch(err => console.error('❌ Service worker registration failed:', err));
+    });
+  }
+
+  // Handle PWA install prompt
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
     document.addEventListener('DOMContentLoaded', () => {
-        const installBtn = document.getElementById('install-btn');
-        if (!installBtn) {
-            console.error('Install button not found in DOM');
-            return;
-        }
+      const installBtn = document.getElementById('install-btn');
+      if (!installBtn) {
+        console.error('Install button not found in DOM');
+        return;
+      }
 
-        installBtn.style.display = 'block';
+      installBtn.style.display = 'block';
 
-        installBtn.addEventListener('click', () => {
-            installBtn.style.display = 'none';
-            deferredPrompt.prompt();
+      installBtn.addEventListener('click', () => {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
 
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('✅ User accepted the install prompt');
-                } else {
-                    console.log('❌ User dismissed the install prompt');
-                }
-                deferredPrompt = null;
-            });
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ User accepted the install prompt');
+          } else {
+            console.log('❌ User dismissed the install prompt');
+          }
+          deferredPrompt = null;
         });
+      });
     });
-});
-document.addEventListener('click', function (e) {
-  const editInsightBtn = e.target.closest('.edit-insight-btn');
-  if (!editInsightBtn) return;
+  });
 
-  const leadId = editInsightBtn.dataset.leadId;
-  if (leadId) {
-    openEditLeadModalById(leadId);
-  } else {
-    console.warn('No lead ID found in edit-insight-btn');
+  // Edit button click (delegated)
+  document.addEventListener('click', function (e) {
+    const editInsightBtn = e.target.closest('.edit-insight-btn');
+    if (!editInsightBtn) return;
+
+    const leadId = editInsightBtn.dataset.leadId;
+    if (leadId) {
+      openEditLeadModalById(leadId);
+    } else {
+      console.warn('No lead ID found in edit-insight-btn');
+    }
+  });
+
+  // 📝 LEAD EDIT PANEL LOGIC
+  let selectedLead = null;
+
+  function openLeadSidePanel(lead) {
+    selectedLead = lead;
+
+    document.getElementById('side-lead-id').value = lead.id;
+    document.getElementById('side-lead-company').value = lead.company || '';
+    document.getElementById('side-lead-contact').value = lead.contact || '';
+    document.getElementById('side-lead-stage').value = lead.stage || 'awareness';
+
+    toggleLeadPanel(true);
   }
-});
 
+  document.getElementById('side-panel-lead-form').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-    </script>
-    <div id="lead-side-panel" class="modal hidden">
+    const id = document.getElementById('side-lead-id').value;
+    const updatedCompany = document.getElementById('side-lead-company').value;
+    const updatedContact = document.getElementById('side-lead-contact').value;
+    const updatedStage = document.getElementById('side-lead-stage').value;
+
+    selectedLead.company = updatedCompany;
+    selectedLead.contact = updatedContact;
+    selectedLead.stage = updatedStage;
+
+    // Save to localStorage
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    // Remove from all stages
+    for (const stage of Object.keys(leads)) {
+      leads[stage] = leads[stage].filter(lead => lead.id !== selectedLead.id);
+    }
+
+    // Add to correct stage
+    leads[updatedStage].push(selectedLead);
+    localStorage.setItem('leads', JSON.stringify(leads));
+
+    toggleLeadPanel(false);
+    showNotification('Lead updated successfully!');
+    loadLeads(); // If you have this function, it will refresh the UI
+  });
+</script>
+
+<!-- ✅ Lead Side Panel for Editing -->
+<div id="lead-side-panel" class="modal hidden">
   <div class="modal-content">
     <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
-    <h2>Lead Details</h2>
-    <div id="lead-history-content"></div>
+    <h2>Edit Lead</h2>
+    <form id="side-panel-lead-form">
+      <input type="hidden" id="side-lead-id">
+      <div class="form-group">
+        <label for="side-lead-company">Company</label>
+        <input type="text" id="side-lead-company" required>
+      </div>
+      <div class="form-group">
+        <label for="side-lead-contact">Contact</label>
+        <input type="text" id="side-lead-contact" required>
+      </div>
+      <div class="form-group">
+        <label for="side-lead-stage">Stage</label>
+        <select id="side-lead-stage">
+          <option value="awareness">Awareness</option>
+          <option value="interest">Interest</option>
+          <option value="intent">Intent</option>
+          <option value="evaluation">Evaluation</option>
+          <option value="purchase">Purchase</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" onclick="toggleLeadPanel(false)">Cancel</button>
+        <button type="submit" class="submit-btn">Save Changes</button>
+      </div>
+    </form>
+    <div id="lead-history-content" style="margin-top: 1rem;"></div>
   </div>
 </div>
+
 </body>
 </html>
