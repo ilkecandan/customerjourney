@@ -2531,6 +2531,8 @@ function loadLeads() {
         const row = document.createElement('tr');
         row.innerHTML = `<td colspan="6" style="text-align: center;">No leads found</td>`;
         tableBody.appendChild(row);
+        attachEditButtonListeners();
+
     } else {
         const recentLeads = allLeads
             .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
@@ -2557,6 +2559,8 @@ recentLeads.forEach(lead => {
     });
 
     tableBody.appendChild(row);
+    attachEditButtonListeners();
+
 });
 
         // Add edit/delete button listeners
@@ -3129,6 +3133,8 @@ function updateLeadsTable() {
         const row = document.createElement('tr');
         row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
         tableBody.appendChild(row);
+        attachEditButtonListeners();
+
         return;
     }
 
@@ -3205,6 +3211,8 @@ function updateLeadsTable() {
 
         row.insertBefore(companyCell, row.firstChild);
         tableBody.appendChild(row);
+        attachEditButtonListeners();
+
 
         // ✅ Make the whole row clickable for editing
         row.addEventListener('click', e => {
@@ -3225,6 +3233,16 @@ function updateLeadsTable() {
             }
         });
     });
+}
+
+        function attachEditButtonListeners() {
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation(); // prevent row click
+      const leadId = this.dataset.leadId;
+      if (leadId) openEditLeadModalById(leadId);
+    });
+  });
 }
 
 
