@@ -3351,10 +3351,36 @@ function setupEventListeners() {
     });
 
     // 📝 Form Submissions
-    document.getElementById('lead-form')?.addEventListener('submit', e => {
-        e.preventDefault();
-        addLead();
-    });
+document.getElementById('lead-form')?.addEventListener('submit', e => {
+  e.preventDefault();
+
+  const newLead = {
+    id: 'lead_' + Date.now(), // ✅ unique ID
+    company: document.getElementById('lead-company').value,
+    contact: document.getElementById('lead-contact').value,
+    email: document.getElementById('lead-email').value,
+    phone: document.getElementById('lead-phone').value,
+    stage: document.getElementById('lead-stage').value,
+    source: document.getElementById('lead-source').value,
+    industry: document.getElementById('lead-industry').value,
+    status: document.getElementById('lead-status').value,
+    contentStrategies: $('#lead-content').val() || [],
+    notes: document.getElementById('lead-notes').value,
+    lastContact: new Date().toISOString()
+  };
+
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
+
+  leads[newLead.stage].push(newLead);
+  localStorage.setItem('leads', JSON.stringify(leads));
+
+  document.getElementById('add-lead-modal').classList.add('hidden');
+  showNotification?.('Lead added successfully!');
+  loadLeads?.();
+});
+
 
     document.getElementById('edit-lead-form')?.addEventListener('submit', e => {
         e.preventDefault();
