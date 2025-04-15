@@ -2126,13 +2126,13 @@ function setupGlobalEventListeners() {
         // Add Lead button
         if (e.target.closest('#add-lead-btn')) {
             document.getElementById('lead-form').reset();
-            document.getElementById('add-lead-modal').classList.remove('hidden');
+document.getElementById('add-lead-modal').classList.add('show');
         }
         
         // Add Content button
         else if (e.target.closest('#add-content-btn')) {
             document.getElementById('content-form').reset();
-            document.getElementById('add-content-modal').classList.remove('hidden');
+document.getElementById('add-content-modal').classList.add('show');
         }
         
         // Refresh Advice button
@@ -2222,13 +2222,13 @@ function setupGlobalEventListeners() {
         // Handle add lead button
         document.getElementById('add-lead-btn')?.addEventListener('click', function() {
             document.getElementById('lead-form').reset();
-            document.getElementById('add-lead-modal').classList.remove('hidden');
+document.getElementById('add-lead-modal').classList.add('show');
         });
 
         // Handle add content button
         document.getElementById('add-content-btn')?.addEventListener('click', function() {
             document.getElementById('content-form').reset();
-            document.getElementById('add-content-modal').classList.remove('hidden');
+document.getElementById('add-content-modal').classList.add('show');
         });
 
         // Handle refresh advice button
@@ -2858,7 +2858,7 @@ function setupGlobalEventListeners() {
             
             document.getElementById('add-content-empty-btn').addEventListener('click', () => {
                 document.getElementById('content-form').reset();
-                document.getElementById('add-content-modal').classList.remove('hidden');
+document.getElementById('add-content-modal').classList.add('show');
             });
             return;
         }
