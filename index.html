@@ -2587,42 +2587,41 @@ document.querySelectorAll('.edit-btn').forEach(btn => {
     updateAdvancedAnalytics();
 }
 
- function openEditLeadModalById(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
+function openEditLeadModalById(leadId) {
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
 
-    let foundLead = null;
-    for (const [stage, stageLeads] of Object.entries(leads)) {
-        const match = stageLeads.find(l => l.id === leadId);
-        if (match) {
-            foundLead = { ...match, currentStage: stage };
-            break;
-        }
+  let foundLead = null;
+  for (const [stage, stageLeads] of Object.entries(leads)) {
+    const match = stageLeads.find(l => l.id === leadId);
+    if (match) {
+      foundLead = { ...match, currentStage: stage };
+      break;
     }
+  }
 
-    if (!foundLead) {
-        showNotification('Lead not found', 'error');
-        return;
-    }
+  if (!foundLead) {
+    showNotification('Lead not found', 'error');
+    return;
+  }
 
-    // Fill the edit modal fields
-    document.getElementById('edit-lead-id').value = foundLead.id;
-    document.getElementById('edit-lead-company').value = foundLead.company || '';
-    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-    document.getElementById('edit-lead-email').value = foundLead.email || '';
-    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-    document.getElementById('edit-lead-stage').value = foundLead.currentStage;
-    document.getElementById('edit-lead-source').value = foundLead.source || '';
-    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-    document.getElementById('edit-lead-status').value = foundLead.status || '';
-    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+  // 🟨 Fill the side panel form fields
+  document.getElementById('side-lead-id').value = foundLead.id;
+  document.getElementById('side-lead-company').value = foundLead.company || '';
+  document.getElementById('side-lead-contact').value = foundLead.contact || '';
+  document.getElementById('side-lead-stage').value = foundLead.currentStage || 'awareness';
 
-    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+  // 🟨 Show the side panel
+  toggleLeadPanel(true);
 
-    document.getElementById('edit-lead-modal').classList.remove('hidden');
+  // Store for editing
+  window.selectedLead = foundLead;
 }
-       
+
+
+
+        
 
 function refreshFunnelInsights() {
     const loader = document.getElementById('insight-loader');
