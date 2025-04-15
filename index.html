@@ -3429,33 +3429,105 @@ document.getElementById('lead-form')?.addEventListener('submit', e => {
         });
     }
 }
-
+// ✅ OPEN the modal with correct data
 function openEditLeadModalById(leadId) {
   const leads = JSON.parse(localStorage.getItem('leads')) || {
     awareness: [], interest: [], intent: [], evaluation: [], purchase: []
   };
 
-  let foundLead = null;
-  for (const [stage, list] of Object.entries(leads)) {
-    const match = list.find(l => l.id === leadId);
+  let found = null;
+  let stage = '';
+
+  for (const [s, arr] of Object.entries(leads)) {
+    const match = arr.find(l => l.id === leadId);
     if (match) {
-      foundLead = { ...match, currentStage: stage };
+      found = match;
+      stage = s;
       break;
     }
   }
 
-  if (!foundLead) {
-    showNotification('Lead not found', 'error');
+  if (!found) {
+    alert('Lead not found!');
     return;
   }
 
-  document.getElementById('side-lead-id').value = foundLead.id;
-  document.getElementById('side-lead-company').value = foundLead.company || '';
-  document.getElementById('side-lead-contact').value = foundLead.contact || '';
-  document.getElementById('side-lead-stage').value = foundLead.currentStage || 'awareness';
+  // Populate modal fields
+  document.getElementById('edit-lead-id').value = found.id;
+  document.getElementById('edit-lead-company').value = found.company || '';
+  document.getElementById('edit-lead-contact').value = found.contact || '';
+  document.getElementById('edit-lead-email').value = found.email || '';
+  document.getElementById('edit-lead-phone').value = found.phone || '';
+  document.getElementById('edit-lead-stage').value = found.stage || stage;
+  document.getElementById('edit-lead-source').value = found.source || '';
+  document.getElementById('edit-lead-industry').value = found.industry || '';
+  document.getElementById('edit-lead-status').value = found.status || '';
+  document.getElementById('edit-lead-notes').value = found.notes || '';
+  $('#edit-lead-content').val(found.contentStrategies || []).trigger('change');
 
-document.getElementById('edit-lead-modal').classList.remove('hidden');
+  // Show modal
+  document.getElementById('edit-lead-modal').classList.remove('hidden');
 }
+
+// ✅ Save Changes Handler
+document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const id = document.getElementById('edit-lead-id').value;
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
+
+  let oldStage = null;
+  let existingLead = null;
+
+  for (const [stage, list] of Object.entries(leads)) {
+    const index = list.findIndex(l => l.id === id);
+    if (index !== -1) {
+      existingLead = list[index];
+      list.splice(index, 1); // remove
+      oldStage = stage;
+      break;
+    }
+  }
+
+  if (!existingLead) {
+    showNotification?.('Lead not found while saving', 'error');
+    return;
+  }
+
+  const updated = {
+    ...existingLead,
+    company: document.getElementById('edit-lead-company').value,
+    contact: document.getElementById('edit-lead-contact').value,
+    email: document.getElementById('edit-lead-email').value,
+    phone: document.getElementById('edit-lead-phone').value,
+    stage: document.getElementById('edit-lead-stage').value,
+    source: document.getElementById('edit-lead-source').value,
+    industry: document.getElementById('edit-lead-industry').value,
+    status: document.getElementById('edit-lead-status').value,
+    notes: document.getElementById('edit-lead-notes').value,
+    contentStrategies: $('#edit-lead-content').val() || [],
+    lastContact: new Date().toISOString()
+  };
+
+  leads[updated.stage].push(updated);
+  localStorage.setItem('leads', JSON.stringify(leads));
+
+  document.getElementById('edit-lead-modal').classList.add('hidden');
+  loadLeads?.();
+  updateAnalytics?.();
+  showNotification?.('Lead updated successfully');
+});
+
+// ✅ Hook up edit buttons
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.edit-insight-btn');
+  if (btn?.dataset?.leadId) {
+    openEditLeadModalById(btn.dataset.leadId);
+  }
+});
+
 
 
         // Export to Excel
