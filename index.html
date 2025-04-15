@@ -3630,58 +3630,63 @@ function updateLeadMovement(lead, newStage) {
         }
 
         // Add a new lead
-        function addLead() {
-            const company = document.getElementById('lead-company').value;
-            const contact = document.getElementById('lead-contact').value;
-            const email = document.getElementById('lead-email').value;
-            const phone = document.getElementById('lead-phone').value;
-            const stage = document.getElementById('lead-stage').value;
-            const source = document.getElementById('lead-source').value;
-            const industry = document.getElementById('lead-industry').value;
-            const status = document.getElementById('lead-status').value;
-            const notes = document.getElementById('lead-notes').value;
 
-            // Get selected content strategies
-            const contentSelect = document.getElementById('lead-content');
-            const contentStrategies = $(contentSelect).val() || [];
+function addLead() {
+  const company = document.getElementById('lead-company').value;
+  const contact = document.getElementById('lead-contact').value;
+  const email = document.getElementById('lead-email').value;
+  const phone = document.getElementById('lead-phone').value;
+  const stage = document.getElementById('lead-stage').value;
+  const source = document.getElementById('lead-source').value;
+  const industry = document.getElementById('lead-industry').value;
+  const status = document.getElementById('lead-status').value;
+  const notes = document.getElementById('lead-notes').value;
 
-            if (!company || !contact || !email) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
+  const contentSelect = document.getElementById('lead-content');
+  const contentStrategies = $(contentSelect).val() || [];
 
-            const newLead = {
-                id: 'lead-' + Date.now(),
-                company,
-                contact,
-                email,
-                phone,
-                source,
-                currentStage: stage,
-                industry,
-                status,
-                notes,
-                contentStrategies,
-                dateAdded: new Date().toISOString(),
-                lastContact: new Date().toISOString(),
-                value: Math.floor(Math.random() * 10000) + 1000 // Random value for demo
-            };
+  if (!company || !contact || !email) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
 
-            // Add to storage
-            const leads = JSON.parse(localStorage.getItem('leads'));
-            leads[stage].push(newLead);
-            localStorage.setItem('leads', JSON.stringify(leads));
+  // ✅ Make sure leads object exists
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
 
-            // Close modal and reset form
-            document.getElementById('add-lead-modal').classList.add('hidden');
-            document.getElementById('lead-form').reset();
+  // ✅ Construct new lead
+  const newLead = {
+    id: 'lead-' + Date.now(), // 🔥 Unique ID is critical for edit
+    company,
+    contact,
+    email,
+    phone,
+    source,
+    stage, // for compatibility
+    currentStage: stage, // for display/UI logic
+    industry,
+    status,
+    notes,
+    contentStrategies,
+    dateAdded: new Date().toISOString(),
+    lastContact: new Date().toISOString(),
+    value: Math.floor(Math.random() * 10000) + 1000 // Demo value
+  };
 
-            // Update UI
-            loadLeads();
-            updateAnalytics();
-            showNotification('Lead added successfully');
-        }
+  // ✅ Push to correct stage
+  leads[stage].push(newLead);
+  localStorage.setItem('leads', JSON.stringify(leads));
 
+  // ✅ Reset UI
+  document.getElementById('add-lead-modal').classList.add('hidden');
+  document.getElementById('lead-form').reset();
+
+  loadLeads?.();
+  updateAnalytics?.();
+  showNotification?.('Lead added successfully');
+}
+        
         // Add new content strategy
         function addContent() {
             const name = document.getElementById('content-name').value;
