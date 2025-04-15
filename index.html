@@ -4568,147 +4568,114 @@ function saveNewLead(lead) {
   }
 
   // ✅ Side Panel Logic
-  function openSidePanelLeadEditor(leadId) {
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
 
-    let selected = null;
-    let foundStage = null;
+function openSidePanelLeadEditor(leadId) {
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
 
-    for (const [stage, list] of Object.entries(leads)) {
-      const lead = list.find(l => l.id === leadId);
-      if (lead) {
-        selected = lead;
-        foundStage = stage;
-        break;
-      }
+  let selected = null;
+  let foundStage = null;
+
+  for (const [stage, list] of Object.entries(leads)) {
+    const lead = list.find(l => l.id === leadId);
+    if (lead) {
+      selected = lead;
+      foundStage = stage;
+      break;
     }
-
-    if (!selected) {
-      showNotification?.('Lead not found', 'error');
-      return;
-    }
-
-    document.getElementById('side-lead-id').value = selected.id;
-    document.getElementById('side-lead-company').value = selected.company || '';
-    document.getElementById('side-lead-contact').value = selected.contact || '';
-    document.getElementById('side-lead-stage').value = selected.stage || foundStage;
-
-    toggleLeadPanel(true);
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    // ✅ Save from side panel
-    const sidePanelForm = document.getElementById('side-panel-lead-form');
-    if (sidePanelForm) {
-      sidePanelForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+  if (!selected) {
+    alert('Lead not found.');
+    return;
+  }
 
-        const id = document.getElementById('side-lead-id').value;
-        const newCompany = document.getElementById('side-lead-company').value;
-        const newContact = document.getElementById('side-lead-contact').value;
-        const newStage = document.getElementById('side-lead-stage').value;
+  // Fill edit modal
+  document.getElementById('edit-lead-id').value = selected.id;
+  document.getElementById('edit-lead-company').value = selected.company || '';
+  document.getElementById('edit-lead-contact').value = selected.contact || '';
+  document.getElementById('edit-lead-email').value = selected.email || '';
+  document.getElementById('edit-lead-phone').value = selected.phone || '';
+  document.getElementById('edit-lead-stage').value = selected.stage || foundStage;
+  document.getElementById('edit-lead-source').value = selected.source || '';
+  document.getElementById('edit-lead-industry').value = selected.industry || '';
+  document.getElementById('edit-lead-status').value = selected.status || '';
+  document.getElementById('edit-lead-notes').value = selected.notes || '';
+  $('#edit-lead-content').val(selected.contentStrategies || []).trigger('change');
 
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-          awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
+  document.getElementById('edit-lead-modal').classList.remove('hidden');
+}
 
-        let updatedLead = null;
+document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
+  e.preventDefault();
 
-        for (const [stage, list] of Object.entries(leads)) {
-          const idx = list.findIndex(l => l.id === id);
-          if (idx !== -1) {
-            updatedLead = list[idx];
-            list.splice(idx, 1);
-            break;
-          }
-        }
+  const id = document.getElementById('edit-lead-id').value;
+  const stage = document.getElementById('edit-lead-stage').value;
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
 
-        if (!updatedLead) {
-          showNotification?.('Lead not found for saving', 'error');
-          return;
-        }
+  let foundLead = null;
+  let oldStage = null;
 
-        const updated = {
-          ...updatedLead,
-          company: newCompany,
-          contact: newContact,
-          stage: newStage,
-          lastContact: new Date().toISOString()
-        };
-
-        leads[newStage].push(updated);
-        localStorage.setItem('leads', JSON.stringify(leads));
-
-        toggleLeadPanel(false);
-        showNotification?.('Lead updated!', 'success');
-        loadLeads?.();
-      });
+  for (const [key, list] of Object.entries(leads)) {
+    const index = list.findIndex(l => l.id === id);
+    if (index !== -1) {
+      foundLead = list[index];
+      list.splice(index, 1);
+      oldStage = key;
+      break;
     }
+  }
 
-    // ✅ Save from full edit modal
-    const editForm = document.getElementById('edit-lead-form');
-    if (editForm) {
-      editForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+  if (!foundLead) {
+    alert('Lead not found.');
+    return;
+  }
 
-        const id = document.getElementById('edit-lead-id').value;
-        const stage = document.getElementById('edit-lead-stage').value;
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-          awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
+  const updatedLead = {
+    ...foundLead,
+    company: document.getElementById('edit-lead-company').value,
+    contact: document.getElementById('edit-lead-contact').value,
+    email: document.getElementById('edit-lead-email').value,
+    phone: document.getElementById('edit-lead-phone').value,
+    stage: stage,
+    source: document.getElementById('edit-lead-source').value,
+    industry: document.getElementById('edit-lead-industry').value,
+    status: document.getElementById('edit-lead-status').value,
+    notes: document.getElementById('edit-lead-notes').value,
+    contentStrategies: $('#edit-lead-content').val() || [],
+    lastContact: new Date().toISOString()
+  };
 
-        let foundLead = null;
+  leads[stage].push(updatedLead);
+  localStorage.setItem('leads', JSON.stringify(leads));
 
-        for (const [key, list] of Object.entries(leads)) {
-          const index = list.findIndex(l => l.id === id);
-          if (index !== -1) {
-            foundLead = list[index];
-            list.splice(index, 1);
-            break;
-          }
-        }
+  document.getElementById('edit-lead-modal').classList.add('hidden');
+  loadLeads();
+  updateAnalytics();
+  showNotification('Lead updated successfully');
+});
 
-        if (!foundLead) {
-          alert('Lead not found.');
-          return;
-        }
-
-        const updatedLead = {
-          ...foundLead,
-          company: document.getElementById('edit-lead-company').value,
-          contact: document.getElementById('edit-lead-contact').value,
-          email: document.getElementById('edit-lead-email').value,
-          phone: document.getElementById('edit-lead-phone').value,
-          stage: stage,
-          source: document.getElementById('edit-lead-source').value,
-          industry: document.getElementById('edit-lead-industry').value,
-          status: document.getElementById('edit-lead-status').value,
-          notes: document.getElementById('edit-lead-notes').value,
-          contentStrategies: $('#edit-lead-content').val() || [],
-          lastContact: new Date().toISOString()
-        };
-
-        leads[stage].push(updatedLead);
-        localStorage.setItem('leads', JSON.stringify(leads));
-
-        toggleEditModal(false);
-        loadLeads();
-        updateAnalytics();
-        showNotification('Lead updated successfully');
-      });
-    }
-
-    // ✅ Hook edit-insight-btn for side panel
-    document.addEventListener('click', function (e) {
-      const btn = e.target.closest('.edit-insight-btn');
-      if (btn && btn.dataset.leadId) {
-        openSidePanelLeadEditor(btn.dataset.leadId);
-      }
-    });
-  });
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.edit-insight-btn');
+  if (btn && btn.dataset.leadId) {
+    openSidePanelLeadEditor(btn.dataset.leadId);
+  }
+});
 </script>
+
+<!-- ✅ Ensure content select2 is triggered after DOM ready -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  $('#edit-lead-content').select2({
+    width: '100%',
+    placeholder: 'Select content strategies'
+  });
+});
+</script>
+
 
 <!-- ✅ Side Panel for Quick Editing -->
 <div id="lead-side-panel" class="modal hidden">
