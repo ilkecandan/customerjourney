@@ -4505,104 +4505,6 @@ function saveNewLead(lead) {
     }
   });
 
-function openLeadSidePanel(lead) {
-      selectedLead = lead;
-
-      document.getElementById('side-lead-id').value = lead.id;
-      document.getElementById('side-lead-company').value = lead.company || '';
-      document.getElementById('side-lead-contact').value = lead.contact || '';
-      document.getElementById('side-lead-stage').value = lead.stage || 'awareness';
-
-document.getElementById('edit-lead-modal').classList.remove('hidden');
-    }
-
-
-// 1. Open the side panel and fill form with existing lead data
-function openSidePanelLeadEditor(leadId) {
-  const leads = JSON.parse(localStorage.getItem('leads')) || {
-    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-  };
-
-  let selected = null;
-  let foundStage = null;
-  for (const [stage, list] of Object.entries(leads)) {
-    const lead = list.find(l => l.id === leadId);
-    if (lead) {
-      selected = lead;
-      foundStage = stage;
-      break;
-    }
-  }
-
-  if (!selected) {
-    showNotification('Lead not found', 'error');
-    return;
-  }
-
-  document.getElementById('side-lead-id').value = selected.id;
-  document.getElementById('side-lead-company').value = selected.company || '';
-  document.getElementById('side-lead-contact').value = selected.contact || '';
-  document.getElementById('side-lead-stage').value = foundStage;
-
-document.getElementById('edit-lead-modal').classList.remove('hidden');
-}
-
-// 2. Save edited lead
-const sidePanelForm = document.getElementById('side-panel-lead-form');
-if (sidePanelForm) {
-  sidePanelForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    const id = document.getElementById('side-lead-id').value;
-    const newCompany = document.getElementById('side-lead-company').value;
-    const newContact = document.getElementById('side-lead-contact').value;
-    const newStage = document.getElementById('side-lead-stage').value;
-
-    let updatedLead = null;
-    let oldStage = null;
-
-    for (const [stage, list] of Object.entries(leads)) {
-      const idx = list.findIndex(l => l.id === id);
-      if (idx !== -1) {
-        updatedLead = list[idx];
-        list.splice(idx, 1); // remove from old stage
-        oldStage = stage;
-        break;
-      }
-    }
-
-    if (!updatedLead) {
-      showNotification('Lead not found for saving', 'error');
-      return;
-    }
-
-    const updated = {
-      ...updatedLead,
-      company: newCompany,
-      contact: newContact,
-      lastContact: new Date().toISOString()
-    };
-
-    leads[newStage].push(updated);
-    localStorage.setItem('leads', JSON.stringify(leads));
-document.getElementById('edit-lead-modal').classList.add('hidden');
-    showNotification('Lead updated!', 'success');
-    loadLeads();
-  });
-}
-
-// 3. Trigger the edit panel from edit button clicks
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.edit-insight-btn');
-  if (btn && btn.dataset.leadId) {
-    openSidePanelLeadEditor(btn.dataset.leadId);
-  }
-});
-
 <script>
   function toggleLeadPanel(show) {
     const panel = document.getElementById('lead-side-panel');
@@ -4617,45 +4519,92 @@ document.addEventListener('click', function (e) {
     }
   }
 
-  // ✅ Handle saving edited lead
-  document.getElementById('side-panel-lead-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const id = document.getElementById('side-lead-id').value;
-    const updatedCompany = document.getElementById('side-lead-company').value;
-    const updatedContact = document.getElementById('side-lead-contact').value;
-    const updatedStage = document.getElementById('side-lead-stage').value;
-
+  // ✅ Open the side panel with lead data
+  function openSidePanelLeadEditor(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
       awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
-    let foundLead = null;
+    let selected = null;
+    let foundStage = null;
 
-    for (const stage in leads) {
-      const index = leads[stage].findIndex(lead => lead.id === id);
-      if (index !== -1) {
-        foundLead = leads[stage][index];
-        leads[stage].splice(index, 1); // Remove old version
+    for (const [stage, list] of Object.entries(leads)) {
+      const lead = list.find(l => l.id === leadId);
+      if (lead) {
+        selected = lead;
+        foundStage = stage;
         break;
       }
     }
 
-    if (foundLead) {
-      foundLead.company = updatedCompany;
-      foundLead.contact = updatedContact;
-      foundLead.stage = updatedStage;
+    if (!selected) {
+      showNotification?.('Lead not found', 'error');
+      return;
+    }
 
-      leads[updatedStage].push(foundLead);
+    document.getElementById('side-lead-id').value = selected.id;
+    document.getElementById('side-lead-company').value = selected.company || '';
+    document.getElementById('side-lead-contact').value = selected.contact || '';
+    document.getElementById('side-lead-stage').value = foundStage;
+
+    toggleLeadPanel(true);
+  }
+
+  // ✅ Save edited lead
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('side-panel-lead-form');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const id = document.getElementById('side-lead-id').value;
+      const newCompany = document.getElementById('side-lead-company').value;
+      const newContact = document.getElementById('side-lead-contact').value;
+      const newStage = document.getElementById('side-lead-stage').value;
+
+      const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+      };
+
+      let updatedLead = null;
+
+      for (const [stage, list] of Object.entries(leads)) {
+        const idx = list.findIndex(l => l.id === id);
+        if (idx !== -1) {
+          updatedLead = list[idx];
+          list.splice(idx, 1); // remove from old stage
+          break;
+        }
+      }
+
+      if (!updatedLead) {
+        showNotification?.('Lead not found for saving', 'error');
+        return;
+      }
+
+      const updated = {
+        ...updatedLead,
+        company: newCompany,
+        contact: newContact,
+        lastContact: new Date().toISOString()
+      };
+
+      leads[newStage].push(updated);
       localStorage.setItem('leads', JSON.stringify(leads));
 
       toggleLeadPanel(false);
-      showNotification?.('Lead updated successfully!');
+      showNotification?.('Lead updated!', 'success');
       loadLeads?.();
-      updateAnalytics?.();
-    } else {
-      showNotification?.('Failed to update: lead not found.', 'error');
-    }
+    });
+
+    // ✅ Hook edit buttons
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.edit-insight-btn');
+      if (btn && btn.dataset.leadId) {
+        openSidePanelLeadEditor(btn.dataset.leadId);
+      }
+    });
   });
 </script>
 
@@ -4665,16 +4614,16 @@ document.addEventListener('click', function (e) {
     <button class="close-modal" onclick="toggleLeadPanel(false)">&times;</button>
     <h2>Edit Lead</h2>
     <form id="side-panel-lead-form">
-      <input type="hidden" id="side-lead-id">
+      <input type="hidden" id="side-lead-id" />
 
       <div class="form-group">
         <label for="side-lead-company">Company</label>
-        <input type="text" id="side-lead-company" required>
+        <input type="text" id="side-lead-company" required />
       </div>
 
       <div class="form-group">
         <label for="side-lead-contact">Contact</label>
-        <input type="text" id="side-lead-contact" required>
+        <input type="text" id="side-lead-contact" required />
       </div>
 
       <div class="form-group">
