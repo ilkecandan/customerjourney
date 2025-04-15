@@ -4555,6 +4555,95 @@ function openLeadSidePanel(lead) {
       toggleLeadPanel(true);
     }
 
+
+// 1. Open the side panel and fill form with existing lead data
+function openSidePanelLeadEditor(leadId) {
+  const leads = JSON.parse(localStorage.getItem('leads')) || {
+    awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+  };
+
+  let selected = null;
+  let foundStage = null;
+  for (const [stage, list] of Object.entries(leads)) {
+    const lead = list.find(l => l.id === leadId);
+    if (lead) {
+      selected = lead;
+      foundStage = stage;
+      break;
+    }
+  }
+
+  if (!selected) {
+    showNotification('Lead not found', 'error');
+    return;
+  }
+
+  document.getElementById('side-lead-id').value = selected.id;
+  document.getElementById('side-lead-company').value = selected.company || '';
+  document.getElementById('side-lead-contact').value = selected.contact || '';
+  document.getElementById('side-lead-stage').value = foundStage;
+
+  toggleLeadPanel(true);
+}
+
+// 2. Save edited lead
+const sidePanelForm = document.getElementById('side-panel-lead-form');
+if (sidePanelForm) {
+  sidePanelForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+      awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
+
+    const id = document.getElementById('side-lead-id').value;
+    const newCompany = document.getElementById('side-lead-company').value;
+    const newContact = document.getElementById('side-lead-contact').value;
+    const newStage = document.getElementById('side-lead-stage').value;
+
+    let updatedLead = null;
+    let oldStage = null;
+
+    for (const [stage, list] of Object.entries(leads)) {
+      const idx = list.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        updatedLead = list[idx];
+        list.splice(idx, 1); // remove from old stage
+        oldStage = stage;
+        break;
+      }
+    }
+
+    if (!updatedLead) {
+      showNotification('Lead not found for saving', 'error');
+      return;
+    }
+
+    const updated = {
+      ...updatedLead,
+      company: newCompany,
+      contact: newContact,
+      lastContact: new Date().toISOString()
+    };
+
+    leads[newStage].push(updated);
+    localStorage.setItem('leads', JSON.stringify(leads));
+    toggleLeadPanel(false);
+    showNotification('Lead updated!', 'success');
+    loadLeads();
+  });
+}
+
+// 3. Trigger the edit panel from edit button clicks
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.edit-insight-btn');
+  if (btn && btn.dataset.leadId) {
+    openSidePanelLeadEditor(btn.dataset.leadId);
+  }
+});
+
+
+        
     function toggleLeadPanel(show) {
       const panel = document.getElementById('lead-side-panel');
       if (show) {
@@ -4609,6 +4698,9 @@ function openLeadSidePanel(lead) {
         showNotification('Failed to update: lead not found.', 'error');
       }
     });
+
+
+        
   </script>
 
   <!-- ✅ Lead Side Panel for Editing -->
