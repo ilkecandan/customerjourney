@@ -3015,7 +3015,17 @@ function createLeadCard(lead) {
     leadCard.appendChild(tagsWrapper);
 
     // Show Insight Panel on Click
-    leadCard.addEventListener('click', () => {
+leadCard.addEventListener('click', () => {
+    const contentHTML = `
+        <p><strong>Company:</strong> ${lead.company}</p>
+        <p><strong>Stage:</strong> ${lead.currentStage}</p>
+        <p><strong>Insight:</strong> ${lead.moves || 0} moves in ${lead.days || 0} days = 🔥HOT!</p>
+        <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
+        <button class="submit-btn" onclick="openEditLeadModalById('${lead.id}')">✏️ Edit Lead</button>
+    `;
+    toggleLeadPanel(true, contentHTML);
+});
+
         const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
         const contentHTML = `
             <p><strong>Company:</strong> ${lead.company}</p>
@@ -3734,7 +3744,12 @@ function updateLeadMovement(lead, newStage) {
             const contentSelect = document.getElementById('edit-lead-content');
             $(contentSelect).val(lead.contentStrategies || []).trigger('change');
 
-            document.getElementById('edit-lead-modal').classList.remove('hidden');
+const editModal = document.getElementById('edit-lead-modal');
+editModal.classList.remove('hidden');
+editModal.classList.add('show');
+document.getElementById('lead-side-panel').innerHTML = '';
+document.getElementById('lead-side-panel').appendChild(editModal);
+toggleLeadPanel(true);
         }
 
         // Save lead changes
