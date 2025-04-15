@@ -4369,41 +4369,40 @@ function saveNewLead(lead) {
 
         
         // Install button functionality
-        function setupInstallButton() {
-  let deferredPrompt;
-  const installBtn = document.getElementById('install-btn');
 
+function setupInstallButton() {
+  // First check if the button exists
+  const installBtn = document.getElementById('install-btn');
+  
   if (!installBtn) {
-    console.error('❌ Install button not found');
+    console.log('Install button not found - skipping setup');
     return;
   }
+
+  let deferredPrompt;
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
 
+    // Show the install button
     installBtn.classList.remove('hidden');
-    installBtn.style.display = 'inline-flex';
-
+    
     installBtn.addEventListener('click', async () => {
       installBtn.classList.add('hidden');
-      installBtn.style.display = 'none';
-
       deferredPrompt.prompt();
+      
       const { outcome } = await deferredPrompt.userChoice;
-
-      console.log(`✅ User response: ${outcome}`);
+      console.log(`User response: ${outcome}`);
       deferredPrompt = null;
     });
   });
 
   window.addEventListener('appinstalled', () => {
-    console.log('✅ App was installed');
+    console.log('App was installed');
     installBtn.classList.add('hidden');
-    installBtn.style.display = 'none';
   });
 }
-
 
         // Register service worker
         function registerServiceWorker() {
