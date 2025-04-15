@@ -570,6 +570,33 @@
     transform: scale(1.02);
     border-left: 3px solid var(--primary-light);
 }
+
+.lead-card.saas {
+  background-color: rgba(91, 206, 250, 0.15); /* light blue */
+  border: 1px solid #5bcefa;
+}
+
+.lead-card.healthcare {
+  background-color: rgba(255, 148, 148, 0.15); /* soft red */
+  border: 1px solid #ff9494;
+}
+
+.lead-card.education {
+  background-color: rgba(255, 224, 102, 0.15); /* mellow yellow */
+  border: 1px solid #ffe066;
+}
+
+.lead-card.realestate {
+  background-color: rgba(174, 214, 103, 0.15); /* minty green */
+  border: 1px solid #aed667;
+}
+        
+[data-drop-target="awareness"] .lead-card { background-color: rgba(255, 255, 255, 0.06); }
+[data-drop-target="interest"] .lead-card { background-color: rgba(91, 206, 250, 0.07); }
+[data-drop-target="intent"] .lead-card { background-color: rgba(174, 214, 103, 0.07); }
+[data-drop-target="evaluation"] .lead-card { background-color: rgba(255, 224, 102, 0.07); }
+[data-drop-target="purchase"] .lead-card { background-color: rgba(255, 255, 255, 0.12); }
+
         
         /* Content badges */
         .content-badges {
