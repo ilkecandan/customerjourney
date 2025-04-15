@@ -4534,6 +4534,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
         });
     });
 });
+document.addEventListener('click', function (e) {
+  const editBtn = e.target.closest('.edit-insight-btn');
+  if (editBtn) {
+    const leadId = editBtn.dataset.leadId;
+    if (leadId) {
+      openEditLeadModalById(leadId); // this function already exists
+      toggleLeadPanel(false); // hide the side panel after opening the form
+    }
+  }
+});
 
 
     </script>
