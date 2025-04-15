@@ -2065,6 +2065,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script>
+        
         let currentSelectedLeadId = null;
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -2114,6 +2115,95 @@ document.addEventListener('click', function(e) {
     }
 });
 
+        function setupEventListeners() {
+    // Handle edit form submission
+    const editForm = document.getElementById('edit-lead-form');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveLeadChanges();
+        });
+    }
+
+    // Handle add lead button
+    document.getElementById('add-lead-btn')?.addEventListener('click', function() {
+        document.getElementById('lead-form').reset();
+        document.getElementById('add-lead-modal').classList.remove('hidden');
+    });
+
+    // Handle add content button
+    document.getElementById('add-content-btn')?.addEventListener('click', function() {
+        document.getElementById('content-form').reset();
+        document.getElementById('add-content-modal').classList.remove('hidden');
+    });
+
+    // Handle refresh advice button
+    document.getElementById('refresh-advice')?.addEventListener('click', function() {
+        refreshFunnelInsights();
+    });
+
+    // Handle expand funnel button
+    document.getElementById('expand-funnel')?.addEventListener('click', function() {
+        const funnelContainer = document.querySelector('.funnel-container');
+        funnelContainer.classList.add('pulse-highlight');
+        setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
+    });
+
+    // Handle export buttons
+    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
+
+    // Handle lead stage filter
+    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+        filterLeadsTable(this.value);
+    });
+
+    // Handle lead search
+    const leadSearch = document.getElementById('lead-search');
+    if (leadSearch) {
+        leadSearch.addEventListener('input', function() {
+            clearTimeout(searchLeads.debounce);
+            searchLeads.debounce = setTimeout(() => {
+                searchLeads(this.value);
+            }, 300);
+        });
+    }
+
+    // Handle modal close buttons
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.modal').classList.add('hidden');
+        });
+    });
+
+    // Handle delete lead button in edit modal
+    document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        deleteLead();
+    });
+
+    // Handle content form submission
+    document.getElementById('content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addContent();
+    });
+
+    // Handle edit content form submission
+    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveContentChanges();
+    });
+
+    // Handle clicks outside modals to close them
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    });
+}
+        
         // Authentication setup
         function setupAuth() {
             const pinInput = document.getElementById('pin-input');
@@ -2398,70 +2488,7 @@ document.addEventListener('click', function(e) {
     setupInstallButton();
 }
 
-function setupEventListeners() {
 
-
-    // Handle edit form submission
-    document.getElementById('edit-lead-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const leadId = document.getElementById('edit-lead-id').value;
-        const newStage = document.getElementById('edit-lead-stage').value;
-        
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
-
-        let foundLead = null;
-        let originalStage = '';
-
-        // Find and remove the lead from its original stage
-        for (const [stage, stageLeads] of Object.entries(leads)) {
-            const index = stageLeads.findIndex(l => l.id === leadId);
-            if (index !== -1) {
-                foundLead = stageLeads[index];
-                stageLeads.splice(index, 1);
-                originalStage = stage;
-                break;
-            }
-        }
-
-        if (!foundLead) {
-            showNotification('Lead not found while saving', 'error');
-            return;
-        }
-
-        // Update the lead with new values
-        const updatedLead = {
-            ...foundLead,
-            company: document.getElementById('edit-lead-company').value,
-            contact: document.getElementById('edit-lead-contact').value,
-            email: document.getElementById('edit-lead-email').value,
-            phone: document.getElementById('edit-lead-phone').value,
-            currentStage: newStage,
-            source: document.getElementById('edit-lead-source').value,
-            industry: document.getElementById('edit-lead-industry').value,
-            status: document.getElementById('edit-lead-status').value,
-            notes: document.getElementById('edit-lead-notes').value,
-            contentStrategies: $('#edit-lead-content').val() || [],
-            lastContact: new Date().toISOString()
-        };
-
-        // Add to the new stage
-        leads[newStage].push(updatedLead);
-        
-        // Save back to localStorage
-        localStorage.setItem('leads', JSON.stringify(leads));
-        
-        // Close modal and update UI
-        document.getElementById('edit-lead-modal').classList.add('hidden');
-        loadLeads();
-        updateAnalytics();
-        showNotification('Lead updated successfully');
-    });
-
-    // Other existing event listeners...
-}
 
 function loadLeads() {
     let leads = JSON.parse(localStorage.getItem('leads')) || {
