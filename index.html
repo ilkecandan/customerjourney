@@ -385,6 +385,7 @@
             color: white;
             text-align: center;
             padding: 0;
+                margin-bottom: 1rem;
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             transform-origin: center;
@@ -466,7 +467,7 @@
        .stage-body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.5rem;
+    gap: 1rem;
     max-height: 300px;
     overflow-y: auto;
     padding: 1rem;
@@ -551,24 +552,24 @@
     color: var(--text-muted);
 }
 
-        
+.lead-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 70px;
+}
 
-        .lead-card:hover {
-            background: rgba(255,255,255,0.15);
-            transform: translateX(2px);
-            border-left: 3px solid var(--primary-light);
-        }
-        
-        .lead-card .company {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: var(--text-primary);
-        }
-        
-        .lead-card .contact {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
+.lead-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(1.02);
+    border-left: 3px solid var(--primary-light);
+}
         
         /* Content badges */
         .content-badges {
@@ -578,21 +579,17 @@
             flex-wrap: wrap;
         }
         
-        .content-badge {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            color: var(--secondary-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid var(--primary-color);
-        }
+       .content-badge {
+    width: auto;
+    height: auto;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    background-color: rgba(88,188,197,0.2);
+    color: var(--accent-color);
+    border: 1px solid var(--primary-light);
+}
+
         
         .content-badge:hover {
             transform: scale(1.1);
