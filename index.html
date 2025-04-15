@@ -2347,17 +2347,57 @@ document.addEventListener('click', function(e) {
 
 function initializeApp() {
     console.log('Initializing app...');
-// Handle edit button clicks (delegated to document)
-document.addEventListener('click', function(e) {
-    const editBtn = e.target.closest('.edit-btn');
-    if (editBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        const leadId = editBtn.dataset.leadId;
-        if (leadId) openEditLeadModalById(leadId);
-    }
-});
     
+    // Set up all event listeners first
+    setupCoreEventListeners();
+    
+    // Initialize default data if none exists
+    initializeDefaultData();
+    
+    // Initialize UI components
+    initializeUIComponents();
+    
+    // Load data and update views
+    loadInitialData();
+}
+
+function setupCoreEventListeners() {
+    // Edit lead form submission
+    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveLeadChanges();
+    });
+    
+    // Delegated click handler for edit buttons and lead cards
+    document.addEventListener('click', function(e) {
+        // Handle edit button clicks
+        const editBtn = e.target.closest('.edit-btn');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const leadId = editBtn.dataset.leadId;
+            if (leadId) openEditLeadModalById(leadId);
+            return;
+        }
+        
+        // Handle lead card clicks in funnel
+        const leadCard = e.target.closest('.lead-card');
+        if (leadCard) {
+            const leadId = leadCard.dataset.leadId;
+            if (leadId) openEditLeadModalById(leadId);
+            return;
+        }
+        
+        // Handle table row clicks (excluding action buttons)
+        const tableRow = e.target.closest('#leads-table-body tr');
+        if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+            const leadId = tableRow.dataset.leadId;
+            if (leadId) openEditLeadModalById(leadId);
+        }
+    });
+}
+
+function initializeDefaultData() {
     // Initialize metadata if none exists
     if (!localStorage.getItem('funnel_metadata')) {
         localStorage.setItem('funnel_metadata', JSON.stringify({
@@ -2370,42 +2410,8 @@ document.addEventListener('click', function(e) {
     // Initialize default leads if none exist
     if (!localStorage.getItem('leads')) {
         const defaultLeads = {
-            awareness: [
-                {
-                    id: 'lead-' + Date.now(),
-                    company: 'Example Corp',
-                    contact: 'John Smith',
-                    email: 'john@example.com',
-                    phone: '555-1234',
-                    currentStage: 'awareness',
-                    notes: 'Interested in our blog content',
-                    contentStrategies: ['content-1'],
-                    dateAdded: new Date().toISOString(),
-                    lastContact: new Date().toISOString(),
-                    industry: 'saas',
-                    status: 'new',
-                    value: 5000,
-                    source: 'website'
-                }
-            ],
-            interest: [
-                {
-                    id: 'lead-' + Date.now(),
-                    company: 'Sample Inc',
-                    contact: 'Sarah Johnson',
-                    email: 'sarah@sample.com',
-                    phone: '555-5678',
-                    currentStage: 'interest',
-                    notes: 'Downloaded our whitepaper',
-                    contentStrategies: ['content-2'],
-                    dateAdded: new Date().toISOString(),
-                    lastContact: new Date().toISOString(),
-                    industry: 'ecommerce',
-                    status: 'hot',
-                    value: 10000,
-                    source: 'social'
-                }
-            ],
+            awareness: [createDefaultLead('awareness')],
+            interest: [createDefaultLead('interest')],
             intent: [],
             evaluation: [],
             purchase: []
@@ -2416,60 +2422,78 @@ document.addEventListener('click', function(e) {
     // Initialize default content if none exists
     if (!localStorage.getItem('content')) {
         const defaultContent = [
-            {
-                id: 'content-1',
-                name: 'Example Blog Post',
-                description: 'Basic introduction to our product',
-                stage: 'awareness',
-                type: 'blog',
-                link: 'https://example.com/blog/intro',
-                targetConversion: 5,
-                dateCreated: new Date().toISOString()
-            },
-            {
-                id: 'content-2',
-                name: 'Sample Demo Video',
-                description: 'Detailed product demonstration',
-                stage: 'interest',
-                type: 'video',
-                link: 'https://example.com/demo',
-                targetConversion: 15,
-                dateCreated: new Date().toISOString()
-            },
-            {
-                id: 'content-3',
-                name: 'Example Case Study',
-                description: 'Success story from existing customer',
-                stage: 'intent',
-                type: 'casestudy',
-                link: 'https://example.com/case-study',
-                targetConversion: 25,
-                dateCreated: new Date().toISOString()
-            },
-            {
-                id: 'content-4',
-                name: 'Sample Pricing Guide',
-                description: 'Detailed pricing information',
-                stage: 'evaluation',
-                type: 'ebook',
-                link: 'https://example.com/pricing',
-                targetConversion: 20,
-                dateCreated: new Date().toISOString()
-            },
-            {
-                id: 'content-5',
-                name: 'Example Testimonials',
-                description: 'Video testimonials from happy customers',
-                stage: 'purchase',
-                type: 'video',
-                link: 'https://example.com/testimonials',
-                targetConversion: 30,
-                dateCreated: new Date().toISOString()
-            }
+            createContentItem('awareness', 'blog'),
+            createContentItem('interest', 'video'),
+            createContentItem('intent', 'casestudy'),
+            createContentItem('evaluation', 'ebook'),
+            createContentItem('purchase', 'video')
         ];
         localStorage.setItem('content', JSON.stringify(defaultContent));
     }
+}
 
+function createDefaultLead(stage) {
+    const isAwareness = stage === 'awareness';
+    return {
+        id: 'lead-' + Date.now(),
+        company: isAwareness ? 'Example Corp' : 'Sample Inc',
+        contact: isAwareness ? 'John Smith' : 'Sarah Johnson',
+        email: isAwareness ? 'john@example.com' : 'sarah@sample.com',
+        phone: isAwareness ? '555-1234' : '555-5678',
+        currentStage: stage,
+        notes: isAwareness ? 'Interested in our blog content' : 'Downloaded our whitepaper',
+        contentStrategies: isAwareness ? ['content-1'] : ['content-2'],
+        dateAdded: new Date().toISOString(),
+        lastContact: new Date().toISOString(),
+        industry: isAwareness ? 'saas' : 'ecommerce',
+        status: isAwareness ? 'new' : 'hot',
+        value: isAwareness ? 5000 : 10000,
+        source: isAwareness ? 'website' : 'social'
+    };
+}
+
+function createContentItem(stage, type) {
+    const contentData = {
+        awareness: {
+            name: 'Example Blog Post',
+            description: 'Basic introduction to our product',
+            targetConversion: 5
+        },
+        interest: {
+            name: 'Sample Demo Video',
+            description: 'Detailed product demonstration',
+            targetConversion: 15
+        },
+        intent: {
+            name: 'Example Case Study',
+            description: 'Success story from existing customer',
+            targetConversion: 25
+        },
+        evaluation: {
+            name: 'Sample Pricing Guide',
+            description: 'Detailed pricing information',
+            targetConversion: 20
+        },
+        purchase: {
+            name: 'Example Testimonials',
+            description: 'Video testimonials from happy customers',
+            targetConversion: 30
+        }
+    };
+    
+    return {
+        id: `content-${Date.now()}`,
+        name: contentData[stage].name,
+        description: contentData[stage].description,
+        stage,
+        type,
+        link: `https://example.com/${type}`,
+        targetConversion: contentData[stage].targetConversion,
+        dateCreated: new Date().toISOString()
+    };
+}
+
+function initializeUIComponents() {
     // Initialize Select2 for content selection
     $('.content-select').select2({
         placeholder: 'Select content strategies',
@@ -2478,16 +2502,21 @@ document.addEventListener('click', function(e) {
 
     // Populate content options
     populateContentOptions();
+    
+    // Setup drag and drop
+    setupDragAndDrop();
+    
+    // Setup PWA install button
+    setupInstallButton();
+}
 
+function loadInitialData() {
     // Load data and setup UI
     loadLeads();
     loadContent();
     setupEventListeners();
     updateAnalytics();
-    setupDragAndDrop();
-    setupInstallButton();
 }
-
 
 
 function loadLeads() {
