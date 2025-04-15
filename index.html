@@ -691,6 +691,20 @@
     display: none !important;
 }
 
+        .edit-insight-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #ffe066;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.edit-insight-btn:hover {
+  background-color: #ffcc00;
+}
+
         
         .leads-table th {
             font-weight: 600;
@@ -2423,7 +2437,14 @@
             setupInstallButton();
         }
         
-        
+        document.addEventListener('click', function (e) {
+  if (e.target.classList.contains('edit-insight-btn')) {
+    const leadId = e.target.dataset.leadId;
+    openEditLeadModalById(leadId);
+    toggleLeadPanel(false); // close the panel when edit modal opens
+  }
+});
+
         // Load leads with content badges
 
 function loadLeads() {
@@ -3015,16 +3036,20 @@ function createLeadCard(lead) {
     leadCard.appendChild(tagsWrapper);
 
     // Show Insight Panel on Click
-    leadCard.addEventListener('click', () => {
-        const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
-        const contentHTML = `
-            <p><strong>Company:</strong> ${lead.company}</p>
-            <p><strong>Stage:</strong> ${lead.currentStage}</p>
-            <p><strong>Insight:</strong> ${insight}</p>
-            <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
-        `;
-        toggleLeadPanel(true, contentHTML);
-    });
+leadCard.addEventListener('click', () => {
+  const insight = `Lead has moved ${lead.moves || 0} stages in ${lead.days || 0} days = 🔥HOT!`;
+  const contentHTML = `
+    <p><strong>Company:</strong> ${lead.company}</p>
+    <p><strong>Stage:</strong> ${lead.currentStage}</p>
+    <p><strong>Insight:</strong> ${insight}</p>
+    <p><strong>Notes:</strong> ${lead.notes || 'No notes'}</p>
+    <button class="edit-insight-btn" data-lead-id="${lead.id}">✏️ Edit Lead</button>
+  `;
+  toggleLeadPanel(true, contentHTML);
+});
+
+
+    
 
     return leadCard;
 }
