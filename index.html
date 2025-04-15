@@ -1137,6 +1137,10 @@
             background-color: var(--accent-color) !important;
             color: var(--secondary-color) !important;
         }
+        .hidden {
+  display: none !important;
+}
+
         
         /* Toast notification */
         .toast {
@@ -2125,7 +2129,7 @@ function setupGlobalEventListeners() {
         // 👉 Add Lead button
         if (e.target.closest('#add-lead-btn')) {
             document.getElementById('lead-form').reset();
-            document.getElementById('add-lead-modal').classList.add('show');
+document.getElementById('add-lead-modal').classList.remove('hidden');
         }
 
         // 👉 Add Content button
@@ -2242,7 +2246,7 @@ function setupGlobalEventListeners() {
         // Handle add lead button
         document.getElementById('add-lead-btn')?.addEventListener('click', function() {
             document.getElementById('lead-form').reset();
-document.getElementById('add-lead-modal').classList.add('show');
+document.getElementById('add-content-modal').classList.remove('hidden');
         });
 
         // Handle add content button
