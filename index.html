@@ -4371,9 +4371,9 @@ function saveNewLead(lead) {
         // Install button functionality
 
 function setupInstallButton() {
-  // First check if the button exists
   const installBtn = document.getElementById('install-btn');
   
+  // If install button doesn't exist, exit the function
   if (!installBtn) {
     console.log('Install button not found - skipping setup');
     return;
@@ -4384,10 +4384,11 @@ function setupInstallButton() {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-
+    
     // Show the install button
     installBtn.classList.remove('hidden');
     
+    // Add click event listener
     installBtn.addEventListener('click', async () => {
       installBtn.classList.add('hidden');
       deferredPrompt.prompt();
