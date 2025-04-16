@@ -2798,30 +2798,40 @@ function openEditLeadModalById(leadId) {
     document.getElementById('edit-lead-modal').classList.add('show');
 }
     
+function refreshFunnelInsights() {
+    const loader = document.getElementById('insight-loader');
+    const adviceBox = document.getElementById('funnel-advice');
+
+    // Show loader and temporary message
+    if (loader) loader.classList.remove('hidden');
+    if (adviceBox) {
+        adviceBox.innerHTML = '<p id="insight-text">Reanalyzing your funnel data...</p>';
+    }
+
+    setTimeout(() => {
+        // Update conversion percentages and smart advice based on real data
+        updateConversionPercentages(); // Recalculate conversion rates
+        generateSmartAdvice();         // Generate insights based on leads and metrics
+
+        // Hide loader
+        if (loader) loader.classList.add('hidden');
+    }, 1000); // Adjust delay as needed
+}
+
+function setupAutoInsightRefresh(intervalInMinutes = 15) {
+    const intervalMs = intervalInMinutes * 60 * 1000;
+
+    setInterval(() => {
+        const refreshBtn = document.getElementById('refresh-advice');
+        if (refreshBtn) {
+            refreshBtn.click(); // Trigger manual refresh to keep everything consistent
+        }
+    }, intervalMs);
+}
+
+
+
     
-    function refreshFunnelInsights() {
-        const loader = document.getElementById('insight-loader');
-        const text = document.getElementById('insight-text');
-
-        if (loader) loader.classList.remove('hidden');
-        if (text) text.textContent = 'Reanalyzing your funnel data...';
-
-        setTimeout(() => {
-            if (loader) loader.classList.add('hidden');
-            if (text) text.textContent = getRandomInsight();
-        }, 3000);
-    }
-
-    function setupAutoInsightRefresh(intervalInMinutes = 15) {
-        const intervalMs = intervalInMinutes * 60 * 1000;
-
-        setInterval(() => {
-            const refreshBtn = document.getElementById('refresh-advice');
-            if (refreshBtn) {
-                refreshBtn.click();
-            }
-        }, intervalMs);
-    }
 
     // Update advanced analytics metrics
     function updateAdvancedAnalytics() {
