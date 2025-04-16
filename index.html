@@ -3872,22 +3872,7 @@ noAwareness: [
             adviceBox.appendChild(ul);
         }
 
-        if (insights.length > 0) {
-            const header = document.createElement('h4');
-            header.textContent = 'Key Metrics:';
-            header.style.marginTop = '1rem';
-            header.style.color = 'var(--accent-color)';
-            adviceBox.appendChild(header);
-
-            const ul = document.createElement('ul');
-            insights.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = item;
-                ul.appendChild(li);
-            });
-            adviceBox.appendChild(ul);
-        }
-    }
+ 
 
     // Update analytics charts and metrics
     function updateAnalytics() {
