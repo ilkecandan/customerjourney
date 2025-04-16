@@ -2304,53 +2304,63 @@ function setupEventListeners() {
     });
 }
 
+    // ✅ Authentication setup
+function setupAuth() {
+    const pinInput = document.getElementById('pin-input');
+    const loginBtn = document.getElementById('login-btn');
+    const pinError = document.getElementById('pin-error');
+
+    // 👉 Configurable PINs (you can change this anytime)
+    const validPins = ['1234', '4321', '0000'];
+
+    // Focus the PIN input when auth screen appears
+    pinInput.focus();
+
+    loginBtn.addEventListener('click', function () {
+        const enteredPin = pinInput.value.trim();
+
+        if (validPins.includes(enteredPin)) {
+            // ✅ Store auth state
+            localStorage.setItem('authenticated', 'true');
+
+            // ✅ Show app, hide login screen
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+
+            // 👋 Onboarding logic
+            if (!localStorage.getItem('onboarding_completed')) {
+                document.getElementById('onboarding-overlay').classList.remove('hidden');
+                setupOnboarding();
+            } else {
+                initializeApp();
+            }
+
+            // ✅ Always ensure event listeners are active
+            setupGlobalEventListeners();
+            setupEventListeners();
+        } else {
+            // ❌ Wrong PIN
+            pinError.textContent = 'Incorrect PIN. Please try again.';
+            pinInput.value = '';
+            pinInput.focus();
+        }
+    });
+
+    // ⏎ Allow Enter key to trigger login
+    pinInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            loginBtn.click();
+        }
+    });
+
+    // 🧼 Clear error on input change
+    pinInput.addEventListener('input', function () {
+        pinError.textContent = '';
+    });
+}
+
+
     
-    // Authentication setup
-    function setupAuth() {
-        const pinInput = document.getElementById('pin-input');
-        const loginBtn = document.getElementById('login-btn');
-        const pinError = document.getElementById('pin-error');
-        
-        // Configurable PINs
-        const validPins = ['1234', '4321', '0000'];
-
-        // Focus on the PIN input when the page loads
-        pinInput.focus();
-
-        loginBtn.addEventListener('click', function() {
-           if (validPins.includes(pinInput.value)) {
-                localStorage.setItem('authenticated', 'true');
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
-
-                // Show onboarding if first time
-                if (!localStorage.getItem('onboarding_completed')) {
-                    document.getElementById('onboarding-overlay').classList.remove('hidden');
-                    setupOnboarding();
-                } else {
-                    initializeApp();
-                    setupGlobalEventListeners();
-
-                }
-            }
-            else {
-                pinError.textContent = 'Incorrect PIN. Please try again.';
-                pinInput.value = '';
-                pinInput.focus();
-            }
-        });
-
-        // Also allow login on Enter key press
-        pinInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loginBtn.click();
-            }
-        });
-
-        pinInput.addEventListener('input', function() {
-            pinError.textContent = '';
-        });
-    }
 
     // Onboarding setup
     function setupOnboarding() {
