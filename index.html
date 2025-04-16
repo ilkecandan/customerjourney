@@ -2055,73 +2055,66 @@
 <script>
     let currentSelectedLeadId = null;
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // First hide the app container
-        document.getElementById('app-container').classList.add('hidden');
+document.addEventListener('DOMContentLoaded', function () {
+    // Always start with hiding the app container
+    document.getElementById('app-container').classList.add('hidden');
 
-        // Check authentication status
-        const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+    // Check if the user is already authenticated
+    const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
-        if (isAuthenticated) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
-            setupInstallButton();
-            
-            // Check if onboarding has been completed
-            if (!localStorage.getItem('onboarding_completed')) {
-                document.getElementById('onboarding-overlay').classList.remove('hidden');
-                setupOnboarding();
-            } else {
-                initializeApp();
+    if (isAuthenticated) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
 
-            }
+        setupInstallButton();
+        setupEventListeners();            // ✅ Ensure all event listeners are bound
+        setupGlobalEventListeners();      // ✅ Ensure modal + button listeners are bound
+
+        if (!localStorage.getItem('onboarding_completed')) {
+            document.getElementById('onboarding-overlay').classList.remove('hidden');
+            setupOnboarding();
         } else {
-            setupAuth();
+            initializeApp();
+        }
+    } else {
+        setupAuth(); // Auth will now also call setupEventListeners + setupGlobalEventListeners after login
+    }
+
+    // 🔁 Delegate click events for dynamically inserted or modal-triggered elements
+    document.addEventListener('click', function (e) {
+        const leadCard = e.target.closest('.lead-card');
+        if (leadCard) {
+            const leadId = leadCard.dataset.leadId;
+            if (leadId) {
+                openEditLeadModalById(leadId);
+            }
+            return;
         }
 
-        // Single event delegation for lead card clicks
-        document.addEventListener('click', function(e) {
-            // Check if clicked on a lead card in the funnel
-            const leadCard = e.target.closest('.lead-card');
-            if (leadCard) {
-                const leadId = leadCard.dataset.leadId;
-                if (leadId) {
-                    openEditLeadModalById(leadId);
-                }
-                return;
+        const tableRow = e.target.closest('#leads-table-body tr');
+        if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+            const leadId = tableRow.dataset.leadId;
+            if (leadId) {
+                openEditLeadModalById(leadId);
             }
-            
-            // Check if clicked on a lead row in the table (but not on action buttons)
-            const tableRow = e.target.closest('#leads-table-body tr');
-            if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-                const leadId = tableRow.dataset.leadId;
-                if (leadId) {
-                    openEditLeadModalById(leadId);
-                }
-            }
+        }
 
-            // Handle edit button clicks
-            const editBtn = e.target.closest('.edit-btn');
-            if (editBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const leadId = editBtn.dataset.leadId;
-                if (leadId) openEditLeadModalById(leadId);
-                return;
-            }
+        const editBtn = e.target.closest('.edit-btn');
+        if (editBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const leadId = editBtn.dataset.leadId;
+            if (leadId) openEditLeadModalById(leadId);
+            return;
+        }
 
-            // Handle edit insight button clicks
-            const editInsightBtn = e.target.closest('.edit-insight-btn');
-            if (editInsightBtn && editInsightBtn.dataset.leadId) {
-                openEditLeadModalById(editInsightBtn.dataset.leadId);
-            }
-        });
-
-        // Setup all other event listeners
-        setupEventListeners();
-        setupGlobalEventListeners();
-
+        const editInsightBtn = e.target.closest('.edit-insight-btn');
+        if (editInsightBtn && editInsightBtn.dataset.leadId) {
+            openEditLeadModalById(editInsightBtn.dataset.leadId);
+        }
     });
+});
+
 
 
 function setupGlobalEventListeners() {
