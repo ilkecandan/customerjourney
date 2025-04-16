@@ -2115,92 +2115,68 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
-
 function setupGlobalEventListeners() {
-    // 🔁 Universal Click Handler
-    document.addEventListener('click', function(e) {
-        // 👉 Add Lead button
-        if (e.target.closest('#open-add-lead-modal-btn')) {
-            document.getElementById('lead-form').reset();
-            document.getElementById('add-lead-modal').classList.add('show'); // ✅ CORRECT MODAL
-        }
+    // 👉 Add Lead button
+    document.getElementById('open-add-lead-modal-btn')?.addEventListener('click', function () {
+        document.getElementById('lead-form').reset();
+        document.getElementById('add-lead-modal').classList.add('show');
+    });
 
-        // 👉 Add Content button
-        else if (e.target.closest('#add-content-btn')) {
-            document.getElementById('content-form').reset();
-            document.getElementById('add-content-modal').classList.add('show');
-        }
+    // 👉 Add Content button
+    document.getElementById('add-content-btn')?.addEventListener('click', function () {
+        document.getElementById('content-form').reset();
+        document.getElementById('add-content-modal').classList.add('show');
+    });
 
-        // 🔁 Refresh smart insights
-        else if (e.target.closest('#refresh-advice')) {
-            refreshFunnelInsights();
-        }
+    // 🔁 Refresh smart insights
+    document.getElementById('refresh-advice')?.addEventListener('click', refreshFunnelInsights);
 
-        // 🧾 Export PDF
-        else if (e.target.closest('#export-pdf')) {
-            exportToPDF();
-        }
+    // 🧾 Export PDF
+    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
 
-        // 📊 Export Excel
-        else if (e.target.closest('#export-excel')) {
-            exportToExcel();
-        }
+    // 📊 Export Excel
+    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
 
-        // ❌ Close any modal
-        else if (e.target.closest('.close-modal')) {
-            e.target.closest('.modal').classList.remove('show');
-        }
-
-        // ✏️ Edit lead
-        else if (e.target.closest('.edit-btn')) {
-            const leadId = e.target.closest('.edit-btn').dataset.leadId;
-            openEditLeadModalById(leadId);
-        }
-
-        // 🗑 Delete lead (excluding main modal button)
-        else if (e.target.closest('.delete-btn') && !e.target.closest('#delete-lead-btn')) {
-            e.stopPropagation();
-            const leadId = e.target.closest('.delete-btn').dataset.leadId;
-            if (confirm('Are you sure you want to delete this lead?')) {
-                deleteLeadById(leadId);
-            }
-        }
+    // ❌ Close modals
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.closest('.modal').classList.remove('show');
+        });
     });
 
     // ✅ FORM: Add Lead
-    document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+    document.getElementById('lead-form')?.addEventListener('submit', function (e) {
         e.preventDefault();
         addLead();
     });
 
     // ✅ FORM: Add Content
-    document.getElementById('content-form')?.addEventListener('submit', function(e) {
+    document.getElementById('content-form')?.addEventListener('submit', function (e) {
         e.preventDefault();
         addContent();
     });
 
     // ✅ FORM: Edit Lead
-    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+    document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
         e.preventDefault();
         saveLeadChanges();
     });
 
     // ✅ FORM: Edit Content
-    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+    document.getElementById('edit-content-form')?.addEventListener('submit', function (e) {
         e.preventDefault();
         saveContentChanges();
     });
 
     // 🔍 Filter by Stage
-    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+    document.getElementById('lead-stage-filter')?.addEventListener('change', function () {
         filterLeadsTable(this.value);
     });
 
     // 🔎 Search Leads (with debounce)
     const leadSearch = document.getElementById('lead-search');
     if (leadSearch) {
-        leadSearch.addEventListener('input', function() {
+        leadSearch.addEventListener('input', function () {
             clearTimeout(searchLeads.debounce);
             searchLeads.debounce = setTimeout(() => {
                 searchLeads(this.value);
@@ -2208,6 +2184,7 @@ function setupGlobalEventListeners() {
         });
     }
 }
+
 
 
     
