@@ -1883,6 +1883,102 @@
             </div>
         </div>
 
+        <!-- Edit Lead Modal -->
+<div id="edit-lead-modal" class="modal hidden">
+  <div class="modal-content">
+    <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
+    <h2>Edit Lead</h2>
+    <form id="edit-lead-form">
+      <input type="hidden" id="edit-lead-id">
+      
+      <div class="form-columns">
+        <div class="form-group">
+          <label for="edit-lead-company">Company Name *</label>
+          <input type="text" id="edit-lead-company" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-contact">Contact Person *</label>
+          <input type="text" id="edit-lead-contact" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-email">Email *</label>
+          <input type="email" id="edit-lead-email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-phone">Phone</label>
+          <input type="tel" id="edit-lead-phone">
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-stage">Current Stage *</label>
+          <select id="edit-lead-stage" required>
+            <option value="awareness">Awareness</option>
+            <option value="interest">Interest</option>
+            <option value="intent">Intent</option>
+            <option value="evaluation">Evaluation</option>
+            <option value="purchase">Purchase</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-source">Source</label>
+          <select id="edit-lead-source">
+            <option value="website">Website</option>
+            <option value="social">Social Media</option>
+            <option value="referral">Referral</option>
+            <option value="event">Event</option>
+            <option value="ad">Advertisement</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-industry">Industry</label>
+          <select id="edit-lead-industry">
+            <option value="saas">SaaS</option>
+            <option value="ecommerce">E-commerce</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="realestate">Real Estate</option>
+            <option value="education">Education</option>
+            <option value="consulting">Consulting</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="edit-lead-status">Status</label>
+          <select id="edit-lead-status">
+            <option value="new">New</option>
+            <option value="hot">Hot</option>
+            <option value="cold">Cold</option>
+            <option value="stalled">Stalled</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group full-width">
+        <label for="edit-lead-content">Content Strategy</label>
+        <select id="edit-lead-content" class="content-select" multiple>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+      </div>
+      
+      <div class="form-group full-width">
+        <label for="edit-lead-notes">Notes</label>
+        <textarea id="edit-lead-notes" rows="3"></textarea>
+      </div>
+      
+<div class="form-actions">
+        <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
+        <button type="submit" class="submit-btn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
         <!-- Add Content Modal -->
         <div id="add-content-modal" class="modal hidden">
             <div class="modal-content">
@@ -2053,13 +2149,14 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
   
 <script>
+
+
     let currentSelectedLeadId = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Always start with hiding the app container
+    // Start with hiding the app container
     document.getElementById('app-container').classList.add('hidden');
 
-    // Check if the user is already authenticated
     const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
     if (isAuthenticated) {
@@ -2067,8 +2164,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('app-container').classList.remove('hidden');
 
         setupInstallButton();
-        setupEventListeners();            // ✅ Ensure all event listeners are bound
-        setupGlobalEventListeners();      // ✅ Ensure modal + button listeners are bound
+        setupEventListeners();
+        setupGlobalEventListeners();
 
         if (!localStorage.getItem('onboarding_completed')) {
             document.getElementById('onboarding-overlay').classList.remove('hidden');
@@ -2077,28 +2174,28 @@ document.addEventListener('DOMContentLoaded', function () {
             initializeApp();
         }
     } else {
-        setupAuth(); // Auth will now also call setupEventListeners + setupGlobalEventListeners after login
+        setupAuth(); // Will call setupEventListeners + setupGlobalEventListeners after login
     }
 
-    // 🔁 Delegate click events for dynamically inserted or modal-triggered elements
+    // Global click delegation
     document.addEventListener('click', function (e) {
+        // Lead card click
         const leadCard = e.target.closest('.lead-card');
         if (leadCard) {
             const leadId = leadCard.dataset.leadId;
-            if (leadId) {
-                openEditLeadModalById(leadId);
-            }
+            if (leadId) openEditLeadModalById(leadId);
             return;
         }
 
+        // Table row click (ignores clicks on edit/delete buttons)
         const tableRow = e.target.closest('#leads-table-body tr');
         if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
             const leadId = tableRow.dataset.leadId;
-            if (leadId) {
-                openEditLeadModalById(leadId);
-            }
+            if (leadId) openEditLeadModalById(leadId);
+            return;
         }
 
+        // Edit button click
         const editBtn = e.target.closest('.edit-btn');
         if (editBtn) {
             e.preventDefault();
@@ -2108,12 +2205,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Insight edit button click
         const editInsightBtn = e.target.closest('.edit-insight-btn');
         if (editInsightBtn && editInsightBtn.dataset.leadId) {
             openEditLeadModalById(editInsightBtn.dataset.leadId);
+            return;
         }
     });
 });
+
 
 function setupGlobalEventListeners() {
     // 👉 Add Lead button
@@ -2656,47 +2756,49 @@ function setupAuth() {
         updateAdvancedAnalytics();
     }
 
-    function openEditLeadModalById(leadId) {
-        const leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
+function openEditLeadModalById(leadId) {
+    const leads = JSON.parse(localStorage.getItem('leads')) || {
+        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+    };
 
-        let foundLead = null;
-        let originalStage = '';
+    let foundLead = null;
+    let originalStage = '';
 
-        // Search through all stages for the lead
-        for (const [stage, stageLeads] of Object.entries(leads)) {
-            const lead = stageLeads.find(l => l.id === leadId);
-            if (lead) {
-                foundLead = lead;
-                originalStage = stage;
-                break;
-            }
+    // Search through all stages for the lead
+    for (const [stage, stageLeads] of Object.entries(leads)) {
+        const lead = stageLeads.find(l => l.id === leadId);
+        if (lead) {
+            foundLead = lead;
+            originalStage = stage;
+            break;
         }
-
-        if (!foundLead) {
-            showNotification('Lead not found', 'error');
-            return;
-        }
-
-        // Populate the edit form
-        document.getElementById('edit-lead-id').value = foundLead.id;
-        document.getElementById('edit-lead-company').value = foundLead.company || '';
-        document.getElementById('edit-lead-contact').value = foundLead.contact || '';
-        document.getElementById('edit-lead-email').value = foundLead.email || '';
-        document.getElementById('edit-lead-phone').value = foundLead.phone || '';
-        document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
-        document.getElementById('edit-lead-source').value = foundLead.source || '';
-        document.getElementById('edit-lead-industry').value = foundLead.industry || '';
-        document.getElementById('edit-lead-status').value = foundLead.status || '';
-        document.getElementById('edit-lead-notes').value = foundLead.notes || '';
-        
-        // Set content strategies
-        $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
-
-        // Show the modal
-        document.getElementById('edit-lead-modal').classList.remove('hidden');
     }
+
+    if (!foundLead) {
+        showNotification('Lead not found', 'error');
+        return;
+    }
+
+    // Populate the edit form
+    document.getElementById('edit-lead-id').value = foundLead.id;
+    document.getElementById('edit-lead-company').value = foundLead.company || '';
+    document.getElementById('edit-lead-contact').value = foundLead.contact || '';
+    document.getElementById('edit-lead-email').value = foundLead.email || '';
+    document.getElementById('edit-lead-phone').value = foundLead.phone || '';
+    document.getElementById('edit-lead-stage').value = foundLead.currentStage || originalStage;
+    document.getElementById('edit-lead-source').value = foundLead.source || '';
+    document.getElementById('edit-lead-industry').value = foundLead.industry || '';
+    document.getElementById('edit-lead-status').value = foundLead.status || '';
+    document.getElementById('edit-lead-notes').value = foundLead.notes || '';
+    
+    // Set content strategies
+    $('#edit-lead-content').val(foundLead.contentStrategies || []).trigger('change');
+
+    // Show the modal
+    document.getElementById('edit-lead-modal').classList.remove('hidden');
+    document.getElementById('edit-lead-modal').classList.add('show');
+}
+    
     
     function refreshFunnelInsights() {
         const loader = document.getElementById('insight-loader');
@@ -3341,99 +3443,81 @@ function addLead() {
     }
 
     // Save lead changes
-    function saveLeadChanges() {
-        const leadId = document.getElementById('edit-lead-id').value;
-        const company = document.getElementById('edit-lead-company').value;
-        const contact = document.getElementById('edit-lead-contact').value;
-        const email = document.getElementById('edit-lead-email').value;
-        const phone = document.getElementById('edit-lead-phone').value;
-        const stage = document.getElementById('edit-lead-stage').value;
-        const source = document.getElementById('edit-lead-source').value;
-        const industry = document.getElementById('edit-lead-industry').value;
-        const status = document.getElementById('edit-lead-status').value;
-        const notes = document.getElementById('edit-lead-notes').value;
+   function saveLeadChanges() {
+    const leadId = document.getElementById('edit-lead-id').value;
+    const company = document.getElementById('edit-lead-company').value;
+    const contact = document.getElementById('edit-lead-contact').value;
+    const email = document.getElementById('edit-lead-email').value;
+    const phone = document.getElementById('edit-lead-phone').value;
+    const stage = document.getElementById('edit-lead-stage').value;
+    const source = document.getElementById('edit-lead-source').value;
+    const industry = document.getElementById('edit-lead-industry').value;
+    const status = document.getElementById('edit-lead-status').value;
+    const notes = document.getElementById('edit-lead-notes').value;
 
-        // Get selected content strategies
-        const contentSelect = document.getElementById('edit-lead-content');
-        const contentStrategies = $(contentSelect).val() || [];
+    // Get selected content strategies
+    const contentSelect = document.getElementById('edit-lead-content');
+    const contentStrategies = $(contentSelect).val() || [];
 
+    // Update lead in storage
+    const leads = JSON.parse(localStorage.getItem('leads'));
+    let leadFound = false;
 
-        // Update lead in storage
-        const leads = JSON.parse(localStorage.getItem('leads'));
-        let leadFound = false;
-
-        // Search through all stages to find the lead
-        for (const [stageKey, stageLeads] of Object.entries(leads)) {
-            const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
-            
-            if (leadIndex !== -1) {
-                // If stage changed, move the lead
-                if (stageKey !== stage) {
-                    const lead = stageLeads[leadIndex];
-                    stageLeads.splice(leadIndex, 1);
-                    
-                    // Update lead properties
-                    lead.company = company;
-                    lead.contact = contact;
-                    lead.email = email;
-                    lead.phone = phone;
-                    lead.source = source;
-                    lead.industry = industry;
-                    lead.status = status;
-                    lead.currentStage = stage;
-                    lead.notes = notes;
-                    lead.contentStrategies = contentStrategies;
-                    lead.lastContact = new Date().toISOString();
-                    
-                    // Add to new stage
-                    leads[stage].push(lead);
-                } else {
-                    // Just update the lead
-                    const lead = stageLeads[leadIndex];
-                    lead.company = company;
-                    lead.contact = contact;
-                    lead.email = email;
-                    lead.phone = phone;
-                    lead.source = source;
-                    lead.industry = industry;
-                    lead.status = status;
-                    lead.notes = notes;
-                    lead.contentStrategies = contentStrategies;
-                    lead.lastContact = new Date().toISOString();
-                }
+    // Search through all stages to find the lead
+    for (const [stageKey, stageLeads] of Object.entries(leads)) {
+        const leadIndex = stageLeads.findIndex(lead => lead.id === leadId);
+        
+        if (leadIndex !== -1) {
+            // If stage changed, move the lead
+            if (stageKey !== stage) {
+                const lead = stageLeads[leadIndex];
+                stageLeads.splice(leadIndex, 1);
                 
-                leadFound = true;
-                break;
+                // Update lead properties
+                lead.company = company;
+                lead.contact = contact;
+                lead.email = email;
+                lead.phone = phone;
+                lead.source = source;
+                lead.industry = industry;
+                lead.status = status;
+                lead.currentStage = stage;
+                lead.notes = notes;
+                lead.contentStrategies = contentStrategies;
+                lead.lastContact = new Date().toISOString();
+                
+                // Add to new stage
+                leads[stage].push(lead);
+            } else {
+                // Just update the lead
+                const lead = stageLeads[leadIndex];
+                lead.company = company;
+                lead.contact = contact;
+                lead.email = email;
+                lead.phone = phone;
+                lead.source = source;
+                lead.industry = industry;
+                lead.status = status;
+                lead.notes = notes;
+                lead.contentStrategies = contentStrategies;
+                lead.lastContact = new Date().toISOString();
             }
-        }
-
-        if (leadFound) {
-            localStorage.setItem('leads', JSON.stringify(leads));
-            document.getElementById('edit-lead-modal').classList.add('hidden');
-            loadLeads();
-            updateAnalytics();
-            showNotification('Lead updated successfully');
+            
+            leadFound = true;
+            break;
         }
     }
 
-    // Open edit content modal
-    function openEditContentModal(content) {
-        if (!content) return;
-        
-        console.log('Opening edit modal for content:', content.id);
-        
-        document.getElementById('edit-content-id').value = content.id;
-        document.getElementById('edit-content-name').value = content.name;
-        document.getElementById('edit-content-description').value = content.description || '';
-        document.getElementById('edit-content-stage').value = content.stage;
-        document.getElementById('edit-content-type').value = content.type || 'blog';
-        document.getElementById('edit-content-link').value = content.link || '';
-        document.getElementById('edit-content-target-conversion').value = content.targetConversion || '';
-
-        const modal = document.getElementById('edit-content-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('show');
+    if (leadFound) {
+        localStorage.setItem('leads', JSON.stringify(leads));
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead updated successfully');
+    } else {
+        showNotification('Error: Lead could not be updated', 'error');
     }
+}
 
     // Save content changes
     function saveContentChanges() {
@@ -4196,101 +4280,7 @@ function addLead() {
     }
 </script>
     
-<!-- Edit Lead Modal -->
-<div id="edit-lead-modal" class="modal hidden">
-  <div class="modal-content">
-    <button class="close-modal" onclick="toggleEditModal(false)">&times;</button>
-    <h2>Edit Lead</h2>
-    <form id="edit-lead-form">
-      <input type="hidden" id="edit-lead-id">
-      
-      <div class="form-columns">
-        <div class="form-group">
-          <label for="edit-lead-company">Company Name *</label>
-          <input type="text" id="edit-lead-company" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-contact">Contact Person *</label>
-          <input type="text" id="edit-lead-contact" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-email">Email *</label>
-          <input type="email" id="edit-lead-email" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-phone">Phone</label>
-          <input type="tel" id="edit-lead-phone">
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-stage">Current Stage *</label>
-          <select id="edit-lead-stage" required>
-            <option value="awareness">Awareness</option>
-            <option value="interest">Interest</option>
-            <option value="intent">Intent</option>
-            <option value="evaluation">Evaluation</option>
-            <option value="purchase">Purchase</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-source">Source</label>
-          <select id="edit-lead-source">
-            <option value="website">Website</option>
-            <option value="social">Social Media</option>
-            <option value="referral">Referral</option>
-            <option value="event">Event</option>
-            <option value="ad">Advertisement</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-industry">Industry</label>
-          <select id="edit-lead-industry">
-            <option value="saas">SaaS</option>
-            <option value="ecommerce">E-commerce</option>
-            <option value="healthcare">Healthcare</option>
-            <option value="realestate">Real Estate</option>
-            <option value="education">Education</option>
-            <option value="consulting">Consulting</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="edit-lead-status">Status</label>
-          <select id="edit-lead-status">
-            <option value="new">New</option>
-            <option value="hot">Hot</option>
-            <option value="cold">Cold</option>
-            <option value="stalled">Stalled</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="form-group full-width">
-        <label for="edit-lead-content">Content Strategy</label>
-        <select id="edit-lead-content" class="content-select" multiple>
-          <!-- Options will be populated by JavaScript -->
-        </select>
-      </div>
-      
-      <div class="form-group full-width">
-        <label for="edit-lead-notes">Notes</label>
-        <textarea id="edit-lead-notes" rows="3"></textarea>
-      </div>
-      
-<div class="form-actions">
-        <button type="button" id="delete-lead-btn" class="delete-btn">Delete Lead</button>
-        <button type="submit" class="submit-btn">Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
+
 
 </body>
 </html>
