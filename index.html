@@ -2324,7 +2324,7 @@ document.getElementById('lead-form').addEventListener('submit', async (e) => {
     notes: document.getElementById('lead-notes').value,
   };
 
-  const res = await fetch('https://your-railway-app.up.railway.app/leads', {
+  const res = await fetch('backendfunnel-production.up.railway.app', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
