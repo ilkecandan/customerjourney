@@ -2123,15 +2123,15 @@
 
     });
 
+
 function setupGlobalEventListeners() {
     // 🔁 Universal Click Handler
     document.addEventListener('click', function(e) {
         // 👉 Add Lead button
-if (e.target.closest('#open-add-lead-modal-btn')) {
-    document.getElementById('lead-form').reset();
-    document.getElementById('add-lead-modal').classList.add('show');
-}
-
+        if (e.target.closest('#open-add-lead-modal-btn')) {
+            document.getElementById('lead-form').reset();
+            document.getElementById('add-lead-modal').classList.add('show'); // ✅ CORRECT MODAL
+        }
 
         // 👉 Add Content button
         else if (e.target.closest('#add-content-btn')) {
@@ -2165,7 +2165,7 @@ if (e.target.closest('#open-add-lead-modal-btn')) {
             openEditLeadModalById(leadId);
         }
 
-        // 🗑 Delete lead
+        // 🗑 Delete lead (excluding main modal button)
         else if (e.target.closest('.delete-btn') && !e.target.closest('#delete-lead-btn')) {
             e.stopPropagation();
             const leadId = e.target.closest('.delete-btn').dataset.leadId;
@@ -2176,48 +2176,33 @@ if (e.target.closest('#open-add-lead-modal-btn')) {
     });
 
     // ✅ FORM: Add Lead
-    const leadForm = document.getElementById('lead-form');
-    if (leadForm) {
-        leadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            addLead();
-        });
-    }
+    document.getElementById('lead-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addLead();
+    });
 
     // ✅ FORM: Add Content
-    const contentForm = document.getElementById('content-form');
-    if (contentForm) {
-        contentForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            addContent();
-        });
-    }
+    document.getElementById('content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addContent();
+    });
 
     // ✅ FORM: Edit Lead
-    const editLeadForm = document.getElementById('edit-lead-form');
-    if (editLeadForm) {
-        editLeadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveLeadChanges();
-        });
-    }
+    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveLeadChanges();
+    });
 
     // ✅ FORM: Edit Content
-    const editContentForm = document.getElementById('edit-content-form');
-    if (editContentForm) {
-        editContentForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveContentChanges();
-        });
-    }
+    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveContentChanges();
+    });
 
     // 🔍 Filter by Stage
-    const stageFilter = document.getElementById('lead-stage-filter');
-    if (stageFilter) {
-        stageFilter.addEventListener('change', function() {
-            filterLeadsTable(this.value);
-        });
-    }
+    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+        filterLeadsTable(this.value);
+    });
 
     // 🔎 Search Leads (with debounce)
     const leadSearch = document.getElementById('lead-search');
@@ -2233,96 +2218,93 @@ if (e.target.closest('#open-add-lead-modal-btn')) {
 
 
     
-    
-    function setupEventListeners() {
-        // Handle edit form submission
-        const editForm = document.getElementById('edit-lead-form');
-        if (editForm) {
-            editForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveLeadChanges();
-            });
-        }
+function setupEventListeners() {
+    // ✏️ Edit Lead Form
+    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveLeadChanges();
+    });
 
-        // Handle add lead button
-        document.getElementById('add-lead-btn')?.addEventListener('click', function() {
-            document.getElementById('lead-form').reset();
-document.getElementById('add-content-modal').classList.remove('hidden');
-        });
+    // ➕ Add Lead button (fix applied)
+    document.getElementById('add-lead-btn')?.addEventListener('click', function() {
+        document.getElementById('lead-form').reset();
+        document.getElementById('add-lead-modal').classList.remove('hidden'); // ✅ FIXED MODAL
+    });
 
-        // Handle add content button
-        document.getElementById('add-content-btn')?.addEventListener('click', function() {
-            document.getElementById('content-form').reset();
-document.getElementById('add-content-modal').classList.add('show');
-        });
+    // ➕ Add Content button
+    document.getElementById('add-content-btn')?.addEventListener('click', function() {
+        document.getElementById('content-form').reset();
+        document.getElementById('add-content-modal').classList.add('show');
+    });
 
-        // Handle refresh advice button
-        document.getElementById('refresh-advice')?.addEventListener('click', function() {
-            refreshFunnelInsights();
-        });
+    // 🔁 Refresh Funnel Advice
+    document.getElementById('refresh-advice')?.addEventListener('click', function() {
+        refreshFunnelInsights();
+    });
 
-        // Handle expand funnel button
-        document.getElementById('expand-funnel')?.addEventListener('click', function() {
-            const funnelContainer = document.querySelector('.funnel-container');
-            funnelContainer.classList.add('pulse-highlight');
-            setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
-        });
+    // 📣 Expand Funnel
+    document.getElementById('expand-funnel')?.addEventListener('click', function() {
+        const funnelContainer = document.querySelector('.funnel-container');
+        funnelContainer.classList.add('pulse-highlight');
+        setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
+    });
 
-        // Handle export buttons
-        document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
-        document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
+    // 🧾 Export Buttons
+    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
 
-        // Handle lead stage filter
-        document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
-            filterLeadsTable(this.value);
-        });
+    // 🔍 Lead Stage Filter
+    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
+        filterLeadsTable(this.value);
+    });
 
-        // Handle lead search
-        const leadSearch = document.getElementById('lead-search');
-        if (leadSearch) {
-            leadSearch.addEventListener('input', function() {
-                clearTimeout(searchLeads.debounce);
-                searchLeads.debounce = setTimeout(() => {
-                    searchLeads(this.value);
-                }, 300);
-            });
-        }
-
-        // Handle modal close buttons
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.closest('.modal').classList.add('hidden');
-            });
-        });
-
-        // Handle delete lead button in edit modal
-        document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            deleteLead();
-        });
-
-        // Handle content form submission
-        document.getElementById('content-form')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            addContent();
-        });
-
-        // Handle edit content form submission
-        document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveContentChanges();
-        });
-
-        // Handle clicks outside modals to close them
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.add('hidden');
-                }
-            });
+    // 🔎 Lead Search (debounced)
+    const leadSearch = document.getElementById('lead-search');
+    if (leadSearch) {
+        leadSearch.addEventListener('input', function() {
+            clearTimeout(searchLeads.debounce);
+            searchLeads.debounce = setTimeout(() => {
+                searchLeads(this.value);
+            }, 300);
         });
     }
 
+    // ❌ Close modals
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.modal').classList.add('hidden');
+        });
+    });
+
+    // 🗑 Delete lead from edit modal
+    document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        deleteLead();
+    });
+
+    // ✅ Add Content
+    document.getElementById('content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        addContent();
+    });
+
+    // ✅ Edit Content
+    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveContentChanges();
+    });
+
+    // ⛔ Click outside to close modals
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    });
+}
+
+    
     // Authentication setup
     function setupAuth() {
         const pinInput = document.getElementById('pin-input');
