@@ -1506,7 +1506,7 @@
             <div class="header-right">
                <!-- In the header section, add the install button with the other action buttons -->
 <div class="header-actions">
-    <button id="add-lead-btn" class="action-btn tooltip pulse-on-hover" type="button">
+<button id="open-add-lead-modal-btn" class="action-btn tooltip pulse-on-hover" type="button">
         <i class="fas fa-plus"></i> Add Lead
         <span class="tooltiptext">Add a new lead to your marketing funnel</span>
     </button>
@@ -1877,7 +1877,7 @@
                     </div>
                     <div class="form-actions">
                         <button type="button" class="cancel-btn">Cancel</button>
-                        <button type="submit" id="add-lead-btn" class="submit-btn">Add Lead</button>
+<button type="submit" id="submit-lead-btn" class="submit-btn">Add Lead</button>
                     </div>
                 </form>
             </div>
@@ -2127,7 +2127,7 @@ function setupGlobalEventListeners() {
     // 🔁 Universal Click Handler
     document.addEventListener('click', function(e) {
         // 👉 Add Lead button
-       if (e.target.closest('#add-lead-btn')) {
+if (e.target.closest('#open-add-lead-modal-btn')) {
     document.getElementById('lead-form').reset();
     document.getElementById('add-lead-modal').classList.remove('hidden');
 }
