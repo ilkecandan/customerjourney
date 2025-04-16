@@ -2308,6 +2308,35 @@ function setupGlobalEventListeners() {
         // Add other delegated logic here if needed
     });
 }
+document.getElementById('lead-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const data = {
+    company: document.getElementById('lead-company').value,
+    contact: document.getElementById('lead-contact').value,
+    email: document.getElementById('lead-email').value,
+    phone: document.getElementById('lead-phone').value,
+    stage: document.getElementById('lead-stage').value,
+    source: document.getElementById('lead-source').value,
+    industry: document.getElementById('lead-industry').value,
+    status: document.getElementById('lead-status').value,
+    content: Array.from(document.getElementById('lead-content').selectedOptions).map(opt => opt.value),
+    notes: document.getElementById('lead-notes').value,
+  };
+
+  const res = await fetch('https://your-railway-app.up.railway.app/leads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (res.ok) {
+    alert('Lead added!');
+    // optionally reload or re-fetch
+  } else {
+    alert('Failed to add lead');
+  }
+});
 
 
     
