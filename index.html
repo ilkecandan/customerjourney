@@ -4325,36 +4325,76 @@ noAwareness: [
         return insights[Math.floor(Math.random() * insights.length)];
     }
 
-    function renderLeadTable(leads) {
-        const tableBody = document.getElementById('leads-table-body');
-        tableBody.innerHTML = '';
+  function renderLeadTable(leads) {
+    const tableBody = document.getElementById('leads-table-body');
+    tableBody.innerHTML = ''; // You can optimize this further with diffing if needed
 
-        if (leads.length === 0) {
-            const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="6" style="text-align: center;">No leads found</td>';
-            tableBody.appendChild(row);
-            return;
-        }
-
-        leads.forEach(lead => {
-            const row = document.createElement('tr');
-            row.dataset.leadId = lead.id;
-            row.innerHTML = `
-                <td>${lead.company}</td>
-                <td>${lead.contact}</td>
-                <td>${capitalizeFirstLetter(lead.stage)}</td>
-                <td>${(lead.contentStrategies || []).length > 0 ? lead.contentStrategies.join(', ') : 'None'}</td>
-                <td>${lead.lastContact ? new Date(lead.lastContact).toLocaleDateString() : 'Never'}</td>
-                <td>
-                    <button class="edit-btn" data-lead-id="${lead.id}"><i class="fas fa-edit"></i></button>
-                    <button class="delete-btn" data-lead-id="${lead.id}"><i class="fas fa-trash"></i></button>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-
-        attachEditButtonListeners();
+    if (!leads || leads.length === 0) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 6;
+        cell.style.textAlign = 'center';
+        cell.textContent = 'No leads found';
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+        return;
     }
+
+    const fragment = document.createDocumentFragment();
+
+    leads.forEach(lead => {
+        const row = document.createElement('tr');
+        row.dataset.leadId = lead.id;
+
+        const companyCell = document.createElement('td');
+        companyCell.textContent = lead.company;
+
+        const contactCell = document.createElement('td');
+        contactCell.textContent = lead.contact;
+
+        const stageCell = document.createElement('td');
+        stageCell.textContent = capitalizeFirstLetter(lead.stage);
+
+        const contentCell = document.createElement('td');
+        contentCell.textContent = (lead.contentStrategies || []).length > 0
+            ? lead.contentStrategies.join(', ')
+            : 'None';
+
+        const lastContactCell = document.createElement('td');
+        lastContactCell.textContent = lead.lastContact
+            ? new Date(lead.lastContact).toLocaleDateString()
+            : 'Never';
+
+        const actionsCell = document.createElement('td');
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.dataset.leadId = lead.id;
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.dataset.leadId = lead.id;
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+
+        actionsCell.appendChild(editBtn);
+        actionsCell.appendChild(deleteBtn);
+
+        row.appendChild(companyCell);
+        row.appendChild(contactCell);
+        row.appendChild(stageCell);
+        row.appendChild(contentCell);
+        row.appendChild(lastContactCell);
+        row.appendChild(actionsCell);
+
+        fragment.appendChild(row);
+    });
+
+    tableBody.appendChild(fragment);
+
+    attachEditButtonListeners();
+}
+
 </script>
     
 
