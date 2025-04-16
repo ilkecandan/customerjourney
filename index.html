@@ -3252,10 +3252,6 @@ function addLead() {
     const contentSelect = document.getElementById('lead-content');
     const contentStrategies = $(contentSelect).val() || [];
 
-    if (!company || !contact || !email) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
 
     const newLead = {
         id: 'lead-' + Date.now(),
