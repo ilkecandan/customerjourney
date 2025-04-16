@@ -3688,41 +3688,77 @@ function addLead() {
 
         // --- Dynamic Advice Options ---
         const adviceOptions = {
-            emptyFunnel: [
-                "Your funnel is empty. Add new leads to get started!",
-                "No leads yet. Time to hunt down some future customers!",
-                "The funnel's feeling like a ghost town. Invite someone in!",
-                "Nothing here yet—this is your sign to populate your funnel!",
-                "Imagine a party where no one shows up. That's your funnel right now."
-            ],
-            noAwareness: [
-                "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
-                "No Awareness leads. Top-of-funnel visibility is critical—let's fix that.",
-                "No one knows you exist if Awareness is empty. Start there.",
-                "Lead the way—literally. Add leads to the Awareness stage.",
-                "Your brand is whispering into the void. Make some noise."
-            ],
-            stuckInInterest: [
-                "Your leads are showing interest—that's a great sign. Give them the nudge they need to go further.",
-                "They're leaning in. Meet them with clarity, value, and a next step.",
-                "This is your moment to shine. A well-timed message or content piece could unlock real movement.",
-                "Interest means the door is open. You just need to walk through it with purpose.",
-                "They're curious. Guide them toward consideration with something meaningful."
-            ],
+           emptyFunnel: [
+    "Your funnel is empty. Add new leads to get started!",
+    "No leads yet. Time to hunt down some future customers!",
+    "The funnel's feeling like a ghost town. Invite someone in!",
+    "Nothing here yet—this is your sign to populate your funnel!",
+    "Imagine a party where no one shows up. That's your funnel right now.",
+    "Zero leads, zero drama. Let’s add some action.",
+    "An empty funnel is just a to-do list waiting to happen.",
+    "You can’t convert what doesn’t exist. Let’s get some names in here.",
+    "Your future clients are out there… but not in this funnel.",
+    "Crickets. That’s what your funnel is hearing. Time to make noise.",
+    "Every empire starts with one lead. Add yours now.",
+    "Even tumbleweeds are tired of rolling through this empty space.",
+    "No data, no decisions. Populate the funnel, then optimize.",
+    "The only thing flowing here is... nothing. Add a lead.",
+    "Blank funnels don't make money. Populate and prosper."
+],
+
+noAwareness: [
+    "You've skipped the top of the funnel. Add leads to Awareness to keep things flowing smoothly.",
+    "No Awareness leads. Top-of-funnel visibility is critical—let's fix that.",
+    "No one knows you exist if Awareness is empty. Start there.",
+    "Lead the way—literally. Add leads to the Awareness stage.",
+    "Your brand is whispering into the void. Make some noise.",
+    "This funnel's missing its opening act. Start with Awareness.",
+    "You can’t convert strangers. First, make them aware you exist.",
+    "Your funnel has no front door. Awareness is that door—install it.",
+    "Marketing rule #1: Be seen. Add Awareness leads now.",
+    "Skipping Awareness is like starting a novel on chapter 7.",
+    "Even the best ideas need an audience. Populate that stage."
+],
+
+         stuckInInterest: [
+    "Your leads are showing interest—that's a great sign. Give them the nudge they need to go further.",
+    "They're leaning in. Meet them with clarity, value, and a next step.",
+    "This is your moment to shine. A well-timed message or content piece could unlock real movement.",
+    "Interest means the door is open. You just need to walk through it with purpose.",
+    "They're curious. Guide them toward consideration with something meaningful.",
+    "Your leads are circling the product like it’s a buffet. Serve them the main course.",
+    "Interest is not commitment. Show them why sticking around is worth it.",
+    "They’ve looked your way. Now give them a reason to stay.",
+    "You're on their radar. Drop value like it’s hot.",
+    "Don’t let warm leads cool down. Stoke the fire—send something irresistible.",
+    "They paused here for a reason. Make your next move unmissable.",
+    "This is the ‘maybe’ zone. Time to turn it into a yes."
+],
             noPurchases: [
-                "You have leads in Consideration but no purchases. Your closing game is next—refine and shine.",
-                "They're almost ready. Strengthen the final touchpoint to guide the decision.",
-                "You're so close—help them take the last step with clarity and confidence.",
-                "No deals closed yet, but interest is alive. Bring precision to your offer.",
-                "Your leads are listening—now give them something undeniable to say yes to."
-            ],
-            underperformingContent: [
-                "Some content may need improvement: {items}. Consider updating or replacing these assets.",
-                "Underperforming content detected: {items}. Time to give them a second life—or a graceful exit.",
-                "Not all content converts. These aren't pulling their weight: {items}. Let's fix that.",
-                "Give these pieces a makeover: {items}. Your funnel deserves better.",
-                "These content assets aren't keeping up: {items}. Refine, refresh, or retire."
-            ],
+    "You have leads in Consideration but no purchases. Your closing game is next—refine and shine.",
+    "They're almost ready. Strengthen the final touchpoint to guide the decision.",
+    "You're so close—help them take the last step with clarity and confidence.",
+    "No deals closed yet, but interest is alive. Bring precision to your offer.",
+    "Your leads are listening—now give them something undeniable to say yes to.",
+    "They’ve read the menu. Now make the dish irresistible.",
+    "This is the decision zone. Be bold, be clear, be compelling.",
+    "If they’ve made it this far, they’re *thinking* about you. Seal the deal.",
+    "You’ve sparked curiosity. Now ignite commitment with value and urgency.",
+    "Don’t fade at the finish line. Add urgency, sweeten the offer, or tighten your CTA.",
+    "They're waiting for a sign—it better be you, not your competitor."
+],
+           underperformingContent: [
+    "Some content may need improvement: {items}. Consider updating or replacing these assets.",
+    "Underperforming content detected: {items}. Time to give them a second life—or a graceful exit.",
+    "Not all content converts. These aren't pulling their weight: {items}. Let's fix that.",
+    "Give these pieces a makeover: {items}. Your funnel deserves better.",
+    "These content assets aren't keeping up: {items}. Refine, refresh, or retire.",
+    "These aren't your star players: {items}. Either upgrade them or bench them.",
+    "Flatlining content alert: {items}. They're not helping, and they might be hurting.",
+    "Dead weight detected: {items}. You don’t need sentimental clutter in your funnel.",
+    "Stale and silent: {items}. Time for a glow-up—or a clean break.",
+    "You deserve content that works as hard as you do. These don't: {items}."
+],
             notContacted: [
                 "{count} leads haven't been contacted in over a week. Keep things warm by reaching out again.",
                 "You're ghosting {count} leads. 👻 Maybe it's time to reconnect?",
