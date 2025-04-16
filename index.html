@@ -1899,7 +1899,7 @@
                     </div>
                     <div class="form-columns">
                         <div class="form-group">
-                            <label for="content-stage">Funnel Stage *</label>
+ v                           <label for="content-stage">Funnel Stage *</label>
                             <select id="content-stage" required>
                                 <option value="awareness">Awareness</option>
                                 <option value="interest">Interest</option>
@@ -2117,17 +2117,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function setupGlobalEventListeners() {
     // 👉 Add Lead button
-    document.getElementById('open-add-lead-modal-btn')?.addEventListener('click', function () {
-        document.getElementById('lead-form').reset();
-        document.getElementById('add-lead-modal').classList.add('show');
-    });
-
+document.getElementById('open-add-lead-modal-btn')?.addEventListener('click', function () {
+    document.getElementById('lead-form').reset();
+    const modal = document.getElementById('add-lead-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+});
     // 👉 Add Content button
-    document.getElementById('add-content-btn')?.addEventListener('click', function () {
-        document.getElementById('content-form').reset();
-        document.getElementById('add-content-modal').classList.add('show');
-    });
-
+ document.getElementById('add-content-btn')?.addEventListener('click', function () {
+    document.getElementById('content-form').reset();
+    const modal = document.getElementById('add-content-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+});
     // 🔁 Refresh smart insights
     document.getElementById('refresh-advice')?.addEventListener('click', refreshFunnelInsights);
 
@@ -2139,10 +2141,12 @@ function setupGlobalEventListeners() {
 
     // ❌ Close modals
     document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.closest('.modal').classList.remove('show');
-        });
+    btn.addEventListener('click', () => {
+        const modal = btn.closest('.modal');
+        modal.classList.remove('show');
+        modal.classList.add('hidden');
     });
+});
 
     // ✅ FORM: Add Lead
     document.getElementById('lead-form')?.addEventListener('submit', function (e) {
