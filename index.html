@@ -24,10 +24,10 @@
             --gold-accent: #BBA45C; /* Ancient bronze-gold */
             --metallic-silver: #8C9AA8; /* Worn silver, aged steel */
             
-            --text-primary: #E0F2F1;
-            --text-secondary: #B2DFDB;
-            --text-muted: #80CBC4;
-            
+            --text-primary: #FFFFFF;
+            --text-secondary: #C8E6C9; /* Was #B2DFDB - better contrast */
+            --text-muted: #80CBC4; 
+             
             --success-color: #4CAF50;
             --warning-color: #FFC107;
             --error-color: #F44336;
@@ -4370,10 +4370,9 @@ noAwareness: [
         ];
         return insights[Math.floor(Math.random() * insights.length)];
     }
-
-  function renderLeadTable(leads) {
+function renderLeadTable(leads) {
     const tableBody = document.getElementById('leads-table-body');
-    tableBody.innerHTML = ''; // You can optimize this further with diffing if needed
+    tableBody.innerHTML = '';
 
     if (!leads || leads.length === 0) {
         const row = document.createElement('tr');
@@ -4437,9 +4436,38 @@ noAwareness: [
     });
 
     tableBody.appendChild(fragment);
-
-    attachEditButtonListeners();
+    attachEditButtonListeners(); // Refresh click handlers
 }
+
+// Debounced search setup
+let searchTimeout = null;
+
+document.getElementById('lead-search')?.addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        performSearch(this.value.trim());
+    }, 300);
+});
+
+function performSearch(query) {
+    const normalizedQuery = query.toLowerCase();
+    const rows = document.querySelectorAll('#leads-table-body tr');
+
+    rows.forEach(row => {
+        if (!row.dataset.leadId) {
+            row.style.display = query ? 'none' : '';
+            return;
+        }
+
+        const company = row.cells[0].textContent.toLowerCase();
+        const contact = row.cells[1].textContent.toLowerCase();
+        const shouldShow = company.includes(normalizedQuery) || contact.includes(normalizedQuery);
+
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+  
 
 </script>
     
