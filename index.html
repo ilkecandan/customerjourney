@@ -2152,191 +2152,184 @@
   
 <script>
 
-
-    let currentSelectedLeadId = null;
+let currentSelectedLeadId = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Start with hiding the app container
-    document.getElementById('app-container').classList.add('hidden');
+  // Hide app by default
+  document.getElementById('app-container').classList.add('hidden');
 
-    const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+  const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
-    if (isAuthenticated) {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
+  if (isAuthenticated) {
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('app-container').classList.remove('hidden');
 
-        setupInstallButton();
-        setupEventListeners();
-        setupGlobalEventListeners();
+    setupInstallButton();
+    setupEventListeners();
+    setupGlobalEventListeners();
 
-        if (!localStorage.getItem('onboarding_completed')) {
-            document.getElementById('onboarding-overlay').classList.remove('hidden');
-            setupOnboarding();
-        } else {
-            initializeApp();
-        }
+    if (!localStorage.getItem('onboarding_completed')) {
+      document.getElementById('onboarding-overlay').classList.remove('hidden');
+      setupOnboarding();
     } else {
-        setupAuth(); // Will call setupEventListeners + setupGlobalEventListeners after login
+      initializeApp();
+    }
+  } else {
+    setupAuth(); // handles login and event setup
+  }
+
+  // Global click handling
+  document.addEventListener('click', function (e) {
+    // Lead card clicked
+    const leadCard = e.target.closest('.lead-card');
+    if (leadCard?.dataset.leadId) {
+      openEditLeadModalById(leadCard.dataset.leadId);
+      return;
     }
 
-    // Global click delegation
-    document.addEventListener('click', function (e) {
-        // Lead card click
-        const leadCard = e.target.closest('.lead-card');
-        if (leadCard) {
-            const leadId = leadCard.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
+    // Table row clicked (excluding buttons)
+    const row = e.target.closest('#leads-table-body tr');
+    if (row?.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+      openEditLeadModalById(row.dataset.leadId);
+      return;
+    }
 
-        // Table row click (ignores clicks on edit/delete buttons)
-        const tableRow = e.target.closest('#leads-table-body tr');
-        if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-            const leadId = tableRow.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
+    // Edit button clicked
+    const editBtn = e.target.closest('.edit-btn');
+    if (editBtn?.dataset.leadId) {
+      e.preventDefault();
+      e.stopPropagation();
+      openEditLeadModalById(editBtn.dataset.leadId);
+      return;
+    }
 
-        // Edit button click
-        const editBtn = e.target.closest('.edit-btn');
-        if (editBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const leadId = editBtn.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
+    // Insight edit clicked
+    const insightBtn = e.target.closest('.edit-insight-btn');
+    if (insightBtn?.dataset.leadId) {
+      openEditLeadModalById(insightBtn.dataset.leadId);
+      return;
+    }
 
-        // Insight edit button click
-        const editInsightBtn = e.target.closest('.edit-insight-btn');
-        if (editInsightBtn && editInsightBtn.dataset.leadId) {
-            openEditLeadModalById(editInsightBtn.dataset.leadId);
-            return;
-        }
-    });
+    // Content card clicked
+    const contentItem = e.target.closest('.content-item');
+    if (contentItem && !e.target.closest('.edit-content, .delete-content')) {
+      const contentId = contentItem.dataset.contentId;
+      const contentList = JSON.parse(localStorage.getItem('content')) || [];
+      const content = contentList.find(c => c.id === contentId);
+      if (content) openEditContentModal(content);
+    }
+  });
 });
-
 
 function setupGlobalEventListeners() {
-    // 👉 Add Lead button
-    document.getElementById('open-add-lead-modal-btn')?.addEventListener('click', function () {
-        document.getElementById('lead-form').reset();
-        const modal = document.getElementById('add-lead-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('show');
-    });
-
-    // 👉 Add Content button
-    document.getElementById('add-content-btn')?.addEventListener('click', function () {
-        document.getElementById('content-form').reset();
-        const modal = document.getElementById('add-content-modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('show');
-    });
-
-    // 🔁 Refresh smart insights
-    document.getElementById('refresh-advice')?.addEventListener('click', refreshFunnelInsights);
-
-    // 🧾 Export PDF
-    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
-
-    // 📊 Export Excel
-    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
-
-    // ❌ Close modals
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const modal = btn.closest('.modal');
-            modal.classList.remove('show');
-            modal.classList.add('hidden');
-        });
-    });
-
-    // ✅ FORM: Add Lead
-    document.getElementById('lead-form')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        addLead();
-    });
-
-    // ✅ FORM: Add Content
-    document.getElementById('content-form')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        addContent();
-    });
-
-    // ✅ FORM: Edit Lead
-    document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        saveLeadChanges();
-    });
-
-    // ✅ FORM: Edit Content
-    document.getElementById('edit-content-form')?.addEventListener('submit', function (e) {
-        e.preventDefault();
-        saveContentChanges();
-    });
-
-    // 🔍 Filter by Stage
-    document.getElementById('lead-stage-filter')?.addEventListener('change', function () {
-        filterLeadsTable(this.value);
-    });
-
-    // 🔎 Search Leads (with debounce)
-    const leadSearch = document.getElementById('lead-search');
-    if (leadSearch) {
-        leadSearch.addEventListener('input', function () {
-            clearTimeout(searchLeads.debounce);
-            searchLeads.debounce = setTimeout(() => {
-                searchLeads(this.value);
-            }, 300);
-        });
-    }
-
-    // 🧠 Delegated click handler (Content item click)
-    document.addEventListener('click', function (e) {
-        // Content item click (excluding buttons inside)
-        const contentItem = e.target.closest('.content-item');
-        if (contentItem && !e.target.closest('.edit-content, .delete-content')) {
-            const contentId = contentItem.dataset.contentId;
-            const contentItems = JSON.parse(localStorage.getItem('content')) || [];
-            const content = contentItems.find(c => c.id === contentId);
-            if (content) {
-                openEditContentModal(content);
-            }
-        }
-
-        // Add other delegated logic here if needed
-    });
-}
-document.getElementById('lead-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const data = {
-    company: document.getElementById('lead-company').value,
-    contact: document.getElementById('lead-contact').value,
-    email: document.getElementById('lead-email').value,
-    phone: document.getElementById('lead-phone').value,
-    stage: document.getElementById('lead-stage').value,
-    source: document.getElementById('lead-source').value,
-    industry: document.getElementById('lead-industry').value,
-    status: document.getElementById('lead-status').value,
-    content: Array.from(document.getElementById('lead-content').selectedOptions).map(opt => opt.value),
-    notes: document.getElementById('lead-notes').value,
-  };
-
-  const res = await fetch('backendfunnel-production.up.railway.app', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+  // Add Lead modal open
+  document.getElementById('open-add-lead-modal-btn')?.addEventListener('click', () => {
+    document.getElementById('lead-form').reset();
+    const modal = document.getElementById('add-lead-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
   });
 
-  if (res.ok) {
-    alert('Lead added!');
-    // optionally reload or re-fetch
-  } else {
-    alert('Failed to add lead');
+  // Add Content modal open
+  document.getElementById('add-content-btn')?.addEventListener('click', () => {
+    document.getElementById('content-form').reset();
+    const modal = document.getElementById('add-content-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+  });
+
+  // Close modals
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const modal = btn.closest('.modal');
+      modal.classList.remove('show');
+      modal.classList.add('hidden');
+    });
+  });
+
+  // Refresh Insights
+  document.getElementById('refresh-advice')?.addEventListener('click', refreshFunnelInsights);
+
+  // Export buttons
+  document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
+  document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
+
+  // Add Content form submit
+  document.getElementById('content-form')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+    addContent();
+  });
+
+  // Edit Lead form submit
+  document.getElementById('edit-lead-form')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+    saveLeadChanges();
+  });
+
+  // Edit Content form submit
+  document.getElementById('edit-content-form')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+    saveContentChanges();
+  });
+
+  // Filter leads by stage
+  document.getElementById('lead-stage-filter')?.addEventListener('change', function () {
+    filterLeadsTable(this.value);
+  });
+
+  // Lead search with debounce
+  const leadSearch = document.getElementById('lead-search');
+  if (leadSearch) {
+    leadSearch.addEventListener('input', function () {
+      clearTimeout(searchLeads.debounce);
+      searchLeads.debounce = setTimeout(() => {
+        searchLeads(this.value);
+      }, 300);
+    });
   }
-});
+
+  // Add Lead form submit (main logic)
+  document.getElementById('lead-form')?.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const company = document.getElementById('lead-company').value.trim();
+    if (!company) {
+      alert('Please enter a company name');
+      return;
+    }
+
+    const data = {
+      company,
+      contact: document.getElementById('lead-contact').value,
+      email: document.getElementById('lead-email').value,
+      phone: document.getElementById('lead-phone').value,
+      stage: document.getElementById('lead-stage').value,
+      source: document.getElementById('lead-source').value,
+      industry: document.getElementById('lead-industry').value,
+      status: document.getElementById('lead-status').value,
+      content: Array.from(document.getElementById('lead-content').selectedOptions).map(opt => opt.value),
+      notes: document.getElementById('lead-notes').value,
+    };
+
+    try {
+      const res = await fetch('https://backendfunnel-production.up.railway.app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        alert('Lead added!');
+        // Optional: Refresh UI or table
+      } else {
+        alert('Failed to add lead');
+      }
+    } catch (error) {
+      console.error('Error adding lead:', error);
+      alert('Something went wrong. Please try again.');
+    }
+  });
+}
 
 
     
