@@ -2151,10 +2151,10 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
   
 <script>
-let currentSelectedLeadId = null;
+
+    let currentSelectedLeadId = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-  // Hide app until login is confirmed
   document.getElementById('app-container').classList.add('hidden');
   const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
@@ -2173,10 +2173,9 @@ document.addEventListener('DOMContentLoaded', function () {
       initializeApp();
     }
   } else {
-    setupAuth(); // handles login and sets up event listeners
+    setupAuth();
   }
 
-  // Global click handling
   document.addEventListener('click', function (e) {
     const leadCard = e.target.closest('.lead-card');
     const row = e.target.closest('#leads-table-body tr');
@@ -2258,8 +2257,8 @@ function setupGlobalEventListeners() {
     });
   }
 
-  // ✅ Add Lead Form - main logic
-  document.getElementById('lead-form')?.addEventListener('submit', async function (e) {
+  // ✅ Add Lead Form - using localStorage
+  document.getElementById('lead-form')?.addEventListener('submit', function (e) {
     e.preventDefault();
 
     const company = document.getElementById('lead-company')?.value?.trim();
@@ -2269,6 +2268,7 @@ function setupGlobalEventListeners() {
     }
 
     const data = {
+      id: Date.now().toString(), // Unique ID
       company,
       contact: document.getElementById('lead-contact')?.value || '',
       email: document.getElementById('lead-email')?.value || '',
@@ -2281,23 +2281,14 @@ function setupGlobalEventListeners() {
       notes: document.getElementById('lead-notes')?.value || '',
     };
 
-    try {
-      const res = await fetch('customerjourney.railway.internal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+    const leads = JSON.parse(localStorage.getItem('leads')) || [];
+    leads.push(data);
+    localStorage.setItem('leads', JSON.stringify(leads));
 
-      if (res.ok) {
-        alert('Lead added!');
-        // Optionally refresh UI
-      } else {
-        alert('Failed to add lead');
-      }
-    } catch (error) {
-      console.error('Error adding lead:', error);
-      alert('Something went wrong. Please try again.');
-    }
+    alert('Lead added successfully!');
+    document.getElementById('lead-form').reset();
+    document.getElementById('add-lead-modal')?.classList.add('hidden');
+    loadLeadsToTable(); // Optional if you show leads in a table
   });
 }
 
@@ -2371,7 +2362,6 @@ function setupEventListeners() {
     });
   });
 }
-
 
 
     // ✅ Authentication setup
