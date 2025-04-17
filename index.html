@@ -3416,50 +3416,73 @@ document.getElementById('lead-form')?.addEventListener('submit', function(e) {
 });
 
 // Update your existing addLead function to ensure it's properly defined
-function addLead() {
-    const company = document.getElementById('lead-company').value;
-    const contact = document.getElementById('lead-contact').value;
-    const email = document.getElementById('lead-email').value;
-    const phone = document.getElementById('lead-phone').value;
-    const stage = document.getElementById('lead-stage').value;
-    const source = document.getElementById('lead-source').value;
-    const industry = document.getElementById('lead-industry').value;
-    const status = document.getElementById('lead-status').value;
-    const notes = document.getElementById('lead-notes').value;
-    const contentSelect = document.getElementById('lead-content');
-    const contentStrategies = $(contentSelect).val() || [];
+
+function validateLeadForm() {
+    const company = document.getElementById('lead-company').value.trim();
+    const contact = document.getElementById('lead-contact').value.trim();
+    const email = document.getElementById('lead-email').value.trim();
+
+    if (!company) {
+        showNotification('Company name is required', 'error');
+        return false;
+    }
 
 
-    const newLead = {
-        id: 'lead-' + Date.now(),
-        company,
-        contact,
-        email,
-        phone,
-        source,
-        currentStage: stage,
-        industry,
-        status,
-        notes,
-        contentStrategies,
-        dateAdded: new Date().toISOString(),
-        lastContact: new Date().toISOString(),
-        value: Math.floor(Math.random() * 10000) + 1000
-    };
-
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-    };
-
-    leads[stage].push(newLead);
-    localStorage.setItem('leads', JSON.stringify(leads));
-
-    document.getElementById('add-lead-modal').classList.add('hidden');
-    document.getElementById('lead-form').reset();
-    loadLeads();
-    updateAnalytics();
-    showNotification('Lead added successfully');
+    return true;
 }
+
+function addLead() {
+    if (!validateLeadForm()) return;
+
+    try {
+        const company = document.getElementById('lead-company').value.trim();
+        const contact = document.getElementById('lead-contact').value.trim();
+        const email = document.getElementById('lead-email').value.trim();
+        const phone = document.getElementById('lead-phone').value.trim();
+        const stage = document.getElementById('lead-stage').value;
+        const source = document.getElementById('lead-source').value;
+        const industry = document.getElementById('lead-industry').value;
+        const status = document.getElementById('lead-status').value;
+        const notes = document.getElementById('lead-notes').value;
+        const contentSelect = document.getElementById('lead-content');
+        const contentStrategies = $(contentSelect).val() || [];
+
+        const newLead = {
+            id: 'lead-' + Date.now(),
+            company,
+            contact,
+            email,
+            phone,
+            source,
+            currentStage: stage,
+            industry,
+            status,
+            notes,
+            contentStrategies,
+            dateAdded: new Date().toISOString(),
+            lastContact: new Date().toISOString(),
+            value: Math.floor(Math.random() * 10000) + 1000
+        };
+
+        const leads = JSON.parse(localStorage.getItem('leads')) || {
+            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+        };
+
+        leads[stage].push(newLead);
+        localStorage.setItem('leads', JSON.stringify(leads));
+
+        document.getElementById('add-lead-modal').classList.add('hidden');
+        document.getElementById('lead-form').reset();
+        loadLeads();
+        updateAnalytics();
+        showNotification('Lead added successfully');
+    } catch (error) {
+        console.error('Error adding lead:', error);
+        showNotification('Failed to add lead. Please try again.', 'error');
+    }
+}
+
+    
     
     // Add new content strategy
     function addContent() {
