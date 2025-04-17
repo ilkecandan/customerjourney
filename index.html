@@ -2282,7 +2282,7 @@ function setupGlobalEventListeners() {
     };
 
     try {
-      const res = await fetch('https://backendfunnel-production.up.railway.app/leads', {
+      const res = await fetch('customerjourney.railway.internal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
