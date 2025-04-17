@@ -3385,11 +3385,7 @@ function setupAutoInsightRefresh(intervalInMinutes = 15) {
     toggleModal('edit-lead-modal', show);
 }
     
-// Add this near your other event listener setups
-document.getElementById('lead-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    addLead();
-});
+
 
 // Update your existing addLead function to ensure it's properly defined
 function addLead() {
