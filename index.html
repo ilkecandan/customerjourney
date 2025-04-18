@@ -2152,68 +2152,103 @@
   
 <script>
 
-
-    let currentSelectedLeadId = null;
+let currentSelectedLeadId = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Start with hiding the app container
-    document.getElementById('app-container').classList.add('hidden');
+    try {
+        // Start with hiding the app container
+        const appContainer = document.getElementById('app-container');
+        const authScreen = document.getElementById('auth-screen');
+        
+        if (!appContainer || !authScreen) {
+            throw new Error('Required DOM elements not found');
+        }
+        
+        appContainer.classList.add('hidden');
 
-    const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+        // Check authentication status
+        const isAuthenticated = localStorage.getItem('authenticated') === 'true';
 
-    if (isAuthenticated) {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
+        if (isAuthenticated) {
+            // Hide auth screen and show app
+            authScreen.classList.add('hidden');
+            appContainer.classList.remove('hidden');
 
-        setupInstallButton();
-        setupEventListeners();
-        setupGlobalEventListeners();
+            // Initialize with proper sequence
+            initializeDefaultData(); // Ensure data structure exists first
+            initializeUIComponents(); // Set up UI components
+            loadInitialData(); // Load data into UI
 
-        if (!localStorage.getItem('onboarding_completed')) {
-            document.getElementById('onboarding-overlay').classList.remove('hidden');
-            setupOnboarding();
+            // Set up remaining functionality
+            setupInstallButton();
+            setupEventListeners();
+            setupGlobalEventListeners();
+
+            // Handle onboarding flow
+            if (!localStorage.getItem('onboarding_completed')) {
+                const onboardingOverlay = document.getElementById('onboarding-overlay');
+                if (onboardingOverlay) {
+                    onboardingOverlay.classList.remove('hidden');
+                    setupOnboarding();
+                }
+            } else {
+                initializeApp();
+            }
         } else {
-            initializeApp();
+            setupAuth();
         }
-    } else {
-        setupAuth(); // Will call setupEventListeners + setupGlobalEventListeners after login
+
+        // Global click delegation with better error handling
+        document.addEventListener('click', function (e) {
+            try {
+                // Lead card click
+                const leadCard = e.target.closest('.lead-card');
+                if (leadCard && leadCard.dataset.leadId) {
+                    openEditLeadModalById(leadCard.dataset.leadId);
+                    return;
+                }
+
+                // Table row click (ignores clicks on edit/delete buttons)
+                const tableRow = e.target.closest('#leads-table-body tr');
+                if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
+                    openEditLeadModalById(tableRow.dataset.leadId);
+                    return;
+                }
+
+                // Edit button click
+                const editBtn = e.target.closest('.edit-btn');
+                if (editBtn && editBtn.dataset.leadId) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openEditLeadModalById(editBtn.dataset.leadId);
+                    return;
+                }
+
+                // Insight edit button click
+                const editInsightBtn = e.target.closest('.edit-insight-btn');
+                if (editInsightBtn && editInsightBtn.dataset.leadId) {
+                    openEditLeadModalById(editInsightBtn.dataset.leadId);
+                }
+            } catch (error) {
+                console.error('Error handling click event:', error);
+            }
+        });
+
+    } catch (error) {
+        console.error('Initialization error:', error);
+        // Show user-friendly error message
+        const errorMessage = document.createElement('div');
+        errorMessage.style.position = 'fixed';
+        errorMessage.style.top = '0';
+        errorMessage.style.left = '0';
+        errorMessage.style.right = '0';
+        errorMessage.style.padding = '1rem';
+        errorMessage.style.backgroundColor = 'var(--error-color)';
+        errorMessage.style.color = 'white';
+        errorMessage.style.zIndex = '9999';
+        errorMessage.textContent = 'Application initialization failed. Please refresh the page.';
+        document.body.appendChild(errorMessage);
     }
-
-    // Global click delegation
-    document.addEventListener('click', function (e) {
-        // Lead card click
-        const leadCard = e.target.closest('.lead-card');
-        if (leadCard) {
-            const leadId = leadCard.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
-
-        // Table row click (ignores clicks on edit/delete buttons)
-        const tableRow = e.target.closest('#leads-table-body tr');
-        if (tableRow && tableRow.dataset.leadId && !e.target.closest('.edit-btn, .delete-btn')) {
-            const leadId = tableRow.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
-
-        // Edit button click
-        const editBtn = e.target.closest('.edit-btn');
-        if (editBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const leadId = editBtn.dataset.leadId;
-            if (leadId) openEditLeadModalById(leadId);
-            return;
-        }
-
-        // Insight edit button click
-        const editInsightBtn = e.target.closest('.edit-insight-btn');
-        if (editInsightBtn && editInsightBtn.dataset.leadId) {
-            openEditLeadModalById(editInsightBtn.dataset.leadId);
-            return;
-        }
-    });
 });
 
 
@@ -2573,40 +2608,41 @@ function setupAuth() {
         });
     }
 
-    function initializeDefaultData() {
-        // Initialize metadata if none exists
-        if (!localStorage.getItem('funnel_metadata')) {
-            localStorage.setItem('funnel_metadata', JSON.stringify({
-                created: new Date().toISOString(),
-                version: '1.1',
-                last_updated: new Date().toISOString()
-            }));
-        }
-        
-        // Initialize default leads if none exist
-        if (!localStorage.getItem('leads')) {
-            const defaultLeads = {
-                awareness: [createDefaultLead('awareness')],
-                interest: [createDefaultLead('interest')],
-                intent: [],
-                evaluation: [],
-                purchase: []
-            };
-            localStorage.setItem('leads', JSON.stringify(defaultLeads));
-        }
 
-        // Initialize default content if none exists
-        if (!localStorage.getItem('content')) {
-            const defaultContent = [
-                createContentItem('awareness', 'blog'),
-                createContentItem('interest', 'video'),
-                createContentItem('intent', 'casestudy'),
-                createContentItem('evaluation', 'ebook'),
-                createContentItem('purchase', 'video')
-            ];
-            localStorage.setItem('content', JSON.stringify(defaultContent));
-        }
+    function initializeDefaultData() {
+    // Initialize metadata if none exists
+    if (!localStorage.getItem('funnel_metadata')) {
+        localStorage.setItem('funnel_metadata', JSON.stringify({
+            created: new Date().toISOString(),
+            version: '1.1',
+            last_updated: new Date().toISOString()
+        }));
     }
+    
+    // Initialize default leads if none exist
+    if (!localStorage.getItem('leads')) {
+        const defaultLeads = {
+            awareness: [createDefaultLead('awareness')],
+            interest: [createDefaultLead('interest')],
+            intent: [],
+            evaluation: [],
+            purchase: []
+        };
+        localStorage.setItem('leads', JSON.stringify(defaultLeads));
+    }
+
+    // Initialize default content if none exists
+    if (!localStorage.getItem('content')) {
+        const defaultContent = [
+            createContentItem('awareness', 'blog'),
+            createContentItem('interest', 'video'),
+            createContentItem('intent', 'casestudy'),
+            createContentItem('evaluation', 'ebook'),
+            createContentItem('purchase', 'video')
+        ];
+        localStorage.setItem('content', JSON.stringify(defaultContent));
+    }
+}
 
     function createDefaultLead(stage) {
         const isAwareness = stage === 'awareness';
@@ -2695,85 +2731,93 @@ function setupAuth() {
         updateAnalytics();
     }
 
-    function loadLeads() {
-        let leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
+   function loadLeads() {
+    // Safely get leads data with proper defaults
+    let leads = JSON.parse(localStorage.getItem('leads'));
+    if (!leads) {
+        leads = {
+            awareness: [], 
+            interest: [], 
+            intent: [], 
+            evaluation: [], 
+            purchase: []
         };
-        const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+        localStorage.setItem('leads', JSON.stringify(leads));
+    }
 
-        // Ensure all leads have an ID
-        let updated = false;
-        for (const stage of Object.keys(leads)) {
-            leads[stage] = leads[stage].map(lead => {
-                if (!lead.id) {
-                    lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
-                    updated = true;
-                }
-                return lead;
+    // Ensure all expected stages exist
+    const expectedStages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
+    expectedStages.forEach(stage => {
+        if (!leads[stage]) {
+            leads[stage] = [];
+        }
+    });
+
+    const contentItems = JSON.parse(localStorage.getItem('content')) || [];
+
+    // Clear and populate each stage body
+    document.querySelectorAll('.stage-body').forEach(container => {
+        container.innerHTML = '';
+        const stage = container.dataset.dropTarget;
+
+        if (!stage || !leads[stage]) {
+            console.error(`Invalid stage: ${stage}`);
+            return;
+        }
+
+        // Content badges for this stage
+        const stageContent = contentItems.filter(c => c.stage === stage);
+        if (stageContent.length > 0) {
+            const contentBadges = document.createElement('div');
+            contentBadges.className = 'content-badges';
+
+            stageContent.forEach(content => {
+                const badge = document.createElement('div');
+                badge.className = 'content-badge';
+                badge.dataset.contentId = content.id;
+                badge.draggable = true;
+                badge.title = `${content.name}\n${content.description}`;
+
+                badge.innerHTML = `
+                    <i class="${getContentIcon(content.type)}"></i>
+                    <span>${content.name.substring(0, 3)}</span>
+                `;
+
+                badge.addEventListener('dragstart', handleContentDragStart);
+                badge.addEventListener('click', () => openEditContentModal(content));
+
+                contentBadges.appendChild(badge);
+            });
+
+            container.appendChild(contentBadges);
+        }
+
+        // Lead cards
+        if (leads[stage].length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty';
+            emptyDiv.textContent = 'Drop leads here';
+            container.appendChild(emptyDiv);
+        } else {
+            leads[stage].forEach(lead => {
+                container.appendChild(createLeadCard(lead));
             });
         }
-        if (updated) {
-            localStorage.setItem('leads', JSON.stringify(leads));
-        }
+    });
 
-        // Clear and populate each stage body
-        document.querySelectorAll('.stage-body').forEach(container => {
-            container.innerHTML = '';
-            const stage = container.dataset.dropTarget;
+    // Update funnel stage stats
+    document.getElementById('awareness-count').textContent = leads.awareness.length;
+    document.getElementById('interest-count').textContent = leads.interest.length;
+    document.getElementById('consideration-count').textContent =
+        leads.intent.length + leads.evaluation.length + leads.purchase.length;
 
-            // Content badges for this stage
-            const stageContent = contentItems.filter(c => c.stage === stage);
-            if (stageContent.length > 0) {
-                const contentBadges = document.createElement('div');
-                contentBadges.className = 'content-badges';
+    // Update leads table
+    updateLeadsTable();
 
-                stageContent.forEach(content => {
-                    const badge = document.createElement('div');
-                    badge.className = 'content-badge';
-                    badge.dataset.contentId = content.id;
-                    badge.draggable = true;
-                    badge.title = `${content.name}\n${content.description}`;
-
-                    badge.innerHTML = `
-                        <i class="${getContentIcon(content.type)}"></i>
-                        <span>${content.name.substring(0, 3)}</span>
-                    `;
-
-                    badge.addEventListener('dragstart', handleContentDragStart);
-                    badge.addEventListener('click', () => openEditContentModal(content));
-
-                    contentBadges.appendChild(badge);
-                });
-
-                container.appendChild(contentBadges);
-            }
-
-            // Lead cards
-            if (leads[stage] && leads[stage].length === 0) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = 'empty';
-                emptyDiv.textContent = 'Drop leads here';
-                container.appendChild(emptyDiv);
-            } else if (leads[stage]) {
-                leads[stage].forEach(lead => {
-                    container.appendChild(createLeadCard(lead));
-                });
-            }
-        });
-
-        // Update funnel stage stats
-        document.getElementById('awareness-count').textContent = leads.awareness.length;
-        document.getElementById('interest-count').textContent = leads.interest.length;
-        document.getElementById('consideration-count').textContent =
-            leads.intent.length + leads.evaluation.length + leads.purchase.length;
-
-        // Update leads table
-        updateLeadsTable();
-
-        updateConversionPercentages();
-        generateSmartAdvice();
-        updateAdvancedAnalytics();
-    }
+    updateConversionPercentages();
+    generateSmartAdvice();
+    updateAdvancedAnalytics();
+}
 
 function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
@@ -3370,7 +3414,8 @@ document.getElementById('lead-form')?.addEventListener('submit', function(e) {
 });
 
 // Update your existing addLead function to ensure it's properly defined
-function addLead() {
+
+    function addLead() {
     const company = document.getElementById('lead-company').value;
     const contact = document.getElementById('lead-contact').value;
     const email = document.getElementById('lead-email').value;
@@ -3383,6 +3428,28 @@ function addLead() {
     const contentSelect = document.getElementById('lead-content');
     const contentStrategies = $(contentSelect).val() || [];
 
+    // Validate required fields
+    if (!company || !contact || !email) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+
+    // Initialize leads data structure if it doesn't exist
+    let leads = JSON.parse(localStorage.getItem('leads'));
+    if (!leads) {
+        leads = {
+            awareness: [], 
+            interest: [], 
+            intent: [], 
+            evaluation: [], 
+            purchase: []
+        };
+    }
+
+    // Ensure the stage exists
+    if (!leads[stage]) {
+        leads[stage] = [];
+    }
 
     const newLead = {
         id: 'lead-' + Date.now(),
@@ -3399,10 +3466,6 @@ function addLead() {
         dateAdded: new Date().toISOString(),
         lastContact: new Date().toISOString(),
         value: Math.floor(Math.random() * 10000) + 1000
-    };
-
-    const leads = JSON.parse(localStorage.getItem('leads')) || {
-        awareness: [], interest: [], intent: [], evaluation: [], purchase: []
     };
 
     leads[stage].push(newLead);
@@ -3627,30 +3690,39 @@ function addLead() {
     }
 
     // Calculate key metrics
+
     function calculateMetrics(leads) {
-        const totalLeads = Object.values(leads).flat().length;
-        const awarenessCount = leads.awareness.length;
-        const interestCount = leads.interest.length;
-        const considerationCount = leads.intent.length + leads.evaluation.length;
-        const purchaseCount = leads.purchase.length;
+    // Ensure leads has all expected stages
+    const expectedStages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
+    expectedStages.forEach(stage => {
+        if (!leads[stage]) {
+            leads[stage] = [];
+        }
+    });
 
-        // Conversion rates (dummy basic logic)
-        const awarenessToInterest = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
-        const interestToConsideration = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
-        const totalConversion = totalLeads > 0 ? Math.round((purchaseCount / totalLeads) * 100) : 0;
+    const totalLeads = Object.values(leads).flat().length;
+    const awarenessCount = leads.awareness.length;
+    const interestCount = leads.interest.length;
+    const considerationCount = leads.intent.length + leads.evaluation.length;
+    const purchaseCount = leads.purchase.length;
 
-        // Hot leads count (if status is 'hot')
-        const allLeads = Object.values(leads).flat();
-        const hotLeads = allLeads.filter(l => l.status === 'hot');
+    // Conversion rates (with proper checks for division by zero)
+    const awarenessToInterest = awarenessCount > 0 ? Math.round((interestCount / awarenessCount) * 100) : 0;
+    const interestToConsideration = interestCount > 0 ? Math.round((considerationCount / interestCount) * 100) : 0;
+    const totalConversion = totalLeads > 0 ? Math.round((purchaseCount / totalLeads) * 100) : 0;
 
-        return {
-            totalLeads,
-            awarenessToInterest,
-            interestToConsideration,
-            totalConversion,
-            hotLeadCount: hotLeads.length
-        };
-    }
+    // Hot leads count (if status is 'hot')
+    const allLeads = Object.values(leads).flat();
+    const hotLeads = allLeads.filter(l => l.status === 'hot');
+
+    return {
+        totalLeads,
+        awarenessToInterest,
+        interestToConsideration,
+        totalConversion,
+        hotLeadCount: hotLeads.length
+    };
+}
 
     // Update conversion percentages between stages
     function updateConversionPercentages() {
