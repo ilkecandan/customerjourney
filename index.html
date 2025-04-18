@@ -2663,9 +2663,9 @@ function setupAuth() {
     }
 
     function loadLeads() {
-        let leads = JSON.parse(localStorage.getItem('leads')) || {
-            awareness: [], interest: [], intent: [], evaluation: [], purchase: []
-        };
+
+        let leads = normalizeLeads(JSON.parse(localStorage.getItem('leads')) || {});
+
         const contentItems = JSON.parse(localStorage.getItem('content')) || [];
 
         // Ensure all leads have an ID
