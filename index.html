@@ -2288,7 +2288,7 @@ function setupGlobalEventListeners() {
     alert('Lead added successfully!');
     document.getElementById('lead-form').reset();
     document.getElementById('add-lead-modal')?.classList.add('hidden');
-    loadLeadsToTable(); // Optional if you show leads in a table
+loadLeads(); // this will handle DOM updates and table
   });
 }
 
@@ -2671,7 +2671,10 @@ function setupAuth() {
         // Ensure all leads have an ID
         let updated = false;
         for (const stage of Object.keys(leads)) {
-            leads[stage] = leads[stage].map(lead => {
+if (!Array.isArray(leads[stage])) {
+  leads[stage] = [];
+}
+leads[stage] = leads[stage].map(lead => {
                 if (!lead.id) {
                     lead.id = 'lead-' + Math.random().toString(36).substr(2, 9);
                     updated = true;
@@ -2742,6 +2745,18 @@ function setupAuth() {
         updateAdvancedAnalytics();
     }
 
+    function normalizeLeads(leads) {
+  const stages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
+  stages.forEach(stage => {
+    if (!Array.isArray(leads[stage])) leads[stage] = [];
+  });
+  return leads;
+}
+
+// Then use it like this:
+let leads = normalizeLeads(JSON.parse(localStorage.getItem('leads')) || {});
+
+    
 function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
         awareness: [], interest: [], intent: [], evaluation: [], purchase: []
