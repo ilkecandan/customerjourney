@@ -2348,43 +2348,76 @@ function setupGlobalEventListeners() {
     
 function setupEventListeners() {
     // ✏️ Edit Lead Form
-    document.getElementById('edit-lead-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveLeadChanges();
-    });
+    const editLeadForm = document.getElementById('edit-lead-form');
+    if (editLeadForm) {
+        editLeadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveLeadChanges();
+        });
+    }
 
-    // ➕ Add Lead button (fix applied)
-    document.getElementById('add-lead-btn')?.addEventListener('click', function() {
-        document.getElementById('lead-form').reset();
-        document.getElementById('add-lead-modal').classList.remove('hidden'); // ✅ FIXED MODAL
-    });
+    // ➕ Add Lead button
+    const addLeadBtn = document.getElementById('add-lead-btn');
+    if (addLeadBtn) {
+        addLeadBtn.addEventListener('click', function() {
+            const leadForm = document.getElementById('lead-form');
+            const addLeadModal = document.getElementById('add-lead-modal');
+            if (leadForm && addLeadModal) {
+                leadForm.reset();
+                addLeadModal.classList.remove('hidden');
+            }
+        });
+    }
 
     // ➕ Add Content button
-    document.getElementById('add-content-btn')?.addEventListener('click', function() {
-        document.getElementById('content-form').reset();
-        document.getElementById('add-content-modal').classList.add('show');
-    });
+    const addContentBtn = document.getElementById('add-content-btn');
+    if (addContentBtn) {
+        addContentBtn.addEventListener('click', function() {
+            const contentForm = document.getElementById('content-form');
+            const addContentModal = document.getElementById('add-content-modal');
+            if (contentForm && addContentModal) {
+                contentForm.reset();
+                addContentModal.classList.add('show');
+            }
+        });
+    }
 
     // 🔁 Refresh Funnel Advice
-    document.getElementById('refresh-advice')?.addEventListener('click', function() {
-        refreshFunnelInsights();
-    });
+    const refreshBtn = document.getElementById('refresh-advice');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshFunnelInsights);
+    }
 
     // 📣 Expand Funnel
-    document.getElementById('expand-funnel')?.addEventListener('click', function() {
-        const funnelContainer = document.querySelector('.funnel-container');
-        funnelContainer.classList.add('pulse-highlight');
-        setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
-    });
+    const expandBtn = document.getElementById('expand-funnel');
+    if (expandBtn) {
+        expandBtn.addEventListener('click', function() {
+            const funnelContainer = document.querySelector('.funnel-container');
+            if (funnelContainer) {
+                funnelContainer.classList.add('pulse-highlight');
+                setTimeout(() => funnelContainer.classList.remove('pulse-highlight'), 2000);
+            }
+        });
+    }
 
     // 🧾 Export Buttons
-    document.getElementById('export-pdf')?.addEventListener('click', exportToPDF);
-    document.getElementById('export-excel')?.addEventListener('click', exportToExcel);
+    const exportPDF = document.getElementById('export-pdf');
+    if (exportPDF) {
+        exportPDF.addEventListener('click', exportToPDF);
+    }
+
+    const exportExcel = document.getElementById('export-excel');
+    if (exportExcel) {
+        exportExcel.addEventListener('click', exportToExcel);
+    }
 
     // 🔍 Lead Stage Filter
-    document.getElementById('lead-stage-filter')?.addEventListener('change', function() {
-        filterLeadsTable(this.value);
-    });
+    const stageFilter = document.getElementById('lead-stage-filter');
+    if (stageFilter) {
+        stageFilter.addEventListener('change', function() {
+            filterLeadsTable(this.value);
+        });
+    }
 
     // 🔎 Lead Search (debounced)
     const leadSearch = document.getElementById('lead-search');
@@ -2398,32 +2431,44 @@ function setupEventListeners() {
     }
 
     // ❌ Close modals
-    document.querySelectorAll('.close-modal').forEach(btn => {
+    const closeBtns = document.querySelectorAll('.close-modal');
+    closeBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            this.closest('.modal').classList.add('hidden');
+            const modal = this.closest('.modal');
+            if (modal) modal.classList.add('hidden');
         });
     });
 
     // 🗑 Delete lead from edit modal
-    document.getElementById('delete-lead-btn')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        deleteLead();
-    });
+    const deleteLeadBtn = document.getElementById('delete-lead-btn');
+    if (deleteLeadBtn) {
+        deleteLeadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteLead();
+        });
+    }
 
     // ✅ Add Content
-    document.getElementById('content-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        addContent();
-    });
+    const contentForm = document.getElementById('content-form');
+    if (contentForm) {
+        contentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            addContent();
+        });
+    }
 
     // ✅ Edit Content
-    document.getElementById('edit-content-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveContentChanges();
-    });
+    const editContentForm = document.getElementById('edit-content-form');
+    if (editContentForm) {
+        editContentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveContentChanges();
+        });
+    }
 
     // ⛔ Click outside to close modals
-    document.querySelectorAll('.modal').forEach(modal => {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
@@ -2431,6 +2476,8 @@ function setupEventListeners() {
         });
     });
 }
+
+    
 
     // ✅ Authentication setup
 function setupAuth() {
@@ -2609,7 +2656,7 @@ function setupAuth() {
     }
 
 
-    function initializeDefaultData() {
+   function initializeDefaultData() {
     // Initialize metadata if none exists
     if (!localStorage.getItem('funnel_metadata')) {
         localStorage.setItem('funnel_metadata', JSON.stringify({
@@ -2618,8 +2665,8 @@ function setupAuth() {
             last_updated: new Date().toISOString()
         }));
     }
-    
-    // Initialize default leads if none exist
+
+    // Fix: Initialize default leads with correct structure
     if (!localStorage.getItem('leads')) {
         const defaultLeads = {
             awareness: [createDefaultLead('awareness')],
@@ -2631,7 +2678,7 @@ function setupAuth() {
         localStorage.setItem('leads', JSON.stringify(defaultLeads));
     }
 
-    // Initialize default content if none exists
+    // Keep default content initialization
     if (!localStorage.getItem('content')) {
         const defaultContent = [
             createContentItem('awareness', 'blog'),
@@ -2643,6 +2690,7 @@ function setupAuth() {
         localStorage.setItem('content', JSON.stringify(defaultContent));
     }
 }
+
 
     function createDefaultLead(stage) {
         const isAwareness = stage === 'awareness';
@@ -2731,10 +2779,14 @@ function setupAuth() {
         updateAnalytics();
     }
 
-   function loadLeads() {
-    // Safely get leads data with proper defaults
-    let leads = JSON.parse(localStorage.getItem('leads'));
-    if (!leads) {
+    function loadLeads() {
+    // Safely get leads data with proper defaults and validation
+    let leads;
+    try {
+        leads = JSON.parse(localStorage.getItem('leads'));
+        if (!leads) throw new Error('No leads data');
+    } catch (e) {
+        // If corrupted or doesn't exist, initialize fresh
         leads = {
             awareness: [], 
             interest: [], 
@@ -2745,10 +2797,10 @@ function setupAuth() {
         localStorage.setItem('leads', JSON.stringify(leads));
     }
 
-    // Ensure all expected stages exist
+    // Ensure all expected stages exist and are arrays
     const expectedStages = ['awareness', 'interest', 'intent', 'evaluation', 'purchase'];
     expectedStages.forEach(stage => {
-        if (!leads[stage]) {
+        if (!Array.isArray(leads[stage])) {
             leads[stage] = [];
         }
     });
@@ -2811,13 +2863,14 @@ function setupAuth() {
     document.getElementById('consideration-count').textContent =
         leads.intent.length + leads.evaluation.length + leads.purchase.length;
 
-    // Update leads table
+    // Update leads table and other logic
     updateLeadsTable();
-
     updateConversionPercentages();
     generateSmartAdvice();
     updateAdvancedAnalytics();
 }
+
+  
 
 function openEditLeadModalById(leadId) {
     const leads = JSON.parse(localStorage.getItem('leads')) || {
